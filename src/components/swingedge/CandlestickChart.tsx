@@ -1,8 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { Candle } from '@/lib/swingedge/types';
+import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
 
 const UP = 'hsl(var(--prism-lime))';
 const DOWN = 'hsl(var(--destructive))';
+const SIDEWAYS = 'hsl(var(--muted-foreground))';
+
+const STRIP_COLOR: Record<StripDirection, string> = { UP, DOWN, SIDEWAYS };
 
 
 export interface ChartLevel {
@@ -17,6 +21,8 @@ interface Props {
   visible?: number;
   height?: number;
   levels?: ChartLevel[];
+  /** Show a direction strip (up / down / sideways segments) under the price pane. */
+  showDirectionStrip?: boolean;
 }
 
 /**
@@ -24,14 +30,21 @@ interface Props {
  * horizontal level lines (support, resistance, estimated entry/stop/target).
  * No chart library — candles are simple rects so theme tokens apply.
  */
-export default function CandlestickChart({ candles, visible = 120, height = 320, levels = [] }: Props) {
+export default function CandlestickChart({ candles, visible = 120, height = 320, levels = [], showDirectionStrip = false }: Props) {
   const shown = useMemo(() => candles.slice(-visible), [candles, visible]);
   const [hover, setHover] = useState<number | null>(null);
+
+  const strip = useMemo(
+    () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
+    [shown, showDirectionStrip],
+  );
 
   const W = 800;
   const H = height;
   const volH = Math.round(H * 0.18);
-  const priceH = H - volH - 24; // 24px date strip
+  const stripH = showDirectionStrip ? 14 : 0;
+  const priceH = H - volH - stripH - 24; // 24px date strip
+  const volTop = priceH + stripH;
   const padL = 8;
   const padR = 56; // room for price labels
   const plotW = W - padL - padR;
@@ -118,6 +131,28 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
           );
         })}
 
+        {/* direction strip: one segment per window, up / down / sideways */}
+        {strip.map((s, i) => {
+          const x = padL + s.startIndex * slot;
+          const w = Math.max(1, (s.endIndex - s.startIndex + 1) * slot);
+          return (
+            <rect
+              key={`d-${i}`}
+              x={x}
+              y={priceH + 3}
+              width={w}
+              height={stripH - 6}
+              fill={STRIP_COLOR[s.direction]}
+              opacity={s.direction === 'SIDEWAYS' ? 0.35 : 0.8}
+              rx={1}
+            >
+              <title>{`${s.startDate.slice(0, 10)} → ${s.endDate.slice(0, 10)}: ${
+                s.direction === 'UP' ? 'moving up' : s.direction === 'DOWN' ? 'moving down' : 'sideways'
+              }`}</title>
+            </rect>
+          );
+        })}
+
         {/* volume pane */}
         {shown.map((c, i) => {
           const x = padL + i * slot + (slot - bodyW) / 2;
@@ -127,7 +162,7 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
             <rect
               key={`v-${c.datetime}`}
               x={x}
-              y={priceH + (volH - 4) - vh}
+              y={volTop + (volH - 4) - vh}
               width={bodyW}
               height={Math.max(1, vh)}
               fill={color}
