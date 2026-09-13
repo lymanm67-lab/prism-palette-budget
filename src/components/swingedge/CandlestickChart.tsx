@@ -1,12 +1,16 @@
 import { useMemo, useState } from 'react';
 import type { Candle } from '@/lib/swingedge/types';
 import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
+import { buildTrendLines, movingAverages } from '@/lib/swingedge/trendLines';
 
 const UP = 'hsl(var(--prism-lime))';
 const DOWN = 'hsl(var(--destructive))';
 const SIDEWAYS = 'hsl(var(--muted-foreground))';
 
 const STRIP_COLOR: Record<StripDirection, string> = { UP, DOWN, SIDEWAYS };
+
+const MA_COLOR = ['hsl(var(--prism-teal))', 'hsl(var(--prism-amber))'];
+const TREND_COLOR = { RESISTANCE: 'hsl(var(--destructive))', SUPPORT: 'hsl(var(--prism-lime))' } as const;
 
 
 export interface ChartLevel {
@@ -23,6 +27,10 @@ interface Props {
   levels?: ChartLevel[];
   /** Show a direction strip (up / down / sideways segments) under the price pane. */
   showDirectionStrip?: boolean;
+  /** Draw sloping trend lines fitted through recent swing highs and lows. */
+  showTrendLines?: boolean;
+  /** Draw the 20 EMA and 50 SMA curves over the candles. */
+  showMovingAverages?: boolean;
 }
 
 /**
@@ -30,7 +38,15 @@ interface Props {
  * horizontal level lines (support, resistance, estimated entry/stop/target).
  * No chart library — candles are simple rects so theme tokens apply.
  */
-export default function CandlestickChart({ candles, visible = 120, height = 320, levels = [], showDirectionStrip = false }: Props) {
+export default function CandlestickChart({
+  candles,
+  visible = 120,
+  height = 320,
+  levels = [],
+  showDirectionStrip = false,
+  showTrendLines = false,
+  showMovingAverages = false,
+}: Props) {
   const shown = useMemo(() => candles.slice(-visible), [candles, visible]);
   const [hover, setHover] = useState<number | null>(null);
 
@@ -38,6 +54,22 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
     () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
     [shown, showDirectionStrip],
   );
+
+  // Averages are computed on the full history, then trimmed, so the visible
+  // window starts with a value instead of a gap.
+  const maSeries = useMemo(
+    () =>
+      showMovingAverages
+        ? movingAverages(candles).map((s) => ({ ...s, values: s.values.slice(-visible) }))
+        : [],
+    [candles, visible, showMovingAverages],
+  );
+
+  const trendLines = useMemo(
+    () => (showTrendLines ? buildTrendLines(shown) : []),
+    [shown, showTrendLines],
+  );
+
 
   const W = 800;
   const H = height;
@@ -67,9 +99,16 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
       if (l.value < lo) lo = l.value;
       if (l.value > hi) hi = l.value;
     }
+    // keep fitted trend lines inside the pane too
+    for (const t of trendLines) {
+      for (const p of [t.startPrice, t.endPrice]) {
+        if (p < lo) lo = p;
+        if (p > hi) hi = p;
+      }
+    }
     if (hi - lo < 1e-9) hi = lo + 1;
     return { lo, hi, maxVol, activeLevels };
-  }, [shown, levels]);
+  }, [shown, levels, trendLines]);
 
   if (!shown.length) {
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
@@ -127,6 +166,61 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
               <rect x={x} y={top} width={bodyW} height={Math.max(1, bot - top)} fill={color} rx={0.5}>
                 <title>{`${fmtDate(c.datetime)}  O ${fmt(c.open)}  H ${fmt(c.high)}  L ${fmt(c.low)}  C ${fmt(c.close)}  Vol ${c.volume.toLocaleString()}`}</title>
               </rect>
+            </g>
+          );
+        })}
+
+        {/* moving average curves */}
+        {maSeries.map((s, si) => {
+          const pts: string[] = [];
+          s.values.forEach((v, i) => {
+            if (typeof v !== 'number' || !Number.isFinite(v)) return;
+            pts.push(`${(padL + i * slot + slot / 2).toFixed(2)},${y(v).toFixed(2)}`);
+          });
+          if (pts.length < 2) return null;
+          return (
+            <polyline
+              key={s.label}
+              points={pts.join(' ')}
+              fill="none"
+              stroke={MA_COLOR[si % MA_COLOR.length]}
+              strokeWidth={1.5}
+              opacity={0.9}
+            >
+              <title>{s.label}</title>
+            </polyline>
+          );
+        })}
+
+        {/* sloping trend lines fitted through recent swing highs / lows */}
+        {trendLines.map((t) => {
+          const x1 = padL + t.startIndex * slot + slot / 2;
+          const x2 = padL + t.endIndex * slot + slot / 2;
+          const label =
+            t.direction === 'RISING' ? 'rising' : t.direction === 'FALLING' ? 'falling' : 'flat';
+          return (
+            <g key={t.kind}>
+              <line
+                x1={x1}
+                x2={x2}
+                y1={y(t.startPrice)}
+                y2={y(t.endPrice)}
+                stroke={TREND_COLOR[t.kind]}
+                strokeWidth={1.5}
+                strokeDasharray="5 4"
+                opacity={0.9}
+              >
+                <title>{`${t.kind === 'RESISTANCE' ? 'Upper' : 'Lower'} trend line, ${label}, through ${t.pivots} swing points`}</title>
+              </line>
+              <text
+                x={x2 - 4}
+                y={y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
+                fontSize={9}
+                textAnchor="end"
+                fill={TREND_COLOR[t.kind]}
+              >
+                {t.kind === 'RESISTANCE' ? 'Upper' : 'Lower'} trend ({label})
+              </text>
             </g>
           );
         })}
