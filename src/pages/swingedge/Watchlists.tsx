@@ -13,6 +13,8 @@ import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import ScoredSymbolTable from '@/components/swingedge/ScoredSymbolTable';
+import BuyZoneAlertsCard from '@/components/swingedge/BuyZoneAlertsCard';
+import { useBuyZoneAlerts } from '@/hooks/use-swingedge-buyzone';
 import { useTradingTitle } from '@/hooks/use-swingedge';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
 import { cacheStatus } from '@/lib/swingedge/cache';
@@ -292,6 +294,10 @@ export default function Watchlists() {
           )}
         </CardContent>
       </Card>
+
+      {symbols.length > 0 && (
+        <BuyZoneAlertsCard hits={buyZoneHits} notifying={mode !== 'demo'} />
+      )}
 
       {currentList && symbols.length > 12 ? (
         <Alert className="border-prism-amber/40">
