@@ -272,6 +272,57 @@ export function revalidateSignal(
     }
   }
 
+  // Event-aware comparisons. Each of these makes revalidation mandatory.
+  const before = stored.eventContext ?? null;
+  const after = current.eventContext ?? null;
+  if (before && after) {
+    if ((before.earningsDate ?? null) !== (after.earningsDate ?? null) && after.earningsDate) {
+      add('NEW_EARNINGS_DATE', `Now ${after.earningsDate}.`);
+    }
+    if (before.earningsCertainty === 'ESTIMATED' && after.earningsCertainty === 'CONFIRMED') {
+      add('EARNINGS_DATE_CONFIRMED');
+    }
+    if (before.earningsTiming && after.earningsTiming && before.earningsTiming !== after.earningsTiming) {
+      add('EARNINGS_TIMING_CHANGED', `Now ${after.earningsTiming}.`);
+    }
+    const newMacro = (after.macroEventIds ?? []).filter((id) => !(before.macroEventIds ?? []).includes(id));
+    if (newMacro.length) add('NEW_MACRO_EVENT', `${newMacro.length} new release inside the window.`);
+    const newGlobal = (after.globalEventIds ?? []).filter((id) => !(before.globalEventIds ?? []).includes(id));
+    if (newGlobal.length) add('NEW_VERIFIED_GLOBAL_EVENT', `${newGlobal.length} newly verified event.`);
+    const resolved = (after.resolvedEventIds ?? []).filter((id) => !(before.resolvedEventIds ?? []).includes(id));
+    if (resolved.length) add('EVENT_RESOLVED', `${resolved.length} event has cleared.`);
+    const sevOrder = ['LOW', 'MODERATE', 'HIGH', 'SEVERE'];
+    const sevBefore = sevOrder.indexOf(before.worstEventSeverity ?? '');
+    const sevAfter = sevOrder.indexOf(after.worstEventSeverity ?? '');
+    if (sevBefore >= 0 && sevAfter > sevBefore) {
+      add('EVENT_SEVERITY_UPGRADED', `${before.worstEventSeverity} became ${after.worstEventSeverity}.`);
+    }
+    if (before.sectorRisk && after.sectorRisk && before.sectorRisk !== after.sectorRisk) {
+      add('SECTOR_RISK_CHANGED', `${before.sectorRisk} became ${after.sectorRisk}.`);
+    }
+    const biasFlipped = before.biasDirection && after.biasDirection && before.biasDirection !== after.biasDirection;
+    const biasMoved =
+      typeof before.biasLeadingPct === 'number' &&
+      typeof after.biasLeadingPct === 'number' &&
+      Math.abs(before.biasLeadingPct - after.biasLeadingPct) >= 10;
+    if (biasFlipped || biasMoved) {
+      add('DIRECTIONAL_BIAS_CHANGED', `Now ${after.biasDirection ?? 'unchanged'} at ${after.biasLeadingPct ?? '—'}%.`);
+    }
+    const stopBefore = before.stop ?? null;
+    const stopAfter = after.stop ?? current.stop ?? null;
+    if (stopBefore !== null && stopAfter !== null && Math.abs(stopBefore - stopAfter) > 0.005) {
+      add('STOP_CHANGED', `${stopBefore} became ${stopAfter}.`);
+    }
+  }
+  if (
+    stored.atrValue &&
+    stored.atrValue > 0 &&
+    typeof current.atrValue === 'number' &&
+    current.atrValue / stored.atrValue >= 1.25
+  ) {
+    add('ATR_EXPANDED', `Normal daily range grew from ${stored.atrValue} to ${current.atrValue}.`);
+  }
+
   // Freshness. Anything beyond a plain "about to trade" check needs review.
   const materialTriggers = triggers.filter((t) => t !== 'BEFORE_PAPER_TRADE');
   const expired =
