@@ -307,6 +307,9 @@ export default function TrainingMode() {
       </div>
 
       <WeeklyReviewSection />
+
+      <TrainingNotesCard />
+
           <NextStepsCard
         summary="Training is the routine, not the trading. Each day ends back in the workflow."
         steps={[
