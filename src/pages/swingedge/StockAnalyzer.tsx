@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Loader2, Save, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
+import CandlestickChart from '@/components/swingedge/CandlestickChart';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
@@ -19,7 +21,7 @@ import {
   RelativeStrengthCard,
   TradabilityCard,
 } from '@/components/swingedge/ContextCards';
-import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
+import { useTradingSettings, useTradingTitle, loadCandles } from '@/hooks/use-swingedge';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
 
 const money = (n: number | null) =>
@@ -36,6 +38,13 @@ export default function StockAnalyzer() {
     useHybridAnalysis(symbol);
   const { data: history } = useHybridSignalHistory(symbol ?? undefined);
   const { settings } = useTradingSettings();
+
+  const { data: candleResult, isLoading: candlesLoading } = useQuery({
+    queryKey: ['se-analyzer-candles', symbol, settings.data_mode],
+    queryFn: () => loadCandles(symbol as string, '1day', settings.data_mode, 260),
+    enabled: !!symbol,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const run = () => {
     const next = input.trim().toUpperCase();
@@ -139,6 +148,34 @@ export default function StockAnalyzer() {
               Compared with {analysis.sectorSymbol} and {analysis.marketTrendSymbol}
             </Badge>
           </div>
+
+          <Card className="border-border/60 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Price chart — daily candles</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                The chart the signal is reading. Dashed lines mark support, resistance and the estimated entry, stop
+                and target.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {candlesLoading ? (
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading the chart…
+                </p>
+              ) : (
+                <CandlestickChart
+                  candles={candleResult?.candles ?? []}
+                  levels={[
+                    { label: 'Support', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
+                    { label: 'Resistance', value: analysis.technical.resistance, color: 'hsl(var(--prism-amber))' },
+                    { label: 'Est. entry', value: levels?.estimatedEntry, color: 'hsl(var(--foreground))' },
+                    { label: 'Est. stop', value: levels?.estimatedStop, color: 'hsl(var(--destructive))' },
+                    { label: 'Est. target', value: levels?.estimatedTarget, color: 'hsl(var(--prism-lime))' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
 
           <HybridSignalCard
             result={analysis.hybrid}
