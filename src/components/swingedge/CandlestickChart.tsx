@@ -45,6 +45,9 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
   const stripH = showDirectionStrip ? 14 : 0;
   const priceH = H - volH - stripH - 24; // 24px date strip
   const volTop = priceH + stripH;
+  const padL = 8;
+  const padR = 56; // room for price labels
+  const plotW = W - padL - padR;
 
   const { lo, hi, maxVol, activeLevels } = useMemo(() => {
     if (!shown.length) return { lo: 0, hi: 0, maxVol: 0, activeLevels: [] as (ChartLevel & { value: number })[] };
