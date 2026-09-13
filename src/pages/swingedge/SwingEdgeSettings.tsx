@@ -22,6 +22,8 @@ import { lastUpdatedLabel } from '@/lib/swingedge/cache';
 import { useConnectionTest, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { ConnectionStatus, DataMode } from '@/lib/swingedge/types';
 
+const DEFAULT_OVERVIEW = ['SPY', 'QQQ', 'DIA', 'IWM'];
+
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 
