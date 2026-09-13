@@ -27,6 +27,10 @@ interface Props {
   levels?: ChartLevel[];
   /** Show a direction strip (up / down / sideways segments) under the price pane. */
   showDirectionStrip?: boolean;
+  /** Draw sloping trend lines fitted through recent swing highs and lows. */
+  showTrendLines?: boolean;
+  /** Draw the 20 EMA and 50 SMA curves over the candles. */
+  showMovingAverages?: boolean;
 }
 
 /**
