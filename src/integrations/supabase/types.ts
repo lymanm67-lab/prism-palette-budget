@@ -12140,6 +12140,66 @@ export type Database = {
         }
         Relationships: []
       }
+      se_mentor_verdicts: {
+        Row: {
+          acknowledged_at: string | null
+          coaching: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          discipline_score: number | null
+          emotional_flags: Json
+          headline: string | null
+          household_id: string
+          id: string
+          page: string | null
+          payload: Json | null
+          rule_breaks: Json
+          scope: string
+          symbol: string | null
+          updated_at: string
+          verdict: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          coaching?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          discipline_score?: number | null
+          emotional_flags?: Json
+          headline?: string | null
+          household_id: string
+          id?: string
+          page?: string | null
+          payload?: Json | null
+          rule_breaks?: Json
+          scope?: string
+          symbol?: string | null
+          updated_at?: string
+          verdict?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          coaching?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          discipline_score?: number | null
+          emotional_flags?: Json
+          headline?: string | null
+          household_id?: string
+          id?: string
+          page?: string | null
+          payload?: Json | null
+          rule_breaks?: Json
+          scope?: string
+          symbol?: string | null
+          updated_at?: string
+          verdict?: string | null
+        }
+        Relationships: []
+      }
       se_paper_trades: {
         Row: {
           actual_simulated_loss: number | null
