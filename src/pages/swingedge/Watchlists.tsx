@@ -13,6 +13,8 @@ import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import ScoredSymbolTable from '@/components/swingedge/ScoredSymbolTable';
+import BuyZoneAlertsCard from '@/components/swingedge/BuyZoneAlertsCard';
+import { useBuyZoneAlerts } from '@/hooks/use-swingedge-buyzone';
 import { useTradingTitle } from '@/hooks/use-swingedge';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
 import { cacheStatus } from '@/lib/swingedge/cache';
@@ -67,6 +69,10 @@ export default function Watchlists() {
       }),
     [rows, roleFilter, statusFilter, roles],
   );
+
+  // Names sitting inside their estimated entry zone right now. Practice data
+  // never raises an alert.
+  const { hits: buyZoneHits } = useBuyZoneAlerts(rows, mode !== 'DEMO');
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return;
@@ -292,6 +298,10 @@ export default function Watchlists() {
           )}
         </CardContent>
       </Card>
+
+      {symbols.length > 0 && (
+        <BuyZoneAlertsCard hits={buyZoneHits} notifying={mode !== 'DEMO'} />
+      )}
 
       {currentList && symbols.length > 12 ? (
         <Alert className="border-prism-amber/40">
