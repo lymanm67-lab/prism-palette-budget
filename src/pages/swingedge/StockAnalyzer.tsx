@@ -177,6 +177,7 @@ export default function StockAnalyzer() {
             </CardContent>
           </Card>
 
+          <HybridSignalCard
             result={analysis.hybrid}
             qualityLabel={analysis.assetType === 'ETF' ? 'Fund quality' : 'Company quality'}
             qualityScore={analysis.qualityScore}
