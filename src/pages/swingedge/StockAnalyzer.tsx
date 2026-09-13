@@ -49,6 +49,11 @@ export default function StockAnalyzer() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const chartDirection = useMemo(
+    () => currentDirection(candleResult?.candles ?? []),
+    [candleResult],
+  );
+
   const run = () => {
     const next = input.trim().toUpperCase();
     if (!next) return;
