@@ -7,7 +7,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useHousehold } from '@/hooks/use-household';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import type { RTrade } from '@/lib/swingedge/expectancy';
 
 export interface ClosedTradeRow extends RTrade {
@@ -53,7 +53,7 @@ export function useClosedRTrades() {
             outcomeClass: t.outcome_class ?? null,
             eventDecision: t.event_decision ?? null,
             readinessScore: t.readiness_score ?? null,
-          } satisfies ClosedTradeRow;
+          } as ClosedTradeRow;
         })
         .filter((r): r is ClosedTradeRow => r !== null);
     },
