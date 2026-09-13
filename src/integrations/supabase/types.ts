@@ -12800,6 +12800,48 @@ export type Database = {
         }
         Relationships: []
       }
+      se_trading_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          custom_text: string | null
+          deleted_at: string | null
+          enabled: boolean
+          household_id: string
+          id: string
+          rule_key: string
+          sort_order: number
+          threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          custom_text?: string | null
+          deleted_at?: string | null
+          enabled?: boolean
+          household_id: string
+          id?: string
+          rule_key: string
+          sort_order?: number
+          threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          custom_text?: string | null
+          deleted_at?: string | null
+          enabled?: boolean
+          household_id?: string
+          id?: string
+          rule_key?: string
+          sort_order?: number
+          threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       se_trading_settings: {
         Row: {
           advanced_mode: boolean
