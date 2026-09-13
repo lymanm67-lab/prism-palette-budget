@@ -1090,6 +1090,27 @@ export default function TradePlanner() {
         </div>
       </div>
 
+      <AiMentorCard
+        scope="TRADE"
+        page="Trade Planner"
+        symbol={symbol || null}
+        context={{
+          price: levels.data?.snapshot?.price ?? null,
+          setup,
+          plan: {
+            entry: entryNum || null,
+            stop: stopNum || null,
+            target: targetNum || null,
+            rewardRisk: risk.rewardRisk || null,
+            shares: risk.shares ?? null,
+            dollarRisk: risk.dollarRisk ?? null,
+          },
+          portfolioHeat: heat,
+          heatGate,
+          circuitBreaker: breaker.assessment,
+        }}
+      />
+
       <AiLevelsAssistant
         page="Trade Planner"
         symbol={symbol || null}
