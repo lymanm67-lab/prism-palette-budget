@@ -52,6 +52,29 @@ async function av(params: Record<string, string>, apiKey: string): Promise<Json>
   return body;
 }
 
+/** Alpha Vantage CSV endpoints (the earnings calendar is one). Returns rows of cells. */
+async function avCsv(params: Record<string, string>, apiKey: string): Promise<string[][]> {
+  const url = new URL(BASE);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  url.searchParams.set('apikey', apiKey);
+  const res = await fetch(url.toString());
+  if (res.status === 429) throw new RateLimitError('Market data provider limit reached — try again later.');
+  if (!res.ok) throw new Error(`Alpha Vantage ${res.status}`);
+  const text = await res.text();
+  const trimmed = text.trim();
+  if (trimmed.startsWith('{')) {
+    const body = JSON.parse(trimmed) as Json;
+    const info = String(body['Information'] ?? body['Note'] ?? body['Error Message'] ?? '');
+    if (info) throw looksRateLimited(info) ? new RateLimitError('Daily market data limit reached — figures will refresh tomorrow.') : new Error(info);
+    return [];
+  }
+  return trimmed
+    .split(/\r?\n/)
+    .filter((line) => line.trim().length > 0)
+    .map((line) => line.split(','));
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -111,6 +134,33 @@ Deno.serve(async (req) => {
     }
 
     if (!symbol) return json({ error: 'symbol is required' }, 400);
+
+    // Earnings calendar. Alpha Vantage returns CSV here, and its dates are
+    // provider estimates unless a company has confirmed the date, so the
+    // certainty is reported as ESTIMATED and never upgraded on our side.
+    if (action === 'earnings') {
+      const rows = await avCsv({ function: 'EARNINGS_CALENDAR', symbol, horizon: '3month' }, apiKey);
+      const head = rows[0]?.map((h) => h.trim().toLowerCase()) ?? [];
+      const symIdx = head.indexOf('symbol');
+      const dateIdx = head.indexOf('reportdate');
+      const next = rows
+        .slice(1)
+        .filter((r) => (symIdx >= 0 ? (r[symIdx] ?? '').trim().toUpperCase() === symbol : true))
+        .map((r) => (dateIdx >= 0 ? (r[dateIdx] ?? '').trim() : ''))
+        .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        .sort()[0] ?? null;
+
+      return json({
+        symbol,
+        date: next,
+        // The provider does not publish the session, so it stays unknown.
+        certainty: next ? 'ESTIMATED' : 'UNKNOWN',
+        timing: 'TIME_UNKNOWN',
+        source: next ? 'Alpha Vantage earnings calendar' : null,
+        fetchedAt: new Date().toISOString(),
+      });
+    }
+
 
     if (action === 'holdings') {
       const data = await av({ function: 'ETF_PROFILE', symbol }, apiKey);
