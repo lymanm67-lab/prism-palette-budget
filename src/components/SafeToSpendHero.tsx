@@ -36,12 +36,16 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
   // transfers, groceries and medical are excluded — see spending rules).
   const spent = useMemo(() => {
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    // Transaction dates are local YYYY-MM-DD — format in local time, never UTC
+    // (toISOString would roll "today" over in the evening for US timezones).
+    const localDate = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const todayStr = localDate(now);
     const monthPrefix = todayStr.slice(0, 7);
     const dow = now.getDay();
     const monday = new Date(now);
     monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
-    const mondayStr = monday.toISOString().split('T')[0];
+    const mondayStr = localDate(monday);
 
     let today = 0, week = 0, month = 0;
     for (const t of (transactions || []) as any[]) {
