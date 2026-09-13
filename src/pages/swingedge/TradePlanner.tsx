@@ -27,6 +27,8 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
 import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
+import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
+import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import { useTradingRules, useEntriesToday } from '@/hooks/use-swingedge-rulebook';
 import { useDisciplineReport } from '@/hooks/use-swingedge-mentor';
 import { useSymbolEarnings } from '@/hooks/use-swingedge-events';
@@ -246,6 +248,7 @@ export default function TradePlanner() {
   // The owner's own rulebook, checked against this plan as it is built, plus the
   // guardrails that speak up on their own. Nothing here calls an AI model.
   const { rules } = useTradingRules();
+  const { record: trackRecord } = useTrackRecord(symbol || null, setup);
   const { report: discipline } = useDisciplineReport();
   const { count: entriesToday } = useEntriesToday();
   const earnings = useSymbolEarnings(symbol || null);
@@ -1019,6 +1022,8 @@ export default function TradePlanner() {
 
         <div className="space-y-4">
           <RuleChecklistCard checks={ruleChecks} />
+
+          <TrackRecordCard record={trackRecord} />
 
           <RiskFirstCard
             entry={entryNum}
