@@ -11926,8 +11926,13 @@ export type Database = {
       }
       se_journal_entries: {
         Row: {
+          bias_direction: string | null
           created_at: string
+          earnings_within_hold: boolean | null
           entry_date: string
+          event_note: string | null
+          event_risk_band: string | null
+          event_risk_score: number | null
           final_risk: number | null
           final_stop: number | null
           followed_stop_rule: boolean | null
@@ -11956,8 +11961,13 @@ export type Database = {
           widened_stop: boolean | null
         }
         Insert: {
+          bias_direction?: string | null
           created_at?: string
+          earnings_within_hold?: boolean | null
           entry_date?: string
+          event_note?: string | null
+          event_risk_band?: string | null
+          event_risk_score?: number | null
           final_risk?: number | null
           final_stop?: number | null
           followed_stop_rule?: boolean | null
@@ -11986,8 +11996,13 @@ export type Database = {
           widened_stop?: boolean | null
         }
         Update: {
+          bias_direction?: string | null
           created_at?: string
+          earnings_within_hold?: boolean | null
           entry_date?: string
+          event_note?: string | null
+          event_risk_band?: string | null
+          event_risk_score?: number | null
           final_risk?: number | null
           final_stop?: number | null
           followed_stop_rule?: boolean | null
@@ -12125,12 +12140,18 @@ export type Database = {
       se_paper_trades: {
         Row: {
           actual_simulated_loss: number | null
+          bias_confidence: string | null
+          bias_direction: string | null
           breakeven_trigger: string | null
           created_at: string
           current_price: number | null
           earnings_ack: boolean
+          earnings_within_hold: boolean | null
           entry_date: string
           entry_price: number
+          event_decision: string | null
+          event_risk_band: string | null
+          event_risk_score: number | null
           execution_score: number | null
           exit_date: string | null
           exit_price: number | null
@@ -12148,6 +12169,7 @@ export type Database = {
           outcome_class: string | null
           planned_loss: number | null
           planned_stop: number | null
+          readiness_score: number | null
           realized_pl: number | null
           revalidated_at: string | null
           rules_followed: boolean | null
@@ -12168,12 +12190,18 @@ export type Database = {
         }
         Insert: {
           actual_simulated_loss?: number | null
+          bias_confidence?: string | null
+          bias_direction?: string | null
           breakeven_trigger?: string | null
           created_at?: string
           current_price?: number | null
           earnings_ack?: boolean
+          earnings_within_hold?: boolean | null
           entry_date?: string
           entry_price: number
+          event_decision?: string | null
+          event_risk_band?: string | null
+          event_risk_score?: number | null
           execution_score?: number | null
           exit_date?: string | null
           exit_price?: number | null
@@ -12191,6 +12219,7 @@ export type Database = {
           outcome_class?: string | null
           planned_loss?: number | null
           planned_stop?: number | null
+          readiness_score?: number | null
           realized_pl?: number | null
           revalidated_at?: string | null
           rules_followed?: boolean | null
@@ -12211,12 +12240,18 @@ export type Database = {
         }
         Update: {
           actual_simulated_loss?: number | null
+          bias_confidence?: string | null
+          bias_direction?: string | null
           breakeven_trigger?: string | null
           created_at?: string
           current_price?: number | null
           earnings_ack?: boolean
+          earnings_within_hold?: boolean | null
           entry_date?: string
           entry_price?: number
+          event_decision?: string | null
+          event_risk_band?: string | null
+          event_risk_score?: number | null
           execution_score?: number | null
           exit_date?: string | null
           exit_price?: number | null
@@ -12234,6 +12269,7 @@ export type Database = {
           outcome_class?: string | null
           planned_loss?: number | null
           planned_stop?: number | null
+          readiness_score?: number | null
           realized_pl?: number | null
           revalidated_at?: string | null
           rules_followed?: boolean | null
