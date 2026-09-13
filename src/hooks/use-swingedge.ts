@@ -143,6 +143,10 @@ export function useTradingSettings() {
           DEFAULT_SETTINGS.training_min_paper_trades,
         ),
         training_mode_enabled: Boolean(row.training_mode_enabled ?? false),
+        market_overview_symbols:
+          Array.isArray(row.market_overview_symbols) && row.market_overview_symbols.length
+            ? (row.market_overview_symbols as string[])
+            : [...INDEX_SYMBOLS],
       };
     },
   });
