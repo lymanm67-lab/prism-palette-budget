@@ -215,6 +215,23 @@ export default function TradingAcademy() {
         </CardContent>
       </Card>
 
+      {!isLoading && percent === 100 && (
+        <Card className="border-prism-lime/50 bg-prism-lime/5">
+          <CardContent className="flex flex-col items-start gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-medium">Academy complete — well done.</p>
+              <p className="text-sm text-muted-foreground">
+                Next, turn the theory into habit: the six-week Training program gives you daily drills,
+                paper trades and weekly reviews that build your track record.
+              </p>
+            </div>
+            <Button asChild className="shrink-0">
+              <Link to="/swingedge/training">Start the 6-week training program</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {modules.map((m) => (
         <Card key={m.module}>
           <CardHeader className="pb-2">
