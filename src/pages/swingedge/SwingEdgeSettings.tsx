@@ -265,6 +265,46 @@ export default function SwingEdgeSettings() {
         </CardContent>
       </Card>
 
+      {/* Market Overview symbols */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Market Overview funds</CardTitle>
+          <CardDescription>
+            These are the funds shown at the top of the SwingEdge dashboard and used to judge the
+            overall market condition. Two to six broad funds works best — each one costs a price
+            reading.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="overview">Symbols, separated by commas</Label>
+            <Input
+              id="overview"
+              className="max-w-md uppercase"
+              value={overview}
+              onChange={(e) => setOverview(e.target.value)}
+              placeholder="SPY, QQQ, DIA, IWM"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={saveOverview} disabled={isSaving}>
+              Save funds
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setOverview(DEFAULT_OVERVIEW.join(', '))}
+              disabled={isSaving}
+            >
+              Reset to defaults
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Anything the data provider does not recognise is simply skipped on the dashboard.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Trading capital firewall */}
       <Card>
         <CardHeader className="pb-3">
