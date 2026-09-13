@@ -72,7 +72,7 @@ export default function Watchlists() {
 
   // Names sitting inside their estimated entry zone right now. Practice data
   // never raises an alert.
-  const { hits: buyZoneHits } = useBuyZoneAlerts(rows, mode !== 'demo');
+  const { hits: buyZoneHits } = useBuyZoneAlerts(rows, mode !== 'DEMO');
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return;
@@ -300,7 +300,7 @@ export default function Watchlists() {
       </Card>
 
       {symbols.length > 0 && (
-        <BuyZoneAlertsCard hits={buyZoneHits} notifying={mode !== 'demo'} />
+        <BuyZoneAlertsCard hits={buyZoneHits} notifying={mode !== 'DEMO'} />
       )}
 
       {currentList && symbols.length > 12 ? (
