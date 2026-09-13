@@ -80,7 +80,34 @@ export default function SwingEdgeSettings() {
     settings.correlation_lookback_days,
     settings.api_minute_limit,
     settings.api_daily_limit,
+    settings.market_overview_symbols,
   ]);
+
+  const saveOverview = async () => {
+    const symbols = Array.from(
+      new Set(
+        overview
+          .split(',')
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean),
+      ),
+    );
+    if (symbols.length < 1) {
+      toast.error('Add at least one fund, or reset to the defaults.');
+      return;
+    }
+    if (symbols.length > 6) {
+      toast.error('Keep it to six funds or fewer — more than that just costs credits.');
+      return;
+    }
+    if (symbols.some((s) => !/^[A-Z.\-]{1,10}$/.test(s))) {
+      toast.error('Use plain symbols such as SPY or QQQ.');
+      return;
+    }
+    await save({ market_overview_symbols: symbols });
+    setOverview(symbols.join(', '));
+    toast.success('Market Overview funds saved.');
+  };
 
   const connection: ConnectionStatus =
     settings.data_mode === 'DEMO'
