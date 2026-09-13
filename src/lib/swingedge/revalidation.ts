@@ -23,7 +23,19 @@ export type RevalidationTrigger =
   | 'CONFIDENCE_FELL'
   | 'SIGNAL_AGED_OUT'
   | 'PRICE_DRIFT_BEYOND_ATR'
-  | 'BEFORE_PAPER_TRADE';
+  | 'BEFORE_PAPER_TRADE'
+  // Event-aware triggers.
+  | 'NEW_EARNINGS_DATE'
+  | 'EARNINGS_DATE_CONFIRMED'
+  | 'EARNINGS_TIMING_CHANGED'
+  | 'NEW_MACRO_EVENT'
+  | 'NEW_VERIFIED_GLOBAL_EVENT'
+  | 'EVENT_SEVERITY_UPGRADED'
+  | 'EVENT_RESOLVED'
+  | 'SECTOR_RISK_CHANGED'
+  | 'DIRECTIONAL_BIAS_CHANGED'
+  | 'ATR_EXPANDED'
+  | 'STOP_CHANGED';
 
 export const TRIGGER_TEXT: Record<RevalidationTrigger, string> = {
   NEW_DAILY_CANDLE: 'A new daily candle has completed since this reading.',
@@ -39,6 +51,17 @@ export const TRIGGER_TEXT: Record<RevalidationTrigger, string> = {
   SIGNAL_AGED_OUT: 'The signal is older than your age limit.',
   PRICE_DRIFT_BEYOND_ATR: 'Price has drifted more than one daily range from the entry.',
   BEFORE_PAPER_TRADE: 'Mandatory check immediately before a paper trade.',
+  NEW_EARNINGS_DATE: 'An earnings date has appeared or moved.',
+  EARNINGS_DATE_CONFIRMED: 'An estimated earnings date has now been confirmed.',
+  EARNINGS_TIMING_CHANGED: 'The time of day of the earnings report has changed.',
+  NEW_MACRO_EVENT: 'A macro release has been added inside the holding window.',
+  NEW_VERIFIED_GLOBAL_EVENT: 'A global or sector event has been verified.',
+  EVENT_SEVERITY_UPGRADED: 'An event became more serious than when this was read.',
+  EVENT_RESOLVED: 'An event has resolved, so the risk picture has changed.',
+  SECTOR_RISK_CHANGED: 'Global sector risk has changed.',
+  DIRECTIONAL_BIAS_CHANGED: 'The historical directional bias has changed materially.',
+  ATR_EXPANDED: 'Normal daily movement has expanded, so the plan needs resizing.',
+  STOP_CHANGED: 'The stop level has changed since this reading.',
 };
 
 export type SignalFreshness = 'CURRENT' | 'NEEDS_REVIEW' | 'EXPIRED';
