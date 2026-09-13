@@ -122,6 +122,23 @@ export default function Watchlists() {
         }
       />
 
+      <HowToUse
+        steps={[
+          'Create a list with a clear purpose rather than one long catch-all list.',
+          'Add symbols you would genuinely be willing to trade — around 10 to 25 per list.',
+          'Read the score and verdict columns: QUALIFIES and WATCH are the only rows worth opening.',
+          'Click a symbol to open it in the Stock Analyzer for the full read.',
+          'Give each name a portfolio role — the job it plays — then let its trading status move as the setup develops.',
+          'Remove names you have stopped following. A stale list wastes your market data allowance.',
+        ]}
+        tips={[
+          'The estimated entry, stop and target are for comparison only. Your real numbers come from the Trade Planner.',
+          'Hover a score to see exactly which parts of the checklist earned the points.',
+          'Lists are private to your household.',
+        ]}
+      />
+
+
       {mode === 'DEMO' ? (
         <Alert className="border-prism-amber/40">
           <Info className="h-4 w-4" />
@@ -315,21 +332,6 @@ export default function Watchlists() {
         </Card>
       ) : null}
 
-      <HowToUse
-        steps={[
-          'Create a list with a clear purpose rather than one long catch-all list.',
-          'Add symbols you would genuinely be willing to trade — around 10 to 25 per list.',
-          'Read the score and verdict columns: QUALIFIES and WATCH are the only rows worth opening.',
-          'Click a symbol to open it in the Stock Analyzer for the full read.',
-          'Give each name a portfolio role — the job it plays — then let its trading status move as the setup develops.',
-          'Remove names you have stopped following. A stale list wastes your market data allowance.',
-        ]}
-        tips={[
-          'The estimated entry, stop and target are for comparison only. Your real numbers come from the Trade Planner.',
-          'Hover a score to see exactly which parts of the checklist earned the points.',
-          'Lists are private to your household.',
-        ]}
-      />
     <AiLevelsAssistant page="Watchlists" />
         <NextStepsCard
       summary="Your list is a shortlist, not a plan. The next step is confirming one name properly."

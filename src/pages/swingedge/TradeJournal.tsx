@@ -172,6 +172,21 @@ export default function TradeJournal() {
         }
       />
 
+      <HowToUse
+        steps={[
+          'Pick the paper trade you are writing about — the plan details fill in for you.',
+          'Write what you planned and what actually happened, in your own words.',
+          'Answer the discipline question honestly: did you follow your plan?',
+          'Tag one main mistake if there was one. Those tags are ranked on the Performance Review.',
+          'Finish with a single change for next time, then leave it alone until your monthly review.',
+        ]}
+        tips={[
+          'The entries you least want to write are the ones worth the most.',
+          'Your journal is private to your household.',
+        ]}
+      />
+
+
       {tradesMissingJournal.length > 0 ? (
         <Alert className="border-prism-amber/40">
           <AlertTriangle className="h-4 w-4" />
@@ -436,19 +451,6 @@ export default function TradeJournal() {
         </CardContent>
       </Card>
 
-      <HowToUse
-        steps={[
-          'Pick the paper trade you are writing about — the plan details fill in for you.',
-          'Write what you planned and what actually happened, in your own words.',
-          'Answer the discipline question honestly: did you follow your plan?',
-          'Tag one main mistake if there was one. Those tags are ranked on the Performance Review.',
-          'Finish with a single change for next time, then leave it alone until your monthly review.',
-        ]}
-        tips={[
-          'The entries you least want to write are the ones worth the most.',
-          'Your journal is private to your household.',
-        ]}
-      />
     <AiLevelsAssistant page="Trade Journal" />
         <NextStepsCard
       summary="The entry is written. Journaling is what turns trades into a track record you can act on."
