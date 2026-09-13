@@ -669,6 +669,23 @@ export default function TradePlanner() {
             ) : null}
           </Step>
 
+          <HowToUse
+            id="planner-stop-loss-guide"
+            title="How to find, place, and add a stop loss"
+            description="A stop loss is not a guess. It is the price that proves your idea wrong."
+            steps={[
+              'Find the invalidation level. For a pullback, use the swing low or the recent support. For a breakout, use the retest low or the breakout level that failed to hold.',
+              'Choose a stop method. Structure uses the chart level. ATR uses normal volatility. Hybrid combines both. Percent is only for very liquid names with no clean level.',
+              'Add a small buffer below the level so a normal wick does not shake you out. The default buffer is 0.25% for beginners.',
+              'Enter the stop in the Stop Price field, or accept the suggested stop. The share count and dollar risk will recalculate from that stop, not the other way around.',
+              'Write one sentence explaining why the stop is there. If you cannot justify it, the stop is not valid and the plan should not be saved.',
+            ]}
+            tips={[
+              'A tighter stop does not mean less risk — it usually means a worse stop that gets hit by noise.',
+              'Never move a stop wider after the trade is open. That is a bad-loss habit the journal will flag.',
+            ]}
+          />
+
           <Step n={5} title="Risk per share" hint="Entry minus stop. Everything else is built on this number.">
             <p className="text-2xl font-bold tabular-nums">
               {risk.riskPerShare === null ? (
@@ -1068,23 +1085,6 @@ export default function TradePlanner() {
         tips={[
           'If a plan would push your total open risk past your portfolio limit, it is blocked on purpose.',
           'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
-        ]}
-      />
-
-      <HowToUse
-        id="planner-stop-loss-guide"
-        title="How to find, place, and add a stop loss"
-        description="A stop loss is not a guess. It is the price that proves your idea wrong."
-        steps={[
-          'Find the invalidation level. For a pullback, use the swing low or the recent support. For a breakout, use the retest low or the breakout level that failed to hold.',
-          'Choose a stop method. Structure uses the chart level. ATR uses normal volatility. Hybrid combines both. Percent is only for very liquid names with no clean level.',
-          'Add a small buffer below the level so a normal wick does not shake you out. The default buffer is 0.25% for beginners.',
-          'Enter the stop in the Stop Price field, or accept the suggested stop. The share count and dollar risk will recalculate from that stop, not the other way around.',
-          'Write one sentence explaining why the stop is there. If you cannot justify it, the stop is not valid and the plan should not be saved.',
-        ]}
-        tips={[
-          'A tighter stop does not mean less risk — it usually means a worse stop that gets hit by noise.',
-          'Never move a stop wider after the trade is open. That is a bad-loss habit the journal will flag.',
         ]}
       />
 
