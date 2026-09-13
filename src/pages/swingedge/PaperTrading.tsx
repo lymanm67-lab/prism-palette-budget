@@ -475,20 +475,6 @@ export default function PaperTrading() {
         </CollapsibleSection>
       ) : null}
 
-      <HowToUse
-        id="paper-how-to"
-        steps={[
-          'Open a simulated position from a saved plan rather than typing a new idea here.',
-          'Check the open risk total after opening it. That is what you would lose if every stop were hit.',
-          'Each day, look at distance to stop and distance to target instead of the profit figure alone.',
-          'Move a stop up only when structure allows it. Widening a stop is logged and warned about every time.',
-          'When you exit, record the reason, then write the journal entry.',
-        ]}
-        tips={[
-          'Nothing here places, routes or transmits a real order.',
-          'Moving a stop further away is the most common way practice accounts lose money. It is logged permanently.',
-        ]}
-      />
     <AiLevelsAssistant page="Paper Trading" />
         <NextStepsCard
       summary="Trades opened here are practice only. What matters next is managing them to the exit and writing down what happened."
