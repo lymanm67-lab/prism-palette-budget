@@ -72,6 +72,7 @@ const DEFAULT_SETTINGS: TradingSettings = {
 
   training_min_paper_trades: 20,
   training_mode_enabled: false,
+  market_overview_symbols: [...INDEX_SYMBOLS],
 };
 
 /** Settings, provider status and the risk envelope for the household. */
