@@ -563,6 +563,23 @@ export default function StockAnalyzer() {
         </Card>
       )}
 
+      <AiMentorCard
+        scope="TRADE"
+        page="Stock Analyzer"
+        symbol={symbol}
+        context={{
+          price: analysis?.technical.price ?? null,
+          setup: analysis?.setup ?? null,
+          trend: analysis?.trend ?? null,
+          verdict: analysis?.verdict ?? null,
+          score: analysis?.score ?? null,
+          levels: levels ?? null,
+          bias: bias ?? null,
+          readiness: readiness ?? null,
+          eventRisk: eventView.result ?? null,
+        }}
+      />
+
       <AiLevelsAssistant
         page="Stock Analyzer"
         symbol={symbol}
