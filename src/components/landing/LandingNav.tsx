@@ -34,6 +34,7 @@ const LandingNav = () => {
         <div className={`hidden md:flex items-center gap-6 text-sm font-semibold ${scrolled ? 'text-muted-foreground' : 'text-white/90'}`}>
           <button onClick={() => scrollTo('benefits')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_benefits" fallback="Benefits" /></button>
           <button onClick={() => scrollTo('features')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_features" fallback="Features" /></button>
+          <button onClick={() => navigate('/swingedge-trading')} className="hover:text-accent transition-colors">SwingEdge™</button>
           <button onClick={() => scrollTo('pricing')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_pricing" fallback="Pricing" /></button>
           <button onClick={() => scrollTo('faq')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_faq" fallback="FAQ" /></button>
           <button onClick={() => navigate('/changelog')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_whats_new" fallback="What's New" /></button>
@@ -63,6 +64,7 @@ const LandingNav = () => {
         <div className="md:hidden bg-card border-b border-border px-6 pb-4 space-y-3">
           <button onClick={() => scrollTo('benefits')} className="block w-full text-left text-sm font-medium text-foreground py-2">Benefits</button>
           <button onClick={() => scrollTo('features')} className="block w-full text-left text-sm font-medium text-foreground py-2">Features</button>
+          <button onClick={() => { setMobileOpen(false); navigate('/swingedge-trading'); }} className="block w-full text-left text-sm font-medium text-foreground py-2">SwingEdge™</button>
           <button onClick={() => scrollTo('pricing')} className="block w-full text-left text-sm font-medium text-foreground py-2">Pricing</button>
           <button onClick={() => scrollTo('faq')} className="block w-full text-left text-sm font-medium text-foreground py-2">FAQ</button>
           <button onClick={() => { setMobileOpen(false); navigate('/changelog'); }} className="block w-full text-left text-sm font-medium text-foreground py-2">What's New</button>
