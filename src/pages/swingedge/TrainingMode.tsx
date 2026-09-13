@@ -323,3 +323,52 @@ export default function TrainingMode() {
 </div>
   );
 }
+
+const NOTES_KEY = 'swingedge-training-notes';
+
+function TrainingNotesCard() {
+  const [notes, setNotes] = useState(() => {
+    try {
+      return window.localStorage.getItem(NOTES_KEY) ?? '';
+    } catch {
+      return '';
+    }
+  });
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(NOTES_KEY, notes);
+        setSavedAt(Date.now());
+      } catch {
+        /* private mode — notes stay in memory only */
+      }
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [notes]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">My training notes</CardTitle>
+        <CardDescription>
+          Anything you want to remember — what clicked, what to drill, questions for the weekly review.
+          Saves automatically on this device.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={6}
+          placeholder="e.g. Doji at support after a pullback — wait for the next candle to confirm before planning anything…"
+          aria-label="Training notes"
+        />
+        <p className="text-[11px] text-muted-foreground" aria-live="polite">
+          {savedAt ? 'Saved' : 'Notes save as you type'}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
