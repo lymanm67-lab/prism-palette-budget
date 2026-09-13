@@ -12760,6 +12760,7 @@ export type Database = {
           data_mode: string
           household_id: string
           id: string
+          market_overview_symbols: string[]
           max_correlated_risk_pct: number
           max_portfolio_risk_pct: number
           max_sector_capital_exposure_pct: number
@@ -12790,6 +12791,7 @@ export type Database = {
           data_mode?: string
           household_id: string
           id?: string
+          market_overview_symbols?: string[]
           max_correlated_risk_pct?: number
           max_portfolio_risk_pct?: number
           max_sector_capital_exposure_pct?: number
@@ -12820,6 +12822,7 @@ export type Database = {
           data_mode?: string
           household_id?: string
           id?: string
+          market_overview_symbols?: string[]
           max_correlated_risk_pct?: number
           max_portfolio_risk_pct?: number
           max_sector_capital_exposure_pct?: number

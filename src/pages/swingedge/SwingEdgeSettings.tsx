@@ -22,6 +22,8 @@ import { lastUpdatedLabel } from '@/lib/swingedge/cache';
 import { useConnectionTest, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { ConnectionStatus, DataMode } from '@/lib/swingedge/types';
 
+const DEFAULT_OVERVIEW = ['SPY', 'QQQ', 'DIA', 'IWM'];
+
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 
@@ -57,6 +59,7 @@ export default function SwingEdgeSettings() {
   const [lookback, setLookback] = useState(String(settings.correlation_lookback_days));
   const [minuteLimit, setMinuteLimit] = useState(String(settings.api_minute_limit));
   const [dailyLimit, setDailyLimit] = useState(String(settings.api_daily_limit));
+  const [overview, setOverview] = useState(settings.market_overview_symbols.join(', '));
 
   useEffect(() => {
     setCapital(String(settings.trading_capital));
@@ -68,6 +71,7 @@ export default function SwingEdgeSettings() {
     setLookback(String(settings.correlation_lookback_days));
     setMinuteLimit(String(settings.api_minute_limit));
     setDailyLimit(String(settings.api_daily_limit));
+    setOverview(settings.market_overview_symbols.join(', '));
   }, [
     settings.trading_capital,
     settings.risk_per_trade_pct,
@@ -78,7 +82,34 @@ export default function SwingEdgeSettings() {
     settings.correlation_lookback_days,
     settings.api_minute_limit,
     settings.api_daily_limit,
+    settings.market_overview_symbols,
   ]);
+
+  const saveOverview = async () => {
+    const symbols = Array.from(
+      new Set(
+        overview
+          .split(',')
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean),
+      ),
+    );
+    if (symbols.length < 1) {
+      toast.error('Add at least one fund, or reset to the defaults.');
+      return;
+    }
+    if (symbols.length > 6) {
+      toast.error('Keep it to six funds or fewer — more than that just costs credits.');
+      return;
+    }
+    if (symbols.some((s) => !/^[A-Z.\-]{1,10}$/.test(s))) {
+      toast.error('Use plain symbols such as SPY or QQQ.');
+      return;
+    }
+    await save({ market_overview_symbols: symbols });
+    setOverview(symbols.join(', '));
+    toast.success('Market Overview funds saved.');
+  };
 
   const connection: ConnectionStatus =
     settings.data_mode === 'DEMO'
@@ -261,6 +292,46 @@ export default function SwingEdgeSettings() {
           <p className="text-xs text-muted-foreground">
             Your key is stored securely on the server and is never shown again or sent to your browser. Every
             price request goes through a secure server function.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Market Overview symbols */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Market Overview funds</CardTitle>
+          <CardDescription>
+            These are the funds shown at the top of the SwingEdge dashboard and used to judge the
+            overall market condition. Two to six broad funds works best — each one costs a price
+            reading.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="overview">Symbols, separated by commas</Label>
+            <Input
+              id="overview"
+              className="max-w-md uppercase"
+              value={overview}
+              onChange={(e) => setOverview(e.target.value)}
+              placeholder="SPY, QQQ, DIA, IWM"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={saveOverview} disabled={isSaving}>
+              Save funds
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setOverview(DEFAULT_OVERVIEW.join(', '))}
+              disabled={isSaving}
+            >
+              Reset to defaults
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Anything the data provider does not recognise is simply skipped on the dashboard.
           </p>
         </CardContent>
       </Card>

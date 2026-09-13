@@ -1,0 +1,1 @@
+ALTER TABLE public.se_trading_settings ADD COLUMN IF NOT EXISTS market_overview_symbols TEXT[] NOT NULL DEFAULT ARRAY['SPY','QQQ','DIA','IWM'];

@@ -42,6 +42,8 @@ export interface TradingSettings {
 
   training_min_paper_trades: number;
   training_mode_enabled: boolean;
+  /** Funds shown in the dashboard Market Overview. Editable per household. */
+  market_overview_symbols: string[];
 }
 
 const DEFAULT_SETTINGS: TradingSettings = {
@@ -70,6 +72,7 @@ const DEFAULT_SETTINGS: TradingSettings = {
 
   training_min_paper_trades: 20,
   training_mode_enabled: false,
+  market_overview_symbols: [...INDEX_SYMBOLS],
 };
 
 /** Settings, provider status and the risk envelope for the household. */
@@ -140,6 +143,10 @@ export function useTradingSettings() {
           DEFAULT_SETTINGS.training_min_paper_trades,
         ),
         training_mode_enabled: Boolean(row.training_mode_enabled ?? false),
+        market_overview_symbols:
+          Array.isArray(row.market_overview_symbols) && row.market_overview_symbols.length
+            ? (row.market_overview_symbols as string[])
+            : [...INDEX_SYMBOLS],
       };
     },
   });
@@ -307,17 +314,21 @@ export interface DashboardData {
   notice: string | null;
 }
 
-/** Market overview for SPY / QQQ / DIA / IWM plus the overall condition. */
+/** Market overview for the household's chosen funds plus the overall condition. */
 export function useSwingEdgeDashboard() {
   const { settings } = useTradingSettings();
   const mode = settings.data_mode;
+  const symbols =
+    settings.market_overview_symbols.length > 0
+      ? settings.market_overview_symbols
+      : [...INDEX_SYMBOLS];
 
   const query = useQuery({
-    queryKey: ['se-dashboard', mode],
+    queryKey: ['se-dashboard', mode, symbols.join(',')],
     staleTime: 5 * 60_000,
     queryFn: async (): Promise<DashboardData> => {
       const results = await Promise.all(
-        INDEX_SYMBOLS.map(async (s) => ({ symbol: s, result: await loadCandles(s, '1day', mode) })),
+        symbols.map(async (s) => ({ symbol: s, result: await loadCandles(s, '1day', mode) })),
       );
       const readings = results
         .map(({ symbol, result }) =>
