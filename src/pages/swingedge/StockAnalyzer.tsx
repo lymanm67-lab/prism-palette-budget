@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Loader2, Save, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
+import CandlestickChart from '@/components/swingedge/CandlestickChart';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
@@ -19,7 +21,7 @@ import {
   RelativeStrengthCard,
   TradabilityCard,
 } from '@/components/swingedge/ContextCards';
-import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
+import { useTradingSettings, useTradingTitle, loadCandles } from '@/hooks/use-swingedge';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
 
 const money = (n: number | null) =>
@@ -36,6 +38,13 @@ export default function StockAnalyzer() {
     useHybridAnalysis(symbol);
   const { data: history } = useHybridSignalHistory(symbol ?? undefined);
   const { settings } = useTradingSettings();
+
+  const { data: candleResult, isLoading: candlesLoading } = useQuery({
+    queryKey: ['se-analyzer-candles', symbol, settings.data_mode],
+    queryFn: () => loadCandles(symbol as string, '1day', settings.data_mode, 260),
+    enabled: !!symbol,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const run = () => {
     const next = input.trim().toUpperCase();
