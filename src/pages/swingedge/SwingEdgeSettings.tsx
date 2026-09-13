@@ -189,7 +189,7 @@ export default function SwingEdgeSettings() {
       </div>
 
       {/* Market data connection */}
-      <Card>
+      <Card id="market-overview-funds" className="scroll-mt-4">
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
