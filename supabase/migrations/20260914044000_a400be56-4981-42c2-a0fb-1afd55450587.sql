@@ -1,0 +1,1 @@
+drop policy if exists "Members can view plaid items" on public.plaid_items;
