@@ -81,6 +81,14 @@ export default function StockAnalyzer() {
   // What happened the last times this name and this setup were traded.
   const { record: trackRecord } = useTrackRecord(symbol, analysis?.technical.setup ?? null);
 
+  // Weekly context, daily setup, 4-hour confirmation and 1-hour entry timing.
+  const { result: mtf } = useMultiTimeframe(symbol, candleResult?.candles, {
+    price: analysis?.technical.price ?? null,
+    entryZone: analysis?.entryZone ?? null,
+  });
+
+
+
   // Historical tendency for the conditions showing right now.
   const bias = useMemo(() => {
     const candles = candleResult?.candles ?? [];
