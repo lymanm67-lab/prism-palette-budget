@@ -56,7 +56,7 @@ export function useMultiTimeframe(
       daily: readDaily(daily),
       h4: readH4(intraday?.h4 ?? []),
       h1: readH1(intraday?.h1 ?? []),
-      m15: readM15([]),
+      m15: readM15(intraday?.m15 ?? []),
       beginner: !settings.advanced_mode,
       price: opts.price ?? daily[daily.length - 1]?.close ?? null,
       entryZone: opts.entryZone ?? null,
