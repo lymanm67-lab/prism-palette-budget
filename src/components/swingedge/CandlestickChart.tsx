@@ -107,6 +107,25 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
 
   const y = (price: number) => ((hi - price) / (hi - lo)) * priceH;
   const slot = plotW / shown.length;
+
+  // Spread stacked labels apart so nearby text never overlaps. Lines stay at
+  // their true price; only the text moves, to just below the previous label.
+  const spreadLabels = (items: { key: string; y: number }[], minGap = 12) => {
+    const sorted = [...items].sort((a, b) => a.y - b.y);
+    let last = -Infinity;
+    for (const it of sorted) {
+      if (it.y < last + minGap) it.y = last + minGap;
+      last = it.y;
+    }
+    return new Map(sorted.map((it) => [it.key, it.y]));
+  };
+  const levelLabelY = spreadLabels(activeLevels.map((l) => ({ key: l.label, y: y(l.value) - 3 })));
+  const trendLabelY = spreadLabels(
+    trendLines.map((t) => ({
+      key: t.kind,
+      y: y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10),
+    })),
+  );
   const bodyW = Math.max(2, Math.floor(slot * 0.6));
   const last = shown[shown.length - 1];
   const hovered = hover !== null ? shown[hover] : null;
@@ -134,7 +153,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
         {activeLevels.map((l) => (
           <g key={l.label}>
             <line x1={padL} x2={W - padR} y1={y(l.value)} y2={y(l.value)} stroke={l.color} strokeWidth={1.25} strokeDasharray="6 3" />
-            <text x={padL + 2} y={y(l.value) - 3} fontSize={9} fill={l.color}>
+            <text x={padL + 2} y={levelLabelY.get(l.label) ?? y(l.value) - 3} fontSize={9} fill={l.color}>
               {l.label} {fmt(l.value)}
             </text>
           </g>
@@ -201,7 +220,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
               </line>
               <text
                 x={x2 - 4}
-                y={y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
+                y={trendLabelY.get(t.kind) ?? y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
                 fontSize={9}
                 textAnchor="end"
                 fill={TREND_COLOR[t.kind]}
