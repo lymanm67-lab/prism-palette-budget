@@ -107,6 +107,25 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
 
   const y = (price: number) => ((hi - price) / (hi - lo)) * priceH;
   const slot = plotW / shown.length;
+
+  // Spread stacked labels apart so nearby text never overlaps. Lines stay at
+  // their true price; only the text moves, to just below the previous label.
+  const spreadLabels = (items: { key: string; y: number }[], minGap = 12) => {
+    const sorted = [...items].sort((a, b) => a.y - b.y);
+    let last = -Infinity;
+    for (const it of sorted) {
+      if (it.y < last + minGap) it.y = last + minGap;
+      last = it.y;
+    }
+    return new Map(sorted.map((it) => [it.key, it.y]));
+  };
+  const levelLabelY = spreadLabels(activeLevels.map((l) => ({ key: l.label, y: y(l.value) - 3 })));
+  const trendLabelY = spreadLabels(
+    trendLines.map((t) => ({
+      key: t.kind,
+      y: y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10),
+    })),
+  );
   const bodyW = Math.max(2, Math.floor(slot * 0.6));
   const last = shown[shown.length - 1];
   const hovered = hover !== null ? shown[hover] : null;
