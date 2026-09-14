@@ -1034,6 +1034,8 @@ export default function TradePlanner() {
         </div>
 
         <div className="space-y-4">
+          <MultiTimeframeCard result={mtf} />
+
           <RuleChecklistCard checks={ruleChecks} />
 
           <TrackRecordCard record={trackRecord} />
