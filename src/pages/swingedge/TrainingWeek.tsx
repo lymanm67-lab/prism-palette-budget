@@ -263,6 +263,32 @@ export default function TrainingWeek() {
         </Card>
       </div>
 
+      <Card className="border-prism-violet/40">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">
+            Thinkorswim paperMoney — week {weekNumber}
+          </CardTitle>
+          <CardDescription>
+            SwingEdge does the deciding. paperMoney is where you practise the clicking.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <ul className="space-y-2 text-sm">
+            {(THINKORSWIM_WEEK_FOCUS[weekNumber] ?? []).map((t) => (
+              <li key={t} className="flex gap-2">
+                <span className="text-prism-violet">·</span>
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+          <Button asChild size="sm" variant="outline">
+            <Link to="/swingedge/practice">Open the Practice Lab</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+
+
       {tradingWeek ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <DailyChecklistCard />
