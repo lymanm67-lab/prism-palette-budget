@@ -181,7 +181,25 @@ export const WEEK_CURRICULUM: WeekCurriculum[] = [
         ],
         practice: { label: 'Open Watchlists', to: '/swingedge/watchlists' },
       },
+      {
+        day: 6,
+        title: 'Which chart does which job',
+        why: 'One chart is not enough and five charts are not five votes. Each timeframe has one job, and the shortest one has the least authority.',
+        lessonKeys: ['multi-timeframe'],
+        drills: [
+          'Read the multi-timeframe lesson.',
+          'Do 5 weekly-to-daily trend reviews: for each name, write the weekly context, then the daily read.',
+          'Do 10 daily setup reviews and name the setup and its invalidation price.',
+          'Do 10 daily-to-4-hour confirmation exercises: write whether the 4-hour chart confirms, is mixed, is weakening or contradicts.',
+          'Do 10 one-hour entry-timing exercises: mark entry confirmed, early, waiting or failed.',
+          'Do 5 fifteen-minute fine-tuning exercises on setups that already qualified, and note whether you got a better price.',
+          'Write up 5 timeframe conflicts and, for each, which chart you followed and why.',
+        ],
+        practice: { label: 'Open the Analyzer', to: '/swingedge/analyzer' },
+        counter: 'setups_analyzed',
+      },
     ],
+
   },
   {
     week: 3,

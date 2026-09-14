@@ -28,6 +28,8 @@ export const ACADEMY_MODULES = [
   'Combining signals',
   'Reading candlesticks in context',
   'Event risk and the calendar',
+  'Multi-timeframe analysis',
+
 
 
 ] as const;
@@ -901,7 +903,53 @@ export const LESSONS: Lesson[] = [
       why: 'Missing information is uncertainty, not safety.',
     },
   },
+  {
+    key: 'multi-timeframe',
+    module: 'Multi-timeframe analysis',
+    title: 'Multi-timeframe analysis for swing trading',
+    minutes: 6,
+    summary: 'Each chart has one job: weekly gives context, daily creates the trade, 4-hour confirms it, 1-hour times the entry, 15-minute only fine-tunes.',
+    body: [
+      'Different charts of the same stock tell different stories, and none of them is lying. A stock can be in a weekly uptrend, pulling back on the daily chart, drifting on the 4-hour and falling on the 15-minute — all at once. The mistake is not noticing the disagreement; it is letting the wrong chart decide.',
+      'Shorter is not better. A shorter chart shows more detail and more noise in the same breath, and noise looks exactly like information while you are staring at it. The 15-minute chart moves most, so it feels most urgent, which is precisely why it should have the least authority.',
+      'The daily chart creates a swing trade because a swing trade lasts days to weeks. That is the timeframe the thesis lives on. The 4-hour chart is where you check whether the daily story is behaving — selling pressure fading into support, or a breakout holding its retest. The 1-hour chart is only for timing: a higher low, a small resistance break, momentum turning up.',
+      'The weekly chart never gives you an entry. It tells you which tide you are swimming in, where the major levels sit, and whether the bigger trend is helping or fighting you.',
+      'The 15-minute chart is optional. It is useful for one thing: getting a slightly better price on a trade you have already decided to take. It becomes noise the moment it starts making decisions — creating a setup that the daily chart does not support, talking you out of a valid trade after one red candle, or convincing you to chase a price that has already run past your entry zone.',
+      'So the rule is simple and it never bends: a lower timeframe cannot rescue a failed higher timeframe. If the daily setup is invalidated, the trade is over no matter how bullish the hour looks. If there is no daily setup, there is no trade — a 1-hour breakout is not a swing setup.',
+    ],
+    example: {
+      title: 'The same stock on five charts',
+      lines: [
+        'Weekly: uptrend, price above both averages — context is helping.',
+        'Daily: pullback into the 20 EMA with momentum cooling — that is the setup.',
+        'Four hour: selling fading, a higher low forming off support — the story is confirmed.',
+        'One hour: higher low made, small resistance broken on better volume — entry is confirmed.',
+        'Fifteen minute: nothing special — fine, it is optional.',
+        'Read together: STRONG ALIGNMENT. Now change one thing — the 1-hour has not turned yet. That is a WAIT, not a smaller position.',
+      ],
+    },
+    keyPoints: [
+      'Daily creates the trade; everything else reacts to it.',
+      'The 4-hour confirms, the 1-hour times, the 15-minute only refines.',
+      'Weekly is context, never an entry signal.',
+      'A bullish 15-minute chart can never produce strong alignment on its own.',
+      'Manage a daily swing trade from the daily and 4-hour charts.',
+    ],
+    blindSpot: 'Alignment across timeframes is agreement, not certainty. Every chart can agree and the trade can still lose — which is why the stop and the size still do the real work.',
+    appliesTo: { label: 'Stock Analyzer', to: '/swingedge/analyzer' },
+    quiz: {
+      question: 'The daily chart has no setup, but the 1-hour chart just broke out strongly. What is this?',
+      options: [
+        'A swing trade, because the breakout is real',
+        'No trade — a lower timeframe cannot create the swing setup',
+        'A smaller version of the same trade',
+      ],
+      answerIndex: 1,
+      why: 'The setup lives on the daily chart. Without it there is nothing for the shorter charts to time.',
+    },
+  },
 ];
+
 
 
 

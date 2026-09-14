@@ -13,8 +13,8 @@
 // never lets a bullish 15-minute chart rescue a failed daily setup.
 
 import { rsiRead, trendAlignment, type RsiState } from './framework';
-import { ema, last, relativeVolume, atr as atrSeries, rsi as rsiSeries, sma, supportResistance, setupState, trendState } from './indicators';
-import type { Candle, SetupState, TrendState } from './types';
+import { ema, last, relativeVolume, atr as atrSeries, rsi as rsiSeries, sma, supportResistance, setupState, trendState, type SetupState } from './indicators';
+import type { Candle, TrendState } from './types';
 
 export type TimeframeKey = 'WEEKLY' | 'DAILY' | 'H4' | 'H1' | 'M15';
 
