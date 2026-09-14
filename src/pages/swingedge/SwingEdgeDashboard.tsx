@@ -173,6 +173,34 @@ export default function SwingEdgeDashboard() {
         ]}
       />
 
+      {/* Which chart does which job */}
+      <CollapsibleSection
+        id="dash-timeframes"
+        title="Multi-timeframe alignment"
+        description="Every chart has one job. A shorter chart never gets to do a longer chart's job."
+        headerRight={
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/swingedge/analyzer">
+              Read a symbol <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {(['WEEKLY', 'DAILY', 'H4', 'H1', 'M15'] as TimeframeKey[]).map((key) => (
+            <div key={key} className="rounded-md border border-border/50 bg-card/50 p-3">
+              <div className="text-sm font-semibold">{TIMEFRAME_ROLE[key].label}</div>
+              <div className="text-xs text-prism-teal">{TIMEFRAME_ROLE[key].role}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{TIMEFRAME_ROLE[key].question}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          The alignment score for a specific name, with its daily thesis, entry timeframe and management timeframe, is on
+          the Stock Analyzer and the Trade Planner. {MTF_MANAGEMENT_WARNING}
+        </p>
+      </CollapsibleSection>
+
       {/* Market condition with a Why? */}
       <CollapsibleSection
         id="dash-market-condition"
