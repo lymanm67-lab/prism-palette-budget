@@ -74,7 +74,7 @@ export default function StockAnalyzer() {
   const { data: history } = useHybridSignalHistory(symbol ?? undefined);
   const { settings } = useTradingSettings();
 
-  const { data: candleResult, isLoading: candlesLoading } = useQuery({
+  const { data: candleResult } = useQuery({
     queryKey: ['se-analyzer-candles', symbol, settings.data_mode],
     queryFn: () => loadCandles(symbol as string, '1day', settings.data_mode, 260),
     enabled: !!symbol,
