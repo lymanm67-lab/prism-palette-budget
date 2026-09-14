@@ -317,15 +317,30 @@ export default function StockAnalyzer() {
                   </Badge>
                 )}
               </div>
+              <div className="flex flex-wrap items-center gap-1 pt-1" role="group" aria-label="Chart timeframe">
+                {CHART_INTERVALS.map((i) => (
+                  <Button
+                    key={i.value}
+                    type="button"
+                    size="sm"
+                    variant={chartInterval === i.value ? 'default' : 'outline'}
+                    className="h-7 px-2.5 text-xs"
+                    onClick={() => setChartInterval(i.value)}
+                  >
+                    {i.label}
+                  </Button>
+                ))}
+              </div>
               <p className="text-xs text-muted-foreground">
                 The chart the signal is reading. Dashed flat lines mark support, resistance and the estimated entry,
-                stop and target. The two sloping dashed lines are trend lines fitted through recent swing highs and
-                lows, and the smooth curves are the 20 EMA (teal) and 50 SMA (amber). The strip under the candles
-                shows which way price was moving in each window — green up, red down, grey sideways.
+                stop and target — these come from the daily chart, whatever timeframe you view. The two sloping
+                dashed lines are trend lines fitted through recent swing highs and lows, and the smooth curves are
+                the 20 EMA (teal) and 50 SMA (amber). The strip under the candles shows which way price was moving
+                in each window — green up, red down, grey sideways.
               </p>
             </CardHeader>
             <CardContent>
-              {candlesLoading ? (
+              {chartLoading ? (
                 <p className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading the chart…
                 </p>
@@ -334,7 +349,7 @@ export default function StockAnalyzer() {
                   showDirectionStrip
                   showTrendLines
                   showMovingAverages
-                  candles={candleResult?.candles ?? []}
+                  candles={chartResult?.candles ?? []}
                   levels={[
                     { label: 'Support', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
                     { label: 'Resistance', value: analysis.technical.resistance, color: 'hsl(var(--prism-amber))' },
