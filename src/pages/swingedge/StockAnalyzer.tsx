@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Loader2, Minus, Save, Search, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowRight, Loader2, Minus, Save, Search, Square, TrendingDown, TrendingUp, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,6 +46,9 @@ import {
 import { useTradingSettings, useTradingTitle, loadCandles } from '@/hooks/use-swingedge';
 import { useEventRisk } from '@/hooks/use-swingedge-events';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
+import { useAnalyzerVoice } from '@/hooks/use-analyzer-voice';
+import { buildAnalysisNarration } from '@/lib/swingedge/narration';
+import { rsiRead } from '@/lib/swingedge/framework';
 
 /** Market regime as a 0-1 backdrop score for readiness. Never a forecast. */
 const REGIME_SCORE: Record<string, number> = {
