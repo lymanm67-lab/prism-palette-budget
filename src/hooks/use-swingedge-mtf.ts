@@ -1,8 +1,9 @@
 // Multi-timeframe read for one symbol.
 //
 // The weekly chart is built from the daily candles already loaded, so the extra
-// cost is one 4-hour and one 1-hour request. The 15-minute chart is optional and
-// is not fetched — it stays "not used" rather than being invented.
+// cost is one 4-hour, one 1-hour and one 15-minute request. The 15-minute chart
+// is optional: if the request fails or returns nothing it reads "not used"
+// rather than showing invented numbers.
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';

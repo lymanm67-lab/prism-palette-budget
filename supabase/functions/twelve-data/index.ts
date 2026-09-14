@@ -25,7 +25,9 @@ const admin = () =>
     auth: { persistSession: false },
   });
 
-const ALLOWED_INTERVALS = new Set(['1h', '4h', '1day', '1week']);
+const ALLOWED_INTERVALS = new Set(['15m', '1h', '4h', '1day', '1week']);
+// Twelve Data names its intervals differently from SwingEdge's internal ones.
+const PROVIDER_INTERVAL: Record<string, string> = { '15m': '15min' };
 const SYMBOL_RE = /^[A-Z][A-Z0-9.\-]{0,9}$/;
 
 interface CallResult {
@@ -271,7 +273,7 @@ Deno.serve(async (req) => {
       const interval = String(payload.interval ?? '1day');
       if (!ALLOWED_INTERVALS.has(interval)) return json({ error: 'Unsupported interval.' }, 400);
       const outputsize = Math.min(Math.max(Number(payload.outputsize ?? 250) || 250, 30), 500);
-      const result = await call('/time_series', { symbol, interval, outputsize: String(outputsize) }, apiKey);
+      const result = await call('/time_series', { symbol, interval: PROVIDER_INTERVAL[interval] ?? interval, outputsize: String(outputsize) }, apiKey);
       await tickCounters({ failed: !!result.errorMessage, rateLimited: result.rateLimited, result });
       if (result.errorMessage) {
         return json({

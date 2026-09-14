@@ -31,6 +31,7 @@ function rng(seed: number) {
 }
 
 const MS: Record<SwingInterval, number> = {
+  '15m': 15 * 60 * 1000,
   '1h': 60 * 60 * 1000,
   '4h': 4 * 60 * 60 * 1000,
   '1day': 24 * 60 * 60 * 1000,
