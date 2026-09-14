@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Loader2, Minus, Save, Search, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowRight, Loader2, Minus, Save, Search, Square, TrendingDown, TrendingUp, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -46,6 +46,9 @@ import {
 import { useTradingSettings, useTradingTitle, loadCandles } from '@/hooks/use-swingedge';
 import { useEventRisk } from '@/hooks/use-swingedge-events';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
+import { useAnalyzerVoice } from '@/hooks/use-analyzer-voice';
+import { buildAnalysisNarration } from '@/lib/swingedge/narration';
+import { rsiRead } from '@/lib/swingedge/framework';
 
 /** Market regime as a 0-1 backdrop score for readiness. Never a forecast. */
 const REGIME_SCORE: Record<string, number> = {
@@ -184,6 +187,39 @@ export default function StockAnalyzer() {
     return scoreTradeReadiness({ scores, details, hardGates });
   }, [analysis, bias, eventView.result, mtf]);
 
+  // Spoken reading of the analysis. Built only from numbers already computed
+  // on this page — nothing extra is estimated for the voice-over.
+  const voice = useAnalyzerVoice();
+  const narration = useMemo(() => {
+    if (!analysis) return null;
+    const t = analysis.technical;
+    const event = eventView.result;
+    return buildAnalysisNarration({
+      symbol: analysis.symbol,
+      assetType: analysis.assetType,
+      price: t.price,
+      trend: t.trend,
+      setup: t.setup,
+      rsi: t.rsi,
+      rsiState: rsiRead(candleResult?.candles ?? [])?.state ?? null,
+      atr: t.atr,
+      support: t.support,
+      resistance: t.resistance,
+      estimatedStop: analysis.technical.levels?.estimatedStop ?? null,
+      estimatedTarget: analysis.technical.levels?.estimatedTarget ?? null,
+      relativeVolume: t.relativeVolume,
+      developing: analysis.developing,
+      biasDirection: bias?.direction ?? null,
+      biasConfidence: bias?.confidence ?? null,
+      eventScore: event?.score ?? null,
+      eventBand: event?.band ?? null,
+      readinessScore: readiness?.score ?? null,
+      readinessVerdict: readiness?.bandLabel ?? null,
+      readinessHardGates: readiness?.hardGates ?? [],
+      mtfLabel: mtf?.alignmentLabel ?? null,
+    });
+  }, [analysis, bias, eventView.result, readiness, mtf, candleResult]);
+
 
 
   const run = () => {
@@ -234,6 +270,23 @@ export default function StockAnalyzer() {
             disabled={isSaving}
           >
             <Save className="mr-2 h-4 w-4" /> Save this reading
+          </Button>
+        )}
+        {narration && (
+          <Button
+            variant="outline"
+            onClick={() => (voice.speaking || voice.loading ? voice.stop() : voice.speak(narration))}
+            disabled={!narration}
+            aria-label={voice.speaking ? 'Stop the spoken reading' : 'Listen to this reading'}
+          >
+            {voice.loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : voice.speaking ? (
+              <Square className="mr-2 h-4 w-4" />
+            ) : (
+              <Volume2 className="mr-2 h-4 w-4" />
+            )}
+            {voice.speaking ? 'Stop reading' : voice.loading ? 'Preparing voice…' : 'Listen to this reading'}
           </Button>
         )}
         {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
