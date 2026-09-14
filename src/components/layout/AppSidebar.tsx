@@ -7,7 +7,7 @@ import {
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
   Layers, Search, AlertTriangle, Activity, Banknote, Smartphone, User, Briefcase, Globe, BookOpen, Users,
-  ShieldCheck, Plane, GraduationCap, FlaskConical,
+  ShieldCheck, Plane, GraduationCap, FlaskConical, Monitor,
 
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-money-logo.png';
