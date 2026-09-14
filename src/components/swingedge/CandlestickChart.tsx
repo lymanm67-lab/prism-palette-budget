@@ -443,9 +443,9 @@ export default function CandlestickChart({
         strip={strip}
         trendLines={trendLines}
         maSeries={maSeries}
-        levels={levels}
+        levels={visibleLevels}
         height={height}
-        showDirectionStrip={showDirectionStrip}
+        showDirectionStrip={showDirectionStrip && showStrip}
       />
 
       <Dialog open={expanded} onOpenChange={setExpanded}>
@@ -458,9 +458,9 @@ export default function CandlestickChart({
             strip={strip}
             trendLines={trendLines}
             maSeries={maSeries}
-            levels={levels}
+            levels={visibleLevels}
             height={600}
-            showDirectionStrip={showDirectionStrip}
+            showDirectionStrip={showDirectionStrip && showStrip}
           />
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
