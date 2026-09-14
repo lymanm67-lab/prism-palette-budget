@@ -73,6 +73,21 @@ export default function StockAnalyzer() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // The chart can be zoomed into finer timeframes without changing the
+  // analysis, which always reads the daily chart.
+  const [chartInterval, setChartInterval] = useState<SwingInterval>('1day');
+  const { data: chartResult, isLoading: chartLoading } = useQuery({
+    queryKey: ['se-analyzer-chart', symbol, chartInterval, settings.data_mode],
+    queryFn: () =>
+      chartInterval === '1day'
+        ? loadCandles(symbol as string, '1day', settings.data_mode, 260)
+        : loadCandles(symbol as string, chartInterval, settings.data_mode, 300),
+    enabled: !!symbol,
+    staleTime: 5 * 60 * 1000,
+  });
+  const chartIntervalLabel =
+    CHART_INTERVALS.find((i) => i.value === chartInterval)?.label.toLowerCase() ?? 'daily';
+
   const chartDirection = useMemo(
     () => currentDirection(candleResult?.candles ?? []),
     [candleResult],
