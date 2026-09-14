@@ -500,7 +500,7 @@ export default function StockAnalyzer() {
                     {
                       n: 2,
                       text: 'Take it on paper first — a paper trade, not real money.',
-                      to: '/swingedge/paper',
+                      to: '/swingedge/paper-trading',
                       cta: 'Open Paper Trading',
                     },
                     {

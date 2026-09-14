@@ -246,22 +246,34 @@ export function checkTradeAgainstHeat(
   const reasons: string[] = [];
   let status: HeatGateStatus = 'WITHIN_LIMITS';
 
+  // Sector caps only mean something when the sector is actually known. Positions
+  // with no recorded sector all fall into "Unclassified", which is a gap in the
+  // data rather than a real concentration, so it is never treated as a breach.
+  const sectorKnown = sector !== 'Unclassified';
+
   if (projectedOpenRisk > summary.maxHeatDollars) {
     status = 'HEAT_LIMIT_REACHED';
     reasons.push(
       `Combined open risk would reach $${projectedOpenRisk.toFixed(2)}, above the $${summary.maxHeatDollars.toFixed(2)} portfolio heat ceiling (${summary.limits.maxPortfolioHeatPct}% of $${capital.toFixed(2)}).`,
     );
-  } else if (projectedSectorHeatPct > summary.limits.maxSectorHeatPct) {
+  } else if (sectorKnown && projectedSectorHeatPct > summary.limits.maxSectorHeatPct) {
     status = 'SECTOR_HEAT_LIMIT_REACHED';
     reasons.push(
       `${sector} risk would reach ${projectedSectorHeatPct.toFixed(2)}% of capital, above the ${summary.limits.maxSectorHeatPct}% sector heat limit.`,
     );
-  } else if (projectedSectorCapitalExposurePct > summary.limits.maxSectorCapitalExposurePct) {
+  } else if (
+    sectorKnown &&
+    projectedSectorCapitalExposurePct > summary.limits.maxSectorCapitalExposurePct
+  ) {
     status = 'SECTOR_EXPOSURE_LIMIT_REACHED';
     reasons.push(
       `${sector} would hold ${projectedSectorCapitalExposurePct.toFixed(2)}% of capital, above the ${summary.limits.maxSectorCapitalExposurePct}% sector exposure limit.`,
     );
-  } else {
+  } else if (!sectorKnown && projectedSectorHeatPct > summary.limits.maxSectorHeatPct) {
+    reasons.push(
+      `Adds $${addedRisk.toFixed(2)} of risk. Open risk becomes $${projectedOpenRisk.toFixed(2)} of the $${summary.maxHeatDollars.toFixed(2)} allowed. Sector limits are not checked because these positions have no recorded sector.`,
+    );
+
     reasons.push(
       `Adds $${addedRisk.toFixed(2)} of risk. Open risk becomes $${projectedOpenRisk.toFixed(2)} of the $${summary.maxHeatDollars.toFixed(2)} allowed.`,
     );
