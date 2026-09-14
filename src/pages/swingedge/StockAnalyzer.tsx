@@ -16,6 +16,7 @@ import { currentDirection } from '@/lib/swingedge/directionStrip';
 import type { SwingInterval } from '@/lib/swingedge/types';
 
 const CHART_INTERVALS: { value: SwingInterval; label: string }[] = [
+  { value: '1week', label: 'Weekly' },
   { value: '1day', label: 'Daily' },
   { value: '4h', label: '4 hour' },
   { value: '1h', label: '1 hour' },
