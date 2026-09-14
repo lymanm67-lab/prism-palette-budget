@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Candle } from '@/lib/swingedge/types';
 import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
-import { buildTrendLines, movingAverages } from '@/lib/swingedge/trendLines';
+import { buildTrendLines, movingAverages, type TrendLine } from '@/lib/swingedge/trendLines';
 
 const UP = 'hsl(var(--prism-lime))';
 const DOWN = 'hsl(var(--destructive))';
@@ -12,6 +15,8 @@ const STRIP_COLOR: Record<StripDirection, string> = { UP, DOWN, SIDEWAYS };
 const MA_COLOR = ['hsl(var(--prism-teal))', 'hsl(var(--prism-amber))'];
 const TREND_COLOR = { RESISTANCE: 'hsl(var(--destructive))', SUPPORT: 'hsl(var(--prism-lime))' } as const;
 
+/** Smallest candle window the zoom control will show. */
+const MIN_VISIBLE = 20;
 
 export interface ChartLevel {
   label: string;
@@ -21,7 +26,7 @@ export interface ChartLevel {
 
 interface Props {
   candles: Candle[];
-  /** How many of the most recent candles to show. */
+  /** How many of the most recent candles to show before any zooming. */
   visible?: number;
   height?: number;
   levels?: ChartLevel[];
@@ -33,43 +38,31 @@ interface Props {
   showMovingAverages?: boolean;
 }
 
+interface MaSeries {
+  label: string;
+  values: (number | null)[];
+}
+
+interface BodyProps {
+  shown: Candle[];
+  strip: ReturnType<typeof buildDirectionStrip>;
+  trendLines: TrendLine[];
+  maSeries: MaSeries[];
+  levels: ChartLevel[];
+  height: number;
+  showDirectionStrip: boolean;
+}
+
+const fmt = (n: number) =>
+  n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+const fmtDate = (iso: string) => iso.slice(0, 10);
+
 /**
- * Lightweight SVG candlestick chart with a volume pane and optional
- * horizontal level lines (support, resistance, estimated entry/stop/target).
- * No chart library — candles are simple rects so theme tokens apply.
+ * The chart itself — candles, volume pane, levels, averages, trend lines.
+ * Rendered inline and again inside the enlarge dialog at a bigger size.
  */
-export default function CandlestickChart({
-  candles,
-  visible = 120,
-  height = 320,
-  levels = [],
-  showDirectionStrip = false,
-  showTrendLines = false,
-  showMovingAverages = false,
-}: Props) {
-  const shown = useMemo(() => candles.slice(-visible), [candles, visible]);
+function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDirectionStrip }: BodyProps) {
   const [hover, setHover] = useState<number | null>(null);
-
-  const strip = useMemo(
-    () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
-    [shown, showDirectionStrip],
-  );
-
-  // Averages are computed on the full history, then trimmed, so the visible
-  // window starts with a value instead of a gap.
-  const maSeries = useMemo(
-    () =>
-      showMovingAverages
-        ? movingAverages(candles).map((s) => ({ ...s, values: s.values.slice(-visible) }))
-        : [],
-    [candles, visible, showMovingAverages],
-  );
-
-  const trendLines = useMemo(
-    () => (showTrendLines ? buildTrendLines(shown) : []),
-    [shown, showTrendLines],
-  );
-
 
   const W = 800;
   const H = height;
@@ -110,19 +103,11 @@ export default function CandlestickChart({
     return { lo, hi, maxVol, activeLevels };
   }, [shown, levels, trendLines]);
 
-  if (!shown.length) {
-    return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
-  }
-
   const y = (price: number) => ((hi - price) / (hi - lo)) * priceH;
   const slot = plotW / shown.length;
   const bodyW = Math.max(2, Math.floor(slot * 0.6));
   const last = shown[shown.length - 1];
   const hovered = hover !== null ? shown[hover] : null;
-
-  const fmt = (n: number) =>
-    n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
-  const fmtDate = (iso: string) => iso.slice(0, 10);
 
   return (
     <div className="w-full">
@@ -288,6 +273,138 @@ export default function CandlestickChart({
             )}, close ${fmt(hovered.close)}, volume ${hovered.volume.toLocaleString()}`
           : `Last session: close ${fmt(last.close)}. Hover a candle for its open, high, low, close and volume.`}
       </p>
+    </div>
+  );
+}
+
+/**
+ * Lightweight SVG candlestick chart with a volume pane and optional
+ * horizontal level lines (support, resistance, estimated entry/stop/target).
+ * No chart library — candles are simple rects so theme tokens apply.
+ *
+ * Zoom works by showing fewer candles (each candle, and all labels, get
+ * bigger). The expand button opens the same chart in a large pop-out view.
+ */
+export default function CandlestickChart({
+  candles,
+  visible = 120,
+  height = 320,
+  levels = [],
+  showDirectionStrip = false,
+  showTrendLines = false,
+  showMovingAverages = false,
+}: Props) {
+  const [visibleCount, setVisibleCount] = useState(visible);
+  const [expanded, setExpanded] = useState(false);
+
+  // Reset zoom when the caller changes the default window (e.g. timeframe switch).
+  useEffect(() => {
+    setVisibleCount(visible);
+  }, [visible, candles]);
+
+  const maxVisible = candles.length;
+  const clamped = Math.min(visibleCount, maxVisible);
+  const canZoomIn = clamped > MIN_VISIBLE;
+  const canZoomOut = clamped < maxVisible;
+
+  const shown = useMemo(() => candles.slice(-clamped), [candles, clamped]);
+
+  const strip = useMemo(
+    () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
+    [shown, showDirectionStrip],
+  );
+
+  // Averages are computed on the full history, then trimmed, so the visible
+  // window starts with a value instead of a gap.
+  const maSeries = useMemo(
+    () =>
+      showMovingAverages
+        ? movingAverages(candles).map((s) => ({ ...s, values: s.values.slice(-clamped) }))
+        : [],
+    [candles, clamped, showMovingAverages],
+  );
+
+  const trendLines = useMemo(
+    () => (showTrendLines ? buildTrendLines(shown) : []),
+    [shown, showTrendLines],
+  );
+
+  if (!shown.length) {
+    return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
+  }
+
+  return (
+    <div className="w-full">
+      <div className="mb-1 flex items-center justify-end gap-1">
+        <span className="mr-1 text-[11px] text-muted-foreground" aria-live="polite">
+          Showing {shown.length} of {candles.length}
+        </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => setVisibleCount((v) => Math.max(MIN_VISIBLE, Math.round(v / 1.5)))}
+          disabled={!canZoomIn}
+          aria-label="Zoom in — show fewer candles, larger"
+          title="Zoom in"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => setVisibleCount((v) => Math.min(maxVisible, Math.round(v * 1.5)))}
+          disabled={!canZoomOut}
+          aria-label="Zoom out — show more candles"
+          title="Zoom out"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => setExpanded(true)}
+          aria-label="Open the chart in a large pop-out view"
+          title="Enlarge chart"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <ChartBody
+        shown={shown}
+        strip={strip}
+        trendLines={trendLines}
+        maSeries={maSeries}
+        levels={levels}
+        height={height}
+        showDirectionStrip={showDirectionStrip}
+      />
+
+      <Dialog open={expanded} onOpenChange={setExpanded}>
+        <DialogContent className="max-w-[95vw] w-[95vw] sm:max-w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>Price chart — enlarged view</DialogTitle>
+          </DialogHeader>
+          <ChartBody
+            shown={shown}
+            strip={strip}
+            trendLines={trendLines}
+            maSeries={maSeries}
+            levels={levels}
+            height={600}
+            showDirectionStrip={showDirectionStrip}
+          />
+          <p className="text-xs text-muted-foreground">
+            Use the zoom buttons behind this window to show more or fewer candles. Press Escape or the close button to return.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
