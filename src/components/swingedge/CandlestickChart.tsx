@@ -108,6 +108,10 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
   const y = (price: number) => ((hi - price) / (hi - lo)) * priceH;
   const slot = plotW / shown.length;
 
+  // Keep text labels inside the price pane so they never get clipped by the SVG
+  // view box, especially labels attached to lines near the top or bottom edge.
+  const clampY = (n: number) => Math.max(10, Math.min(priceH - 4, n));
+
   // Spread stacked labels apart so nearby text never overlaps. Lines stay at
   // their true price; only the text moves, to just below the previous label.
   const spreadLabels = (items: { key: string; y: number }[], minGap = 12) => {
@@ -117,7 +121,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
       if (it.y < last + minGap) it.y = last + minGap;
       last = it.y;
     }
-    return new Map(sorted.map((it) => [it.key, it.y]));
+    return new Map(sorted.map((it) => [it.key, clampY(it.y)]));
   };
   const levelLabelY = spreadLabels(activeLevels.map((l) => ({ key: l.label, y: y(l.value) - 3 })));
   const trendLabelY = spreadLabels(
@@ -143,7 +147,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
         {[lo, (lo + hi) / 2, hi].map((p) => (
           <g key={p}>
             <line x1={padL} x2={W - padR} y1={y(p)} y2={y(p)} stroke="hsl(var(--border))" strokeDasharray="2 4" />
-            <text x={W - padR + 6} y={y(p) + 3} fontSize={10} className="fill-muted-foreground">
+            <text x={W - padR + 6} y={clampY(y(p) + 3)} fontSize={10} className="fill-muted-foreground">
               {fmt(p)}
             </text>
           </g>
@@ -219,8 +223,8 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
                 <title>{`${t.kind === 'RESISTANCE' ? 'Upper' : 'Lower'} trend line, ${label}, through ${t.pivots} swing points`}</title>
               </line>
               <text
-                x={x2 - 4}
-                y={trendLabelY.get(t.kind) ?? y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
+                x={Math.max(padL + 4, Math.min(x2 - 4, W - padR - 4))}
+                y={trendLabelY.get(t.kind) ?? clampY(y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10))}
                 fontSize={9}
                 textAnchor="end"
                 fill={TREND_COLOR[t.kind]}
