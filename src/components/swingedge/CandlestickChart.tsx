@@ -223,8 +223,8 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
                 <title>{`${t.kind === 'RESISTANCE' ? 'Upper' : 'Lower'} trend line, ${label}, through ${t.pivots} swing points`}</title>
               </line>
               <text
-                x={x2 - 4}
-                y={trendLabelY.get(t.kind) ?? y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
+                x={Math.max(padL + 4, Math.min(x2 - 4, W - padR - 4))}
+                y={trendLabelY.get(t.kind) ?? clampY(y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10))}
                 fontSize={9}
                 textAnchor="end"
                 fill={TREND_COLOR[t.kind]}
