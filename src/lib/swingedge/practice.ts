@@ -142,8 +142,9 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** Builds the training account from whatever the trader has configured. */
 export function trainingAccount(
-  capital = TRAINING_DEFAULTS.capital,
-  riskPct = TRAINING_DEFAULTS.riskPct,
+  capital: number = TRAINING_DEFAULTS.capital,
+  riskPct: number = TRAINING_DEFAULTS.riskPct,
+
 ): TrainingAccount {
   return {
     capital,
