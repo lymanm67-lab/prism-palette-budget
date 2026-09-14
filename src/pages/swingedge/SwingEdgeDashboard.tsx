@@ -22,6 +22,8 @@ import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
 import ReadinessPointsCard from '@/components/swingedge/ReadinessPointsCard';
 import DailyChecklistCard from '@/components/swingedge/DailyChecklistCard';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
+import PracticeTodayCard from '@/components/swingedge/PracticeTodayCard';
+
 
 
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
@@ -287,8 +289,12 @@ export default function SwingEdgeDashboard() {
       {/* Guided trade workflow + live-trade readiness */}
       <TradeWorkflow />
 
+      {/* Today's practice loop: SwingEdge decides, paperMoney executes */}
+      <PracticeTodayCard />
+
       {/* Risk actually on the table right now */}
       <PortfolioHeatCard />
+
 
       {/* Daily discipline: five questions, and the pause after a losing run */}
       <div className="grid gap-4 lg:grid-cols-2">
