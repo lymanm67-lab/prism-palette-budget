@@ -20,6 +20,8 @@ import DirectionalBiasCard from '@/components/swingedge/DirectionalBiasCard';
 import EventRiskCard from '@/components/swingedge/EventRiskCard';
 import TradeReadinessCard from '@/components/swingedge/TradeReadinessCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
+import MultiTimeframeCard from '@/components/swingedge/MultiTimeframeCard';
+import { useMultiTimeframe } from '@/hooks/use-swingedge-mtf';
 import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
