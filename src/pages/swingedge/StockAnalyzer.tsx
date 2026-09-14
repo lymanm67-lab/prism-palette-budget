@@ -363,6 +363,8 @@ export default function StockAnalyzer() {
             {eventView.result && <EventRiskCard result={eventView.result} dataNote={eventView.dataNote} />}
           </div>
 
+          <MultiTimeframeCard result={mtf} />
+
           {readiness && <TradeReadinessCard readiness={readiness} />}
 
           <CandlePatternCard analysis={analysis.candles} advanced={settings.advanced_mode} />
