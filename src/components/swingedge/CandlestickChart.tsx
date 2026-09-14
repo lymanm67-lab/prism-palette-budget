@@ -153,7 +153,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
         {activeLevels.map((l) => (
           <g key={l.label}>
             <line x1={padL} x2={W - padR} y1={y(l.value)} y2={y(l.value)} stroke={l.color} strokeWidth={1.25} strokeDasharray="6 3" />
-            <text x={padL + 2} y={y(l.value) - 3} fontSize={9} fill={l.color}>
+            <text x={padL + 2} y={levelLabelY.get(l.label) ?? y(l.value) - 3} fontSize={9} fill={l.color}>
               {l.label} {fmt(l.value)}
             </text>
           </g>
@@ -220,7 +220,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
               </line>
               <text
                 x={x2 - 4}
-                y={y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
+                y={trendLabelY.get(t.kind) ?? y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
                 fontSize={9}
                 textAnchor="end"
                 fill={TREND_COLOR[t.kind]}
