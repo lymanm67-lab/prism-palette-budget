@@ -1,8 +1,9 @@
 // Multi-timeframe read for one symbol.
 //
 // The weekly chart is built from the daily candles already loaded, so the extra
-// cost is one 4-hour and one 1-hour request. The 15-minute chart is optional and
-// is not fetched — it stays "not used" rather than being invented.
+// cost is one 4-hour, one 1-hour and one 15-minute request. The 15-minute chart
+// is optional: if the request fails or returns nothing it reads "not used"
+// rather than showing invented numbers.
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -36,11 +37,12 @@ export function useMultiTimeframe(
   const { data: intraday, isLoading } = useQuery({
     queryKey: ['se-mtf', symbol, settings.data_mode],
     queryFn: async () => {
-      const [h4, h1] = await Promise.all([
+      const [h4, h1, m15] = await Promise.all([
         loadCandles(symbol as string, '4h', settings.data_mode, 200),
         loadCandles(symbol as string, '1h', settings.data_mode, 200),
+        loadCandles(symbol as string, '15m', settings.data_mode, 200).catch(() => null),
       ]);
-      return { h4: h4.candles, h1: h1.candles };
+      return { h4: h4.candles, h1: h1.candles, m15: m15?.candles ?? [] };
     },
     enabled,
     staleTime: 5 * 60 * 1000,
@@ -54,7 +56,7 @@ export function useMultiTimeframe(
       daily: readDaily(daily),
       h4: readH4(intraday?.h4 ?? []),
       h1: readH1(intraday?.h1 ?? []),
-      m15: readM15([]),
+      m15: readM15(intraday?.m15 ?? []),
       beginner: !settings.advanced_mode,
       price: opts.price ?? daily[daily.length - 1]?.close ?? null,
       entryZone: opts.entryZone ?? null,

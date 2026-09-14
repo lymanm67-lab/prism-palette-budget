@@ -13,6 +13,14 @@ import CandlestickChart from '@/components/swingedge/CandlestickChart';
 import ReadThisChartCard from '@/components/swingedge/ReadThisChartCard';
 import { readChart } from '@/lib/swingedge/chartReading';
 import { currentDirection } from '@/lib/swingedge/directionStrip';
+import type { SwingInterval } from '@/lib/swingedge/types';
+
+const CHART_INTERVALS: { value: SwingInterval; label: string }[] = [
+  { value: '1day', label: 'Daily' },
+  { value: '4h', label: '4 hour' },
+  { value: '1h', label: '1 hour' },
+  { value: '15m', label: '15 min' },
+];
 import { directionalBias } from '@/lib/swingedge/directionalBias';
 import { conditionsFromNow } from '@/lib/swingedge/historicalMatch';
 import { scoreTradeReadiness, type ReadinessItemKey } from '@/lib/swingedge/tradeReadiness';
@@ -66,12 +74,27 @@ export default function StockAnalyzer() {
   const { data: history } = useHybridSignalHistory(symbol ?? undefined);
   const { settings } = useTradingSettings();
 
-  const { data: candleResult, isLoading: candlesLoading } = useQuery({
+  const { data: candleResult } = useQuery({
     queryKey: ['se-analyzer-candles', symbol, settings.data_mode],
     queryFn: () => loadCandles(symbol as string, '1day', settings.data_mode, 260),
     enabled: !!symbol,
     staleTime: 5 * 60 * 1000,
   });
+
+  // The chart can be zoomed into finer timeframes without changing the
+  // analysis, which always reads the daily chart.
+  const [chartInterval, setChartInterval] = useState<SwingInterval>('1day');
+  const { data: chartResult, isLoading: chartLoading } = useQuery({
+    queryKey: ['se-analyzer-chart', symbol, chartInterval, settings.data_mode],
+    queryFn: () =>
+      chartInterval === '1day'
+        ? loadCandles(symbol as string, '1day', settings.data_mode, 260)
+        : loadCandles(symbol as string, chartInterval, settings.data_mode, 300),
+    enabled: !!symbol,
+    staleTime: 5 * 60 * 1000,
+  });
+  const chartIntervalLabel =
+    CHART_INTERVALS.find((i) => i.value === chartInterval)?.label.toLowerCase() ?? 'daily';
 
   const chartDirection = useMemo(
     () => currentDirection(candleResult?.candles ?? []),
@@ -269,7 +292,7 @@ export default function StockAnalyzer() {
           <Card className="border-border/60 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">Price chart — daily candles</CardTitle>
+                <CardTitle className="text-base">Price chart — {chartIntervalLabel} candles</CardTitle>
                 {chartDirection && (
                   <Badge
                     variant="outline"
@@ -294,15 +317,30 @@ export default function StockAnalyzer() {
                   </Badge>
                 )}
               </div>
+              <div className="flex flex-wrap items-center gap-1 pt-1" role="group" aria-label="Chart timeframe">
+                {CHART_INTERVALS.map((i) => (
+                  <Button
+                    key={i.value}
+                    type="button"
+                    size="sm"
+                    variant={chartInterval === i.value ? 'default' : 'outline'}
+                    className="h-7 px-2.5 text-xs"
+                    onClick={() => setChartInterval(i.value)}
+                  >
+                    {i.label}
+                  </Button>
+                ))}
+              </div>
               <p className="text-xs text-muted-foreground">
                 The chart the signal is reading. Dashed flat lines mark support, resistance and the estimated entry,
-                stop and target. The two sloping dashed lines are trend lines fitted through recent swing highs and
-                lows, and the smooth curves are the 20 EMA (teal) and 50 SMA (amber). The strip under the candles
-                shows which way price was moving in each window — green up, red down, grey sideways.
+                stop and target — these come from the daily chart, whatever timeframe you view. The two sloping
+                dashed lines are trend lines fitted through recent swing highs and lows, and the smooth curves are
+                the 20 EMA (teal) and 50 SMA (amber). The strip under the candles shows which way price was moving
+                in each window — green up, red down, grey sideways.
               </p>
             </CardHeader>
             <CardContent>
-              {candlesLoading ? (
+              {chartLoading ? (
                 <p className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading the chart…
                 </p>
@@ -311,7 +349,7 @@ export default function StockAnalyzer() {
                   showDirectionStrip
                   showTrendLines
                   showMovingAverages
-                  candles={candleResult?.candles ?? []}
+                  candles={chartResult?.candles ?? []}
                   levels={[
                     { label: 'Support', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
                     { label: 'Resistance', value: analysis.technical.resistance, color: 'hsl(var(--prism-amber))' },

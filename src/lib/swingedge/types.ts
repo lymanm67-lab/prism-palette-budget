@@ -2,12 +2,13 @@
 // The calculation engine depends on these normalized shapes only, never on a
 // specific market data provider.
 
-export type SwingInterval = '1day' | '4h' | '1h' | '1week';
+export type SwingInterval = '1day' | '4h' | '1h' | '15m' | '1week';
 
 export const SWING_INTERVALS: { value: SwingInterval; label: string; role: string }[] = [
   { value: '1day', label: 'Daily', role: 'Primary swing timeframe' },
   { value: '4h', label: '4 hour', role: 'Confirmation timeframe' },
   { value: '1h', label: '1 hour', role: 'Fine timing' },
+  { value: '15m', label: '15 minute', role: 'Execution fine-tuning (optional)' },
   { value: '1week', label: 'Weekly', role: 'Long-term context' },
 ];
 

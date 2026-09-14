@@ -6,6 +6,7 @@ import type { CacheStatus, SwingInterval } from './types';
 
 /** Minutes after which cached data stops being Fresh, then stops being Aging. */
 const THRESHOLDS: Record<SwingInterval, { fresh: number; aging: number }> = {
+  '15m': { fresh: 5, aging: 60 },
   '1h': { fresh: 30, aging: 240 },
   '4h': { fresh: 120, aging: 720 },
   '1day': { fresh: 240, aging: 60 * 36 },
