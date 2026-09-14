@@ -187,6 +187,39 @@ export default function StockAnalyzer() {
     return scoreTradeReadiness({ scores, details, hardGates });
   }, [analysis, bias, eventView.result, mtf]);
 
+  // Spoken reading of the analysis. Built only from numbers already computed
+  // on this page — nothing extra is estimated for the voice-over.
+  const voice = useAnalyzerVoice();
+  const narration = useMemo(() => {
+    if (!analysis) return null;
+    const t = analysis.technical;
+    const event = eventView.result;
+    return buildAnalysisNarration({
+      symbol: analysis.symbol,
+      assetType: analysis.assetType,
+      price: t.price,
+      trend: t.trend,
+      setup: t.setup,
+      rsi: t.rsi,
+      rsiState: rsiRead(candleResult?.candles ?? [])?.state ?? null,
+      atr: t.atr,
+      support: t.support,
+      resistance: t.resistance,
+      estimatedStop: levels?.estimatedStop ?? null,
+      estimatedTarget: levels?.estimatedTarget ?? null,
+      relativeVolume: t.relativeVolume,
+      developing: analysis.developing,
+      biasDirection: bias?.direction ?? null,
+      biasConfidence: bias?.confidence ?? null,
+      eventScore: event?.score ?? null,
+      eventBand: event?.band ?? null,
+      readinessScore: readiness?.score ?? null,
+      readinessVerdict: readiness?.bandLabel ?? null,
+      readinessHardGates: readiness?.hardGates ?? [],
+      mtfLabel: mtf?.alignmentLabel ?? null,
+    });
+  }, [analysis, bias, eventView.result, readiness, mtf, candleResult]);
+
 
 
   const run = () => {
