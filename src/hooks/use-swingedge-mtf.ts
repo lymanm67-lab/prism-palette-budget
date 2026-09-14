@@ -37,11 +37,12 @@ export function useMultiTimeframe(
   const { data: intraday, isLoading } = useQuery({
     queryKey: ['se-mtf', symbol, settings.data_mode],
     queryFn: async () => {
-      const [h4, h1] = await Promise.all([
+      const [h4, h1, m15] = await Promise.all([
         loadCandles(symbol as string, '4h', settings.data_mode, 200),
         loadCandles(symbol as string, '1h', settings.data_mode, 200),
+        loadCandles(symbol as string, '15m', settings.data_mode, 200).catch(() => null),
       ]);
-      return { h4: h4.candles, h1: h1.candles };
+      return { h4: h4.candles, h1: h1.candles, m15: m15?.candles ?? [] };
     },
     enabled,
     staleTime: 5 * 60 * 1000,
