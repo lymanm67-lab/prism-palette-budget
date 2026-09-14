@@ -323,24 +323,28 @@ export default function CandlestickChart({
   const shown = useMemo(() => candles.slice(-clamped), [candles, clamped]);
 
   const strip = useMemo(
-    () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
-    [shown, showDirectionStrip],
+    () => (showDirectionStrip && showStrip ? buildDirectionStrip(shown) : []),
+    [shown, showDirectionStrip, showStrip],
   );
 
   // Averages are computed on the full history, then trimmed, so the visible
   // window starts with a value instead of a gap.
   const maSeries = useMemo(
     () =>
-      showMovingAverages
+      showMovingAverages && showMas
         ? movingAverages(candles).map((s) => ({ ...s, values: s.values.slice(-clamped) }))
         : [],
-    [candles, clamped, showMovingAverages],
+    [candles, clamped, showMovingAverages, showMas],
   );
 
   const trendLines = useMemo(
-    () => (showTrendLines ? buildTrendLines(shown) : []),
-    [shown, showTrendLines],
+    () => (showTrendLines && showTrends ? buildTrendLines(shown) : []),
+    [shown, showTrendLines, showTrends],
   );
+
+  const visibleLevels = showLevels ? levels : [];
+  const overlayCount =
+    (showMovingAverages ? 1 : 0) + (showTrendLines ? 1 : 0) + (levels.length ? 1 : 0) + (showDirectionStrip ? 1 : 0);
 
   if (!shown.length) {
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
