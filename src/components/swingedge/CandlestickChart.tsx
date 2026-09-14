@@ -400,9 +400,21 @@ export default function CandlestickChart({
             height={600}
             showDirectionStrip={showDirectionStrip}
           />
-          <p className="text-xs text-muted-foreground">
-            Use the zoom buttons behind this window to show more or fewer candles. Press Escape or the close button to return.
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              Use the zoom buttons behind this window to show more or fewer candles.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setExpanded(false)}
+              aria-label="Return to the chart on the main page"
+            >
+              <Minimize2 className="mr-2 h-4 w-4" />
+              Return to chart
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
