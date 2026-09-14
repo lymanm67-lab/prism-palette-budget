@@ -15,6 +15,7 @@ import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import WatchlistDashboardCard from '@/components/swingedge/WatchlistDashboardCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
+import { MTF_MANAGEMENT_WARNING, TIMEFRAME_ROLE, type TimeframeKey } from '@/lib/swingedge/multiTimeframe';
 import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
 import PortfolioRolesCard from '@/components/swingedge/PortfolioRolesCard';
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
