@@ -11549,6 +11549,156 @@ export type Database = {
         }
         Relationships: []
       }
+      se_execution_tickets: {
+        Row: {
+          actual_entry: number | null
+          actual_shares: number | null
+          actual_stop: number | null
+          actual_target: number | null
+          approved_shares: number | null
+          bias_confidence: string | null
+          bias_direction: string | null
+          bias_probability: number | null
+          created_at: string
+          earnings_note: string | null
+          entry_zone_high: number | null
+          entry_zone_low: number | null
+          event_risk_band: string | null
+          execution_time: string | null
+          expected_hold: string | null
+          handoff_checklist: Json
+          household_id: string
+          id: string
+          max_dollar_risk: number | null
+          notes: string | null
+          order_type: string | null
+          paper_trade_id: string | null
+          planned_entry: number
+          planned_stop: number
+          planned_target: number | null
+          position_value: number | null
+          potential_reward: number | null
+          practice_session_id: string | null
+          readiness_score: number | null
+          reward_risk: number | null
+          risk_pct: number | null
+          risk_per_share: number | null
+          setup_type: string | null
+          signal: string | null
+          slippage: number | null
+          status: string
+          symbol: string
+          timeframe_daily: string | null
+          timeframe_h1: string | null
+          timeframe_h4: string | null
+          timeframe_m15: string | null
+          timeframe_weekly: string | null
+          trade_plan_id: string | null
+          training_capital: number | null
+          training_checklist: Json
+          updated_at: string
+          variance_band: string | null
+        }
+        Insert: {
+          actual_entry?: number | null
+          actual_shares?: number | null
+          actual_stop?: number | null
+          actual_target?: number | null
+          approved_shares?: number | null
+          bias_confidence?: string | null
+          bias_direction?: string | null
+          bias_probability?: number | null
+          created_at?: string
+          earnings_note?: string | null
+          entry_zone_high?: number | null
+          entry_zone_low?: number | null
+          event_risk_band?: string | null
+          execution_time?: string | null
+          expected_hold?: string | null
+          handoff_checklist?: Json
+          household_id: string
+          id?: string
+          max_dollar_risk?: number | null
+          notes?: string | null
+          order_type?: string | null
+          paper_trade_id?: string | null
+          planned_entry: number
+          planned_stop: number
+          planned_target?: number | null
+          position_value?: number | null
+          potential_reward?: number | null
+          practice_session_id?: string | null
+          readiness_score?: number | null
+          reward_risk?: number | null
+          risk_pct?: number | null
+          risk_per_share?: number | null
+          setup_type?: string | null
+          signal?: string | null
+          slippage?: number | null
+          status?: string
+          symbol: string
+          timeframe_daily?: string | null
+          timeframe_h1?: string | null
+          timeframe_h4?: string | null
+          timeframe_m15?: string | null
+          timeframe_weekly?: string | null
+          trade_plan_id?: string | null
+          training_capital?: number | null
+          training_checklist?: Json
+          updated_at?: string
+          variance_band?: string | null
+        }
+        Update: {
+          actual_entry?: number | null
+          actual_shares?: number | null
+          actual_stop?: number | null
+          actual_target?: number | null
+          approved_shares?: number | null
+          bias_confidence?: string | null
+          bias_direction?: string | null
+          bias_probability?: number | null
+          created_at?: string
+          earnings_note?: string | null
+          entry_zone_high?: number | null
+          entry_zone_low?: number | null
+          event_risk_band?: string | null
+          execution_time?: string | null
+          expected_hold?: string | null
+          handoff_checklist?: Json
+          household_id?: string
+          id?: string
+          max_dollar_risk?: number | null
+          notes?: string | null
+          order_type?: string | null
+          paper_trade_id?: string | null
+          planned_entry?: number
+          planned_stop?: number
+          planned_target?: number | null
+          position_value?: number | null
+          potential_reward?: number | null
+          practice_session_id?: string | null
+          readiness_score?: number | null
+          reward_risk?: number | null
+          risk_pct?: number | null
+          risk_per_share?: number | null
+          setup_type?: string | null
+          signal?: string | null
+          slippage?: number | null
+          status?: string
+          symbol?: string
+          timeframe_daily?: string | null
+          timeframe_h1?: string | null
+          timeframe_h4?: string | null
+          timeframe_m15?: string | null
+          timeframe_weekly?: string | null
+          trade_plan_id?: string | null
+          training_capital?: number | null
+          training_checklist?: Json
+          updated_at?: string
+          variance_band?: string | null
+        }
+        Relationships: []
+      }
       se_fundamental_cache: {
         Row: {
           as_of: string | null
@@ -12203,6 +12353,8 @@ export type Database = {
       se_paper_trades: {
         Row: {
           actual_simulated_loss: number | null
+          actual_target: number | null
+          approved_shares: number | null
           bias_confidence: string | null
           bias_direction: string | null
           breakeven_trigger: string | null
@@ -12216,22 +12368,30 @@ export type Database = {
           event_risk_band: string | null
           event_risk_score: number | null
           execution_score: number | null
+          execution_ticket_id: string | null
+          execution_time: string | null
           exit_date: string | null
           exit_price: number | null
           exit_reason: string | null
+          exit_time: string | null
           gap_difference: number | null
           household_id: string
           id: string
           initial_dollar_risk: number | null
           invalidation: string | null
+          max_adverse_excursion: number | null
+          max_favorable_excursion: number | null
           notes: string | null
+          order_type: string | null
           original_risk: number | null
           original_shares: number | null
           original_stop: number | null
           original_target: number | null
           outcome_class: string | null
+          planned_entry: number | null
           planned_loss: number | null
           planned_stop: number | null
+          practice_session_id: string | null
           readiness_score: number | null
           realized_pl: number | null
           revalidated_at: string | null
@@ -12250,9 +12410,12 @@ export type Database = {
           trade_plan_id: string | null
           trailing_method: string | null
           updated_at: string
+          variance_band: string | null
         }
         Insert: {
           actual_simulated_loss?: number | null
+          actual_target?: number | null
+          approved_shares?: number | null
           bias_confidence?: string | null
           bias_direction?: string | null
           breakeven_trigger?: string | null
@@ -12266,22 +12429,30 @@ export type Database = {
           event_risk_band?: string | null
           event_risk_score?: number | null
           execution_score?: number | null
+          execution_ticket_id?: string | null
+          execution_time?: string | null
           exit_date?: string | null
           exit_price?: number | null
           exit_reason?: string | null
+          exit_time?: string | null
           gap_difference?: number | null
           household_id: string
           id?: string
           initial_dollar_risk?: number | null
           invalidation?: string | null
+          max_adverse_excursion?: number | null
+          max_favorable_excursion?: number | null
           notes?: string | null
+          order_type?: string | null
           original_risk?: number | null
           original_shares?: number | null
           original_stop?: number | null
           original_target?: number | null
           outcome_class?: string | null
+          planned_entry?: number | null
           planned_loss?: number | null
           planned_stop?: number | null
+          practice_session_id?: string | null
           readiness_score?: number | null
           realized_pl?: number | null
           revalidated_at?: string | null
@@ -12300,9 +12471,12 @@ export type Database = {
           trade_plan_id?: string | null
           trailing_method?: string | null
           updated_at?: string
+          variance_band?: string | null
         }
         Update: {
           actual_simulated_loss?: number | null
+          actual_target?: number | null
+          approved_shares?: number | null
           bias_confidence?: string | null
           bias_direction?: string | null
           breakeven_trigger?: string | null
@@ -12316,22 +12490,30 @@ export type Database = {
           event_risk_band?: string | null
           event_risk_score?: number | null
           execution_score?: number | null
+          execution_ticket_id?: string | null
+          execution_time?: string | null
           exit_date?: string | null
           exit_price?: number | null
           exit_reason?: string | null
+          exit_time?: string | null
           gap_difference?: number | null
           household_id?: string
           id?: string
           initial_dollar_risk?: number | null
           invalidation?: string | null
+          max_adverse_excursion?: number | null
+          max_favorable_excursion?: number | null
           notes?: string | null
+          order_type?: string | null
           original_risk?: number | null
           original_shares?: number | null
           original_stop?: number | null
           original_target?: number | null
           outcome_class?: string | null
+          planned_entry?: number | null
           planned_loss?: number | null
           planned_stop?: number | null
+          practice_session_id?: string | null
           readiness_score?: number | null
           realized_pl?: number | null
           revalidated_at?: string | null
@@ -12350,6 +12532,7 @@ export type Database = {
           trade_plan_id?: string | null
           trailing_method?: string | null
           updated_at?: string
+          variance_band?: string | null
         }
         Relationships: [
           {
@@ -12367,6 +12550,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      se_practice_sessions: {
+        Row: {
+          best_skip_reason: string | null
+          best_skip_symbol: string | null
+          candidates_reviewed: number
+          created_at: string
+          household_id: string
+          id: string
+          lessons_learned: string | null
+          market_read: string | null
+          notes: string | null
+          regime_note: string | null
+          rule_violations: string | null
+          session_date: string
+          trades_executed: number
+          trades_qualified: number
+          trades_rejected: number
+          training_week: number | null
+          updated_at: string
+        }
+        Insert: {
+          best_skip_reason?: string | null
+          best_skip_symbol?: string | null
+          candidates_reviewed?: number
+          created_at?: string
+          household_id: string
+          id?: string
+          lessons_learned?: string | null
+          market_read?: string | null
+          notes?: string | null
+          regime_note?: string | null
+          rule_violations?: string | null
+          session_date?: string
+          trades_executed?: number
+          trades_qualified?: number
+          trades_rejected?: number
+          training_week?: number | null
+          updated_at?: string
+        }
+        Update: {
+          best_skip_reason?: string | null
+          best_skip_symbol?: string | null
+          candidates_reviewed?: number
+          created_at?: string
+          household_id?: string
+          id?: string
+          lessons_learned?: string | null
+          market_read?: string | null
+          notes?: string | null
+          regime_note?: string | null
+          rule_violations?: string | null
+          session_date?: string
+          trades_executed?: number
+          trades_qualified?: number
+          trades_rejected?: number
+          training_week?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       se_signal_conflicts: {
         Row: {
@@ -12620,6 +12863,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      se_target_modifications: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          new_target: number
+          original_target: number | null
+          paper_trade_id: string
+          reason: string
+          updated_reward_risk: number | null
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          new_target: number
+          original_target?: number | null
+          paper_trade_id: string
+          reason: string
+          updated_reward_risk?: number | null
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          new_target?: number
+          original_target?: number | null
+          paper_trade_id?: string
+          reason?: string
+          updated_reward_risk?: number | null
+        }
+        Relationships: []
       }
       se_trade_plans: {
         Row: {

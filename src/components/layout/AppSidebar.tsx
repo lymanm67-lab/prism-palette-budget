@@ -108,6 +108,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/swingedge/watchlists', icon: Layers, label: 'Watchlists', color: 'text-prism-indigo' },
       { to: '/swingedge/planner', icon: ClipboardCheck, label: 'Trade Planner', color: 'text-prism-lime' },
       { to: '/swingedge/rulebook', icon: ShieldCheck, label: 'My Rulebook', color: 'text-prism-lime' },
+      { to: '/swingedge/practice', icon: Monitor, label: 'Practice Lab', color: 'text-prism-violet' },
       { to: '/swingedge/paper-trading', icon: Activity, label: 'Paper Trading', color: 'text-prism-violet' },
       { to: '/swingedge/journal', icon: FileText, label: 'Trade Journal', color: 'text-prism-amber' },
       { to: '/swingedge/performance', icon: BarChart3, label: 'Performance Review', color: 'text-prism-teal' },
