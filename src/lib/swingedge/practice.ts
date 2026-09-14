@@ -675,3 +675,43 @@ export function tradeResult(input: TradeResultInput): TradeResult {
   }
   return { dollarPl, rMultiple, percentReturn, holdingDays };
 }
+
+/* ------------------------------------------------ course integration, weeks 1–6 */
+
+/**
+ * What paperMoney is for in each week of the six-week course. SwingEdge always
+ * does the analysis; the platform work is added in deliberately, one layer at a
+ * time, and no trading is asked for until the analysis habit exists.
+ */
+export const THINKORSWIM_WEEK_FOCUS: Record<number, string[]> = {
+  1: [
+    'Set up your paperMoney charts to match SwingEdge: daily candles, 20 EMA, 50 SMA, RSI 14, volume.',
+    'Practise basic navigation — symbol lookup, timeframes, drawing a horizontal line.',
+    'No trades this week. None.',
+  ],
+  2: [
+    'Scan in SwingEdge, then open each candidate in paperMoney and read the same chart in both places.',
+    'Build the same watchlist in both tools so the names match.',
+    'Still no orders — the goal is that the two screens tell you the same story.',
+  ],
+  3: [
+    'Analyse pullbacks in SwingEdge, and only execute the ones that qualify in paperMoney.',
+    'Use the approved share count exactly. Attach the stop with the entry, in the same order ticket.',
+    'Record every fill back in SwingEdge the same day.',
+  ],
+  4: [
+    'Analyse breakouts in SwingEdge, and only execute the ones that qualify in paperMoney.',
+    'Notice how much more the fill drifts from the plan on a breakout than on a pullback.',
+    'Log the variance every time — that number is the lesson.',
+  ],
+  5: [
+    'Drill the mechanics: position sizing, stop orders, target orders, order modification, and reading R.',
+    'Practise moving a stop up to breakeven, and practise not moving one down.',
+    'Every modification gets a written reason in SwingEdge.',
+  ],
+  6: [
+    'Run the whole loop alone: SwingEdge analysis, paperMoney execution, SwingEdge journal, SwingEdge review.',
+    'No prompting from the checklists — use them only to check yourself afterwards.',
+    'Grade each trade good win, good loss, bad win or bad loss before you look at the money.',
+  ],
+};
