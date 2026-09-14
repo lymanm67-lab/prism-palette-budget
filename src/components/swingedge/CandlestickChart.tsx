@@ -147,7 +147,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
         {[lo, (lo + hi) / 2, hi].map((p) => (
           <g key={p}>
             <line x1={padL} x2={W - padR} y1={y(p)} y2={y(p)} stroke="hsl(var(--border))" strokeDasharray="2 4" />
-            <text x={W - padR + 6} y={y(p) + 3} fontSize={10} className="fill-muted-foreground">
+            <text x={W - padR + 6} y={clampY(y(p) + 3)} fontSize={10} className="fill-muted-foreground">
               {fmt(p)}
             </text>
           </g>
