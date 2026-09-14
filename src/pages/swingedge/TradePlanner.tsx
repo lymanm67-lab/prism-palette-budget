@@ -252,6 +252,16 @@ export default function TradePlanner() {
   // guardrails that speak up on their own. Nothing here calls an AI model.
   const { rules } = useTradingRules();
   const { record: trackRecord } = useTrackRecord(symbol || null, setup);
+
+  // Weekly context, daily setup, 4-hour confirmation, 1-hour entry timing.
+  const plannedZone = useMemo(
+    () => (entryNum > 0 ? buildEntryZone(entryNum, atrValue) : null),
+    [entryNum, atrValue],
+  );
+  const { result: mtf } = useMultiTimeframe(symbol || null, L?.candles, {
+    price: L?.snapshot?.price ?? null,
+    entryZone: plannedZone,
+  });
   const { report: discipline } = useDisciplineReport();
   const { count: entriesToday } = useEntriesToday();
   const earnings = useSymbolEarnings(symbol || null);
