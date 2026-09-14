@@ -356,6 +356,51 @@ export default function CandlestickChart({
         <span className="mr-1 text-[11px] text-muted-foreground" aria-live="polite">
           Showing {shown.length} of {candles.length}
         </span>
+        {overlayCount > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                aria-label="Choose which chart lines to show"
+                title="Chart lines"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 p-3">
+              <p className="mb-2 text-xs font-medium">Chart lines</p>
+              <div className="space-y-2">
+                {showMovingAverages && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showMas} onCheckedChange={(v) => setShowMas(v === true)} />
+                    20 EMA &amp; 50 SMA averages
+                  </label>
+                )}
+                {showTrendLines && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showTrends} onCheckedChange={(v) => setShowTrends(v === true)} />
+                    Trend lines
+                  </label>
+                )}
+                {levels.length > 0 && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showLevels} onCheckedChange={(v) => setShowLevels(v === true)} />
+                    Level lines (support, entry, stop, target)
+                  </label>
+                )}
+                {showDirectionStrip && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showStrip} onCheckedChange={(v) => setShowStrip(v === true)} />
+                    Direction strip
+                  </label>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
         <Button
           type="button"
           variant="ghost"
