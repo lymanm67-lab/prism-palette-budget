@@ -29,6 +29,7 @@ export const ACADEMY_MODULES = [
   'Reading candlesticks in context',
   'Event risk and the calendar',
   'Multi-timeframe analysis',
+  'Practising with Thinkorswim',
 
 
 
@@ -948,8 +949,48 @@ export const LESSONS: Lesson[] = [
       why: 'The setup lives on the daily chart. Without it there is nothing for the shorter charts to time.',
     },
   },
+  {
+    key: 'swingedge-and-thinkorswim',
+    module: 'Practising with Thinkorswim',
+    title: 'SwingEdge decides, paperMoney executes',
+    minutes: 6,
+    summary:
+      'Two tools, two jobs. SwingEdge finds, validates, sizes and grades the trade. Thinkorswim paperMoney is where you practise placing and managing the order.',
+    body: [
+      'Beginners try to do everything on the broker screen, because the broker screen is where the Buy button is. That is exactly backwards. The decision is made before you open the platform, and it is made in writing.',
+      'SwingEdge owns the thinking: the market read, the timeframe hierarchy, the scan, the setup, the event check, the plan, the size, the readiness score, the journal and the review. Thinkorswim paperMoney owns the hands: order entry, stop orders, target orders, fills, position management and the feel of a real platform.',
+      'One trap deserves its own paragraph. paperMoney may show a hundred thousand dollars of buying power. Your training account is five thousand, and one percent of it is fifty dollars. That fifty dollars, divided by the distance from your entry to your stop, is the only share count you are allowed to type. Buying power is not permission.',
+      'The other trap is the fill. A plan is not a fill. If you planned to buy at 50.00 and the simulator filled you at 50.18, every number after that comes from 50.18. Recording the planned price as though it happened is the fastest way to learn nothing from a hundred practice trades.',
+    ],
+    example: {
+      title: 'One loop, end to end',
+      lines: [
+        'Training account 5,000, risk 1% — one unit of risk is 50.00.',
+        'Entry 44.50, stop 42.50 — risk per share 2.00.',
+        'Approved shares: 50.00 divided by 2.00 = 25. Not 26, whatever paperMoney offers.',
+        'Filled at 44.62 in paperMoney — recorded as 44.62, so actual risk per share is 2.12.',
+        'Closed at 42.50 for a 53.00 loss, about 1R, every rule followed: a GOOD LOSS.',
+      ],
+    },
+    keyPoints: [
+      'The plan is finished before the platform opens.',
+      'paperMoney buying power never changes the approved share count.',
+      'The actual fill replaces the planned price in every later calculation.',
+      'Manage the swing on the daily and 4-hour charts, not on one 15-minute candle.',
+      'Profit and loss decides win or loss; rules decide good or bad.',
+    ],
+    blindSpot:
+      'A simulator fills more kindly than a real market in fast conditions, and it costs you nothing emotionally to lose. Neither of those transfers.',
+    appliesTo: { label: 'Practice Lab', to: '/swingedge/practice' },
+    quiz: {
+      question:
+        'paperMoney shows $100,000 of buying power. Your training account is $5,000 at 1% risk, entry $50, stop $48. How many shares?',
+      options: ['As many as buying power allows', '25 shares', '100 shares', 'Whatever keeps the position under $5,000'],
+      answerIndex: 1,
+      why: 'Max risk is $50, risk per share is $2, so 25 shares. Buying power is irrelevant to sizing.',
+    },
+  },
 ];
-
 
 
 
