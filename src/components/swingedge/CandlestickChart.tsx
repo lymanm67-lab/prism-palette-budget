@@ -299,10 +299,21 @@ export default function CandlestickChart({
   const [visibleCount, setVisibleCount] = useState(visible);
   const [expanded, setExpanded] = useState(false);
 
+  // Overlay visibility — user can hide lines that make the chart busy.
+  const [showMas, setShowMas] = useState(showMovingAverages);
+  const [showTrends, setShowTrends] = useState(showTrendLines);
+  const [showLevels, setShowLevels] = useState(true);
+  const [showStrip, setShowStrip] = useState(showDirectionStrip);
+
   // Reset zoom when the caller changes the default window (e.g. timeframe switch).
   useEffect(() => {
     setVisibleCount(visible);
   }, [visible, candles]);
+
+  // Re-sync overlay defaults if the caller changes what the chart offers.
+  useEffect(() => setShowMas(showMovingAverages), [showMovingAverages]);
+  useEffect(() => setShowTrends(showTrendLines), [showTrendLines]);
+  useEffect(() => setShowStrip(showDirectionStrip), [showDirectionStrip]);
 
   const maxVisible = candles.length;
   const clamped = Math.min(visibleCount, maxVisible);
