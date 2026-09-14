@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
+import { Maximize2, Minimize2, SlidersHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Candle } from '@/lib/swingedge/types';
 import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
@@ -297,10 +299,21 @@ export default function CandlestickChart({
   const [visibleCount, setVisibleCount] = useState(visible);
   const [expanded, setExpanded] = useState(false);
 
+  // Overlay visibility — user can hide lines that make the chart busy.
+  const [showMas, setShowMas] = useState(showMovingAverages);
+  const [showTrends, setShowTrends] = useState(showTrendLines);
+  const [showLevels, setShowLevels] = useState(true);
+  const [showStrip, setShowStrip] = useState(showDirectionStrip);
+
   // Reset zoom when the caller changes the default window (e.g. timeframe switch).
   useEffect(() => {
     setVisibleCount(visible);
   }, [visible, candles]);
+
+  // Re-sync overlay defaults if the caller changes what the chart offers.
+  useEffect(() => setShowMas(showMovingAverages), [showMovingAverages]);
+  useEffect(() => setShowTrends(showTrendLines), [showTrendLines]);
+  useEffect(() => setShowStrip(showDirectionStrip), [showDirectionStrip]);
 
   const maxVisible = candles.length;
   const clamped = Math.min(visibleCount, maxVisible);
@@ -310,24 +323,28 @@ export default function CandlestickChart({
   const shown = useMemo(() => candles.slice(-clamped), [candles, clamped]);
 
   const strip = useMemo(
-    () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
-    [shown, showDirectionStrip],
+    () => (showDirectionStrip && showStrip ? buildDirectionStrip(shown) : []),
+    [shown, showDirectionStrip, showStrip],
   );
 
   // Averages are computed on the full history, then trimmed, so the visible
   // window starts with a value instead of a gap.
   const maSeries = useMemo(
     () =>
-      showMovingAverages
+      showMovingAverages && showMas
         ? movingAverages(candles).map((s) => ({ ...s, values: s.values.slice(-clamped) }))
         : [],
-    [candles, clamped, showMovingAverages],
+    [candles, clamped, showMovingAverages, showMas],
   );
 
   const trendLines = useMemo(
-    () => (showTrendLines ? buildTrendLines(shown) : []),
-    [shown, showTrendLines],
+    () => (showTrendLines && showTrends ? buildTrendLines(shown) : []),
+    [shown, showTrendLines, showTrends],
   );
+
+  const visibleLevels = showLevels ? levels : [];
+  const overlayCount =
+    (showMovingAverages ? 1 : 0) + (showTrendLines ? 1 : 0) + (levels.length ? 1 : 0) + (showDirectionStrip ? 1 : 0);
 
   if (!shown.length) {
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
@@ -339,6 +356,51 @@ export default function CandlestickChart({
         <span className="mr-1 text-[11px] text-muted-foreground" aria-live="polite">
           Showing {shown.length} of {candles.length}
         </span>
+        {overlayCount > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                aria-label="Choose which chart lines to show"
+                title="Chart lines"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56 p-3">
+              <p className="mb-2 text-xs font-medium">Chart lines</p>
+              <div className="space-y-2">
+                {showMovingAverages && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showMas} onCheckedChange={(v) => setShowMas(v === true)} />
+                    20 EMA &amp; 50 SMA averages
+                  </label>
+                )}
+                {showTrendLines && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showTrends} onCheckedChange={(v) => setShowTrends(v === true)} />
+                    Trend lines
+                  </label>
+                )}
+                {levels.length > 0 && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showLevels} onCheckedChange={(v) => setShowLevels(v === true)} />
+                    Level lines (support, entry, stop, target)
+                  </label>
+                )}
+                {showDirectionStrip && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={showStrip} onCheckedChange={(v) => setShowStrip(v === true)} />
+                    Direction strip
+                  </label>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -381,9 +443,9 @@ export default function CandlestickChart({
         strip={strip}
         trendLines={trendLines}
         maSeries={maSeries}
-        levels={levels}
+        levels={visibleLevels}
         height={height}
-        showDirectionStrip={showDirectionStrip}
+        showDirectionStrip={showDirectionStrip && showStrip}
       />
 
       <Dialog open={expanded} onOpenChange={setExpanded}>
@@ -396,9 +458,9 @@ export default function CandlestickChart({
             strip={strip}
             trendLines={trendLines}
             maSeries={maSeries}
-            levels={levels}
+            levels={visibleLevels}
             height={600}
-            showDirectionStrip={showDirectionStrip}
+            showDirectionStrip={showDirectionStrip && showStrip}
           />
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
