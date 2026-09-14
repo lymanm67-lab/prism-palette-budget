@@ -13,6 +13,14 @@ import CandlestickChart from '@/components/swingedge/CandlestickChart';
 import ReadThisChartCard from '@/components/swingedge/ReadThisChartCard';
 import { readChart } from '@/lib/swingedge/chartReading';
 import { currentDirection } from '@/lib/swingedge/directionStrip';
+import type { SwingInterval } from '@/lib/swingedge/types';
+
+const CHART_INTERVALS: { value: SwingInterval; label: string }[] = [
+  { value: '1day', label: 'Daily' },
+  { value: '4h', label: '4 hour' },
+  { value: '1h', label: '1 hour' },
+  { value: '15m', label: '15 min' },
+];
 import { directionalBias } from '@/lib/swingedge/directionalBias';
 import { conditionsFromNow } from '@/lib/swingedge/historicalMatch';
 import { scoreTradeReadiness, type ReadinessItemKey } from '@/lib/swingedge/tradeReadiness';
@@ -284,7 +292,7 @@ export default function StockAnalyzer() {
           <Card className="border-border/60 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">Price chart — daily candles</CardTitle>
+                <CardTitle className="text-base">Price chart — {chartIntervalLabel} candles</CardTitle>
                 {chartDirection && (
                   <Badge
                     variant="outline"
