@@ -108,6 +108,10 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
   const y = (price: number) => ((hi - price) / (hi - lo)) * priceH;
   const slot = plotW / shown.length;
 
+  // Keep text labels inside the price pane so they never get clipped by the SVG
+  // view box, especially labels attached to lines near the top or bottom edge.
+  const clampY = (n: number) => Math.max(10, Math.min(priceH - 4, n));
+
   // Spread stacked labels apart so nearby text never overlaps. Lines stay at
   // their true price; only the text moves, to just below the previous label.
   const spreadLabels = (items: { key: string; y: number }[], minGap = 12) => {
@@ -117,7 +121,7 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
       if (it.y < last + minGap) it.y = last + minGap;
       last = it.y;
     }
-    return new Map(sorted.map((it) => [it.key, it.y]));
+    return new Map(sorted.map((it) => [it.key, clampY(it.y)]));
   };
   const levelLabelY = spreadLabels(activeLevels.map((l) => ({ key: l.label, y: y(l.value) - 3 })));
   const trendLabelY = spreadLabels(
