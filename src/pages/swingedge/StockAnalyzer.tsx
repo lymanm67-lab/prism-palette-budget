@@ -205,8 +205,8 @@ export default function StockAnalyzer() {
       atr: t.atr,
       support: t.support,
       resistance: t.resistance,
-      estimatedStop: levels?.estimatedStop ?? null,
-      estimatedTarget: levels?.estimatedTarget ?? null,
+      estimatedStop: analysis.technical.levels?.estimatedStop ?? null,
+      estimatedTarget: analysis.technical.levels?.estimatedTarget ?? null,
       relativeVolume: t.relativeVolume,
       developing: analysis.developing,
       biasDirection: bias?.direction ?? null,
@@ -270,6 +270,23 @@ export default function StockAnalyzer() {
             disabled={isSaving}
           >
             <Save className="mr-2 h-4 w-4" /> Save this reading
+          </Button>
+        )}
+        {narration && (
+          <Button
+            variant="outline"
+            onClick={() => (voice.speaking || voice.loading ? voice.stop() : voice.speak(narration))}
+            disabled={!narration}
+            aria-label={voice.speaking ? 'Stop the spoken reading' : 'Listen to this reading'}
+          >
+            {voice.loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : voice.speaking ? (
+              <Square className="mr-2 h-4 w-4" />
+            ) : (
+              <Volume2 className="mr-2 h-4 w-4" />
+            )}
+            {voice.speaking ? 'Stop reading' : voice.loading ? 'Preparing voice…' : 'Listen to this reading'}
           </Button>
         )}
         {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
