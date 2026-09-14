@@ -137,6 +137,7 @@ export default function StockAnalyzer() {
       revalidation: analysis.developing ? 0.5 : 1,
       heat: null,
       correlation: null,
+      timeframes: mtf ? mtf.score / 100 : null,
     };
 
     const details: Partial<Record<ReadinessItemKey, string>> = {
@@ -147,16 +148,19 @@ export default function StockAnalyzer() {
       bias: bias ? `${bias.direction} lean from ${bias.independentEpisodes} separate past episodes.` : 'No matching history.',
       event: event ? `Event risk ${event.score} of 100 (${event.band}).` : 'No event data available.',
       revalidation: analysis.developing ? "Today's candle is still forming." : 'Reading uses completed candles.',
+      timeframes: mtf ? `${mtf.alignmentLabel} across weekly, daily, 4-hour and 1-hour.` : 'Timeframes not read yet.',
     };
 
     const hardGates = [
       ...analysis.risk.hardGateFailures,
       ...(analysis.tradability.hardGate ? [`Tradability: ${analysis.tradability.reasons[0]}`] : []),
       ...(event?.hardGates ?? []),
+      ...(mtf?.hardGates ?? []),
     ];
 
     return scoreTradeReadiness({ scores, details, hardGates });
-  }, [analysis, bias, eventView.result]);
+  }, [analysis, bias, eventView.result, mtf]);
+
 
 
   const run = () => {
