@@ -20,6 +20,8 @@ import DirectionalBiasCard from '@/components/swingedge/DirectionalBiasCard';
 import EventRiskCard from '@/components/swingedge/EventRiskCard';
 import TradeReadinessCard from '@/components/swingedge/TradeReadinessCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
+import MultiTimeframeCard from '@/components/swingedge/MultiTimeframeCard';
+import { useMultiTimeframe } from '@/hooks/use-swingedge-mtf';
 import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
@@ -79,6 +81,14 @@ export default function StockAnalyzer() {
   // What happened the last times this name and this setup were traded.
   const { record: trackRecord } = useTrackRecord(symbol, analysis?.technical.setup ?? null);
 
+  // Weekly context, daily setup, 4-hour confirmation and 1-hour entry timing.
+  const { result: mtf } = useMultiTimeframe(symbol, candleResult?.candles, {
+    price: analysis?.technical.price ?? null,
+    entryZone: analysis?.entryZone ?? null,
+  });
+
+
+
   // Historical tendency for the conditions showing right now.
   const bias = useMemo(() => {
     const candles = candleResult?.candles ?? [];
@@ -127,6 +137,7 @@ export default function StockAnalyzer() {
       revalidation: analysis.developing ? 0.5 : 1,
       heat: null,
       correlation: null,
+      timeframes: mtf ? mtf.score / 100 : null,
     };
 
     const details: Partial<Record<ReadinessItemKey, string>> = {
@@ -137,16 +148,19 @@ export default function StockAnalyzer() {
       bias: bias ? `${bias.direction} lean from ${bias.independentEpisodes} separate past episodes.` : 'No matching history.',
       event: event ? `Event risk ${event.score} of 100 (${event.band}).` : 'No event data available.',
       revalidation: analysis.developing ? "Today's candle is still forming." : 'Reading uses completed candles.',
+      timeframes: mtf ? `${mtf.alignmentLabel} across weekly, daily, 4-hour and 1-hour.` : 'Timeframes not read yet.',
     };
 
     const hardGates = [
       ...analysis.risk.hardGateFailures,
       ...(analysis.tradability.hardGate ? [`Tradability: ${analysis.tradability.reasons[0]}`] : []),
       ...(event?.hardGates ?? []),
+      ...(mtf?.hardGates ?? []),
     ];
 
     return scoreTradeReadiness({ scores, details, hardGates });
-  }, [analysis, bias, eventView.result]);
+  }, [analysis, bias, eventView.result, mtf]);
+
 
 
   const run = () => {
@@ -348,6 +362,8 @@ export default function StockAnalyzer() {
             {bias && <DirectionalBiasCard bias={bias} />}
             {eventView.result && <EventRiskCard result={eventView.result} dataNote={eventView.dataNote} />}
           </div>
+
+          <MultiTimeframeCard result={mtf} />
 
           {readiness && <TradeReadinessCard readiness={readiness} />}
 

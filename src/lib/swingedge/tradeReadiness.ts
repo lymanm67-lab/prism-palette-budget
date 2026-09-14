@@ -30,30 +30,33 @@ export type ReadinessItemKey =
   | 'event'
   | 'revalidation'
   | 'heat'
-  | 'correlation';
+  | 'correlation'
+  | 'timeframes';
 
 export type ReadinessWeights = Record<ReadinessItemKey, number>;
 
 /** Default weights. Advanced Mode may change these; they always total 100. */
 export const DEFAULT_READINESS_WEIGHTS: ReadinessWeights = {
-  setup: 10,
-  stop: 10,
-  trend: 9,
-  bias: 9,
-  rewardRisk: 9,
-  quality: 8,
-  regime: 7,
-  sector: 6,
+  timeframes: 10,
+  setup: 9,
+  stop: 9,
+  trend: 8,
+  bias: 8,
+  rewardRisk: 8,
+  quality: 7,
+  regime: 6,
+  sector: 5,
   candles: 5,
-  volume: 5,
+  volume: 4,
   sizing: 5,
   event: 5,
   revalidation: 5,
   heat: 4,
-  correlation: 3,
+  correlation: 2,
 };
 
 export const READINESS_LABELS: Record<ReadinessItemKey, string> = {
+  timeframes: 'Multi-timeframe alignment',
   setup: 'Setup quality',
   stop: 'Stop placement',
   trend: 'Trend alignment',
@@ -70,6 +73,7 @@ export const READINESS_LABELS: Record<ReadinessItemKey, string> = {
   heat: 'Portfolio heat',
   correlation: 'Correlation',
 };
+
 
 export interface ReadinessScores {
   /** Each item scored 0 to 1. Null means the input was unavailable. */

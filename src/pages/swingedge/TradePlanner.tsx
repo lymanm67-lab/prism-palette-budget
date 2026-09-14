@@ -29,6 +29,9 @@ import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
 import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
+import MultiTimeframeCard from '@/components/swingedge/MultiTimeframeCard';
+import { useMultiTimeframe } from '@/hooks/use-swingedge-mtf';
+import { entryZone as buildEntryZone } from '@/lib/swingedge/signalLifecycle';
 import { useTradingRules, useEntriesToday } from '@/hooks/use-swingedge-rulebook';
 import { useDisciplineReport } from '@/hooks/use-swingedge-mentor';
 import { useSymbolEarnings } from '@/hooks/use-swingedge-events';
@@ -249,6 +252,16 @@ export default function TradePlanner() {
   // guardrails that speak up on their own. Nothing here calls an AI model.
   const { rules } = useTradingRules();
   const { record: trackRecord } = useTrackRecord(symbol || null, setup);
+
+  // Weekly context, daily setup, 4-hour confirmation, 1-hour entry timing.
+  const plannedZone = useMemo(
+    () => (entryNum > 0 ? buildEntryZone(entryNum, atrValue) : null),
+    [entryNum, atrValue],
+  );
+  const { result: mtf } = useMultiTimeframe(symbol || null, L?.candles, {
+    price: L?.snapshot?.price ?? null,
+    entryZone: plannedZone,
+  });
   const { report: discipline } = useDisciplineReport();
   const { count: entriesToday } = useEntriesToday();
   const earnings = useSymbolEarnings(symbol || null);
@@ -1021,6 +1034,8 @@ export default function TradePlanner() {
         </div>
 
         <div className="space-y-4">
+          <MultiTimeframeCard result={mtf} />
+
           <RuleChecklistCard checks={ruleChecks} />
 
           <TrackRecordCard record={trackRecord} />
