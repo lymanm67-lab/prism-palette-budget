@@ -305,6 +305,10 @@ Deno.serve(async (req) => {
         asOf: new Date().toISOString(),
       });
     }
-    return json({ error: message }, 502);
+    // Provider-side refusals (unknown symbol, restricted endpoint, no figures)
+    // are answered with 200 and an error field. Callers already read that field,
+    // and this way the real reason reaches the user instead of a generic
+    // "non-2xx status" from the function client.
+    return json({ error: message, unavailable: true, symbol: symbol || null, asOf: new Date().toISOString() }, 200);
   }
 });
