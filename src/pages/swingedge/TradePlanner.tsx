@@ -462,10 +462,10 @@ export default function TradePlanner() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SwingEdgeHeader
         title="Trade Planner"
-        subtitle="The stop decides the share count. The share count never decides the stop."
+        subtitle="Five decisions: what you are trading, what proves you wrong, how much you can risk, where you take profit, and whether it qualifies."
         mode={settings.data_mode}
         right={
           <Badge variant="outline" className={cn('text-xs', VERDICT_TONE[qualification.verdict])}>
@@ -474,30 +474,35 @@ export default function TradePlanner() {
         }
       />
 
-      <HowToUse
-        id="planner-how-to"
-        title="How to use this screen"
-        description="Follow these steps in order the first few times."
-        steps={[
-          'Confirm your trading capital and risk per trade on the trading settings page before you plan anything.',
-          'Work down the ten steps in order. The stop comes from the invalidation level, never from the share count you want.',
-          'Compare the structure stop with the ATR stop. If they disagree, understand why before choosing.',
-          'Check the share count and the dollar risk. That dollar figure is what you are truly risking.',
-          'Save the plan, then open it in Paper Trading to practise it.',
-        ]}
-        tips={[
-          'If a plan would push your total open risk past your portfolio limit, it is blocked on purpose.',
-          'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
-        ]}
+      <PlannerSummaryBar
+        symbol={symbol}
+        entry={entryNum > 0 ? entryNum : null}
+        stop={stopNum > 0 ? stopNum : null}
+        target={targetNum > 0 ? targetNum : null}
+        riskPerShare={risk.riskPerShare}
+        dollarRisk={risk.plannedLoss}
+        shares={risk.shares}
+        rewardRisk={risk.rewardRisk}
+        verdictLabel={VERDICT_LABEL[qualification.verdict]}
+        verdictTone={VERDICT_TONE[qualification.verdict]}
       />
 
       <GuardrailBanner guardrails={guardrails} />
 
-      <StopRuleCard />
-
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-4">
-          <Step n={1} title="Select the setup" hint="Pullback and breakout use different structural levels.">
+        <div className="space-y-3">
+          <PlannerStage
+            n={1}
+            title="What am I trading?"
+            summary={
+              symbol
+                ? `${symbol} · ${setup === 'NONE' ? 'no clear setup' : setup === 'PULLBACK' ? 'pullback' : 'breakout'}`
+                : 'Choose a symbol and the setup type'
+            }
+            complete={symbol.length >= 1 && setup !== 'NONE'}
+            open={openStage === 1}
+            onToggle={() => toggleStage(1)}
+          >
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Label htmlFor="planner-symbol">Symbol</Label>
@@ -532,48 +537,60 @@ export default function TradePlanner() {
                 {L.snapshot.resistance ? money(L.snapshot.resistance) : '—'}
               </p>
             ) : null}
-          </Step>
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={() => setOpenStage(2)}>
+                Next: what proves me wrong
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </PlannerStage>
 
-          <Step n={2} title="Define the entry" hint="The price you would genuinely pay, not a wish.">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="planner-entry">Planned entry</Label>
+          <PlannerStage
+            n={2}
+            title="What proves me wrong?"
+            summary={
+              stopNum > 0 && !risk.invalidStop
+                ? `Stop ${money(stopNum)} · quality ${quality.quality.toLowerCase()}${
+                    invalidation.trim() ? '' : ' · invalidation sentence missing'
+                  }`
+                : 'Write the invalidation, then set the stop from it'
+            }
+            complete={invalidation.trim().length > 0 && stopNum > 0 && !risk.invalidStop && quality.quality !== 'INVALID'}
+            open={openStage === 2}
+            onToggle={() => toggleStage(2)}
+          >
+            <div>
+              <Label htmlFor="planner-entry">Planned entry</Label>
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Input id="planner-entry" value={entry} onChange={(e) => setEntry(e.target.value)} inputMode="decimal" />
-              </div>
-              <div className="flex items-end">
                 <label className="flex items-center gap-2 text-sm">
                   <Checkbox checked={entryConfirmed} onCheckedChange={(v) => setEntryConfirmed(!!v)} />
                   Entry trigger has already confirmed
                 </label>
               </div>
             </div>
-          </Step>
 
-          <Step
-            n={3}
-            title="Identify the invalidation"
-            hint="What would prove this trade wrong? Required before a trade can qualify."
-          >
-            <Textarea
-              value={invalidation}
-              onChange={(e) => setInvalidation(e.target.value)}
-              rows={3}
-              placeholder="A close below the recent swing low would break the current higher-low structure."
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={suggestInvalidation}>
-                Suggest a sentence
-              </Button>
-              <span className="text-xs text-muted-foreground">
-                Review the suggestion in your own words before you accept it.
-              </span>
+            <div>
+              <Label>What would prove this trade wrong?</Label>
+              <Textarea
+                value={invalidation}
+                onChange={(e) => setInvalidation(e.target.value)}
+                rows={3}
+                placeholder="A close below the recent swing low would break the current higher-low structure."
+              />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" onClick={suggestInvalidation}>
+                  Suggest a sentence
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Review the suggestion in your own words before you accept it.
+                </span>
+              </div>
+              {structure.invalidationLevel !== null ? (
+                <p className="mt-1 text-xs text-muted-foreground">{structure.explanation}</p>
+              ) : null}
             </div>
-            {structure.invalidationLevel !== null ? (
-              <p className="text-xs text-muted-foreground">{structure.explanation}</p>
-            ) : null}
-          </Step>
 
-          <Step n={4} title="Set the stop from the invalidation" hint="Choose a method, then check it against the chart.">
             <div className="grid gap-2 sm:grid-cols-2">
               <div>
                 <Label>Stop method</Label>
@@ -607,9 +624,6 @@ export default function TradePlanner() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  A stop placed exactly at obvious support is vulnerable to normal market movement.
-                </p>
               </div>
               {method === 'ATR' || method === 'HYBRID' ? (
                 <div>
@@ -647,35 +661,9 @@ export default function TradePlanner() {
               ) : null}
             </div>
 
-            <div className="rounded-lg bg-muted/40 p-3 text-sm">
-              <div className="grid gap-1 sm:grid-cols-3">
-                <span>
-                  Structure stop:{' '}
-                  <strong>{structure.stop === null ? '—' : money(structure.stop)}</strong>
-                </span>
-                <span>
-                  {atrMultiple} ATR stop: <strong>{atrBased === null ? '—' : money(atrBased)}</strong>
-                </span>
-                <span>
-                  {pctStop}% stop: <strong>{percentBased === null ? '—' : money(percentBased)}</strong>
-                </span>
-              </div>
-              {structure.stop !== null && atrBased !== null ? (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Difference {money(Math.abs(structure.stop - atrBased))}. {compareStops(structure.stop, atrBased)}
-                </p>
-              ) : null}
-              {method === 'HYBRID' ? <p className="mt-2 text-xs">{hybrid.reason}</p> : null}
-              {method === 'PERCENT' ? (
-                <p className="mt-2 text-xs text-prism-amber">
-                  Percentage stops do not account for technical structure or stock volatility.
-                </p>
-              ) : null}
-            </div>
-
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <Label htmlFor="planner-stop">SUGGESTED STOP (edit if your chart says otherwise)</Label>
+                <Label htmlFor="planner-stop">Stop price (edit if your chart says otherwise)</Label>
                 <Input
                   id="planner-stop"
                   value={stopInput === '' ? (suggestedStop === null ? '' : suggestedStop.toFixed(2)) : stopInput}
@@ -689,7 +677,7 @@ export default function TradePlanner() {
               <div className="flex items-end gap-2">
                 <Button variant="outline" size="sm" onClick={() => setShowWhy((s) => !s)}>
                   <HelpCircle className="mr-2 h-4 w-4" />
-                  WHY IS THE STOP HERE?
+                  Why is the stop here?
                 </Button>
                 <Badge
                   variant="outline"
@@ -719,20 +707,16 @@ export default function TradePlanner() {
               </Alert>
             ) : null}
 
-            {quality.warnings.map((w) => (
-              <Alert key={w} className="border-prism-amber/40">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>{w}</AlertDescription>
-              </Alert>
-            ))}
-
             {!quality.justified ? (
-              <Alert variant={quality.quality === 'INVALID' ? 'destructive' : undefined} className={quality.quality === 'INVALID' ? undefined : 'border-prism-amber/40'}>
+              <Alert
+                variant={quality.quality === 'INVALID' ? 'destructive' : undefined}
+                className={quality.quality === 'INVALID' ? undefined : 'border-prism-amber/40'}
+              >
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>
                   {quality.quality === 'INVALID'
-                    ? 'DOES NOT QUALIFY — the stop has no technical basis'
-                    : 'NOT READY — review or revise this stop'}
+                    ? 'Does not qualify — the stop has no technical basis'
+                    : 'Not ready — review or revise this stop'}
                 </AlertTitle>
                 <AlertDescription className="space-y-2">
                   <ul className="list-disc space-y-1 pl-4">
@@ -740,10 +724,6 @@ export default function TradePlanner() {
                       <li key={r}>{r}</li>
                     ))}
                   </ul>
-                  <p>
-                    Your stop does not have to match the suggestion. It does have to read as a genuine invalidation
-                    level for this setup, given support, swing structure and volatility.
-                  </p>
                   {settings.advanced_mode ? (
                     <>
                       <label className="flex items-center gap-2 text-sm font-medium">
@@ -787,46 +767,115 @@ export default function TradePlanner() {
                 </AlertDescription>
               </Alert>
             ) : null}
-          </Step>
 
-          <HowToUse
-            id="planner-stop-loss-guide"
-            title="How to find, place, and add a stop loss"
-            description="A stop loss is not a guess. It is the price that proves your idea wrong."
-            steps={[
-              'Find the invalidation level. For a pullback, use the swing low or the recent support. For a breakout, use the retest low or the breakout level that failed to hold.',
-              'Choose a stop method. Structure uses the chart level. ATR uses normal volatility. Hybrid combines both. Percent is only for very liquid names with no clean level.',
-              'Add a small buffer below the level so a normal wick does not shake you out. The default buffer is 0.25% for beginners.',
-              'Enter the stop in the Stop Price field, or accept the suggested stop. The share count and dollar risk will recalculate from that stop, not the other way around.',
-              'Write one sentence explaining why the stop is there. If you cannot justify it, the stop is not valid and the plan should not be saved.',
-            ]}
-            tips={[
-              'A tighter stop does not mean less risk — it usually means a worse stop that gets hit by noise.',
-              'Never move a stop wider after the trade is open. That is a bad-loss habit the journal will flag.',
-            ]}
-          />
+            <CollapsibleSection
+              id="planner-stop-compare"
+              title="Compare the stop methods"
+              description="Structure, ATR and percentage side by side."
+              defaultOpen={false}
+            >
+              <div className="space-y-2 text-sm">
+                <div className="grid gap-1 sm:grid-cols-3">
+                  <span>
+                    Structure stop: <strong>{structure.stop === null ? '—' : money(structure.stop)}</strong>
+                  </span>
+                  <span>
+                    {atrMultiple} ATR stop: <strong>{atrBased === null ? '—' : money(atrBased)}</strong>
+                  </span>
+                  <span>
+                    {pctStop}% stop: <strong>{percentBased === null ? '—' : money(percentBased)}</strong>
+                  </span>
+                </div>
+                {structure.stop !== null && atrBased !== null ? (
+                  <p className="text-xs text-muted-foreground">
+                    Difference {money(Math.abs(structure.stop - atrBased))}.{' '}
+                    {compareStops(structure.stop, atrBased)}
+                  </p>
+                ) : null}
+                {method === 'HYBRID' ? <p className="text-xs">{hybrid.reason}</p> : null}
+                {method === 'PERCENT' ? (
+                  <p className="text-xs text-prism-amber">
+                    Percentage stops do not account for technical structure or stock volatility.
+                  </p>
+                ) : null}
+              </div>
+            </CollapsibleSection>
 
-          <Step n={5} title="Risk per share" hint="Entry minus stop. Everything else is built on this number.">
-            <p className="text-2xl font-bold tabular-nums">
-              {risk.riskPerShare === null ? (
-                <span className="text-destructive">INVALID STOP</span>
-              ) : (
-                money(risk.riskPerShare)
-              )}
-            </p>
+            <CollapsibleSection
+              id="planner-stop-teaching"
+              title="Teach me about stops"
+              description="How to find, place and justify a stop loss."
+              defaultOpen={false}
+            >
+              <div className="space-y-3">
+                <StopRuleCard />
+                <HowToUse
+                  id="planner-stop-loss-guide"
+                  title="How to find, place, and add a stop loss"
+                  description="A stop loss is not a guess. It is the price that proves your idea wrong."
+                  steps={[
+                    'Find the invalidation level. For a pullback, use the swing low or the recent support. For a breakout, use the retest low or the breakout level that failed to hold.',
+                    'Choose a stop method. Structure uses the chart level. ATR uses normal volatility. Hybrid combines both. Percent is only for very liquid names with no clean level.',
+                    'Add a small buffer below the level so a normal wick does not shake you out. The default buffer is 0.25% for beginners.',
+                    'Enter the stop in the stop price field, or accept the suggested stop. The share count and dollar risk recalculate from that stop, not the other way around.',
+                    'Write one sentence explaining why the stop is there. If you cannot justify it, the stop is not valid and the plan should not be saved.',
+                  ]}
+                  tips={[
+                    'A tighter stop does not mean less risk — it usually means a worse stop that gets hit by noise.',
+                    'Never move a stop wider after the trade is open. That is a bad-loss habit the journal will flag.',
+                  ]}
+                />
+              </div>
+            </CollapsibleSection>
+
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={() => setOpenStage(3)}>
+                Next: how much can I risk
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </PlannerStage>
+
+          <PlannerStage
+            n={3}
+            title="How much can I risk?"
+            summary={
+              risk.riskPerShare === null
+                ? 'Set a valid entry and stop first'
+                : `${risk.shares} shares · ${money(risk.plannedLoss)} at risk · limit ${money(risk.maxDollarRisk)}`
+            }
+            complete={(risk.shares ?? 0) >= 1 && !risk.riskLimitExceeded}
+            open={openStage === 3}
+            onToggle={() => toggleStage(3)}
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <Label>Risk per share</Label>
+                <p className="text-xl font-bold tabular-nums">
+                  {risk.riskPerShare === null ? (
+                    <span className="text-destructive">Invalid stop</span>
+                  ) : (
+                    money(risk.riskPerShare)
+                  )}
+                </p>
+              </div>
+              <div>
+                <Label>Trading account</Label>
+                <p className="text-xl font-semibold">{money(settings.trading_capital)}</p>
+              </div>
+              <div>
+                <Label>Maximum planned loss</Label>
+                <p className="text-xl font-semibold">{money(risk.maxDollarRisk)}</p>
+              </div>
+            </div>
+
             {risk.invalidStop ? (
               <p className="text-sm text-destructive">
                 For a long trade the stop must sit below the entry. No further calculation is possible.
               </p>
             ) : null}
-          </Step>
 
-          <Step n={6} title="Apply your account risk limit" hint="Your rule decides the dollars, not the trade.">
             <div className="grid gap-3 sm:grid-cols-3">
-              <div>
-                <Label>Trading account</Label>
-                <p className="text-lg font-semibold">{money(settings.trading_capital)}</p>
-              </div>
               <div>
                 <Label>Risk rule</Label>
                 <Select
@@ -846,19 +895,6 @@ export default function TradePlanner() {
                 </Select>
               </div>
               <div>
-                <Label>Maximum planned loss</Label>
-                <p className="text-lg font-semibold">{money(risk.maxDollarRisk)}</p>
-              </div>
-            </div>
-          </Step>
-
-          <Step n={7} title="Calculate the position size" hint="Shares are always rounded down.">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div>
-                <Label>Shares from your rule</Label>
-                <p className="text-lg font-semibold">{risk.suggestedShares}</p>
-              </div>
-              <div>
                 <Label htmlFor="planner-shares">Shares you plan to buy</Label>
                 <Input
                   id="planner-shares"
@@ -867,35 +903,62 @@ export default function TradePlanner() {
                   onChange={(e) => setSharesInput(e.target.value)}
                   inputMode="numeric"
                 />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Your rule allows {risk.suggestedShares}, always rounded down.
+                </p>
               </div>
               <div>
                 <Label>Position value</Label>
-                <p className="text-lg font-semibold">{money(risk.positionValue)}</p>
+                <p className="text-xl font-semibold">{money(risk.positionValue)}</p>
               </div>
             </div>
+
             {risk.riskLimitExceeded ? (
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
-                <AlertTitle>RISK LIMIT EXCEEDED</AlertTitle>
+                <AlertTitle>Risk limit exceeded</AlertTitle>
                 <AlertDescription className="space-y-1">
                   <p>
                     You planned to risk {money(risk.plannedLoss)}, but your current rule allows{' '}
                     {money(risk.maxDollarRisk)}.
                   </p>
-                  <p className="font-semibold">MAXIMUM ALLOWED SHARES: {risk.maxAllowedShares}</p>
+                  <p className="font-semibold">Maximum allowed shares: {risk.maxAllowedShares}</p>
                   <Button variant="outline" size="sm" onClick={() => setSharesInput(String(risk.maxAllowedShares))}>
                     Use {risk.maxAllowedShares} shares
                   </Button>
                 </AlertDescription>
               </Alert>
             ) : null}
-          </Step>
 
-          <Step n={8} title="Determine the target" hint="Pick from structure, or type your own.">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={() => setOpenStage(4)}>
+                Next: where will I take profit
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </PlannerStage>
+
+          <PlannerStage
+            n={4}
+            title="Where will I take profit?"
+            summary={
+              targetNum > 0
+                ? `Target ${money(targetNum)} · ${risk.rewardRisk === null ? '—' : `${risk.rewardRisk} : 1`} against a ${minRR} : 1 minimum`
+                : 'Pick a target from structure, or type your own'
+            }
+            complete={targetNum > entryNum && risk.rewardRiskStatus !== 'BELOW_RULE'}
+            open={openStage === 4}
+            onToggle={() => toggleStage(4)}
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
               <div>
                 <Label htmlFor="planner-target">Planned target</Label>
-                <Input id="planner-target" value={target} onChange={(e) => setTarget(e.target.value)} inputMode="decimal" />
+                <Input
+                  id="planner-target"
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                  inputMode="decimal"
+                />
               </div>
               <div>
                 <Label>Target method</Label>
@@ -913,7 +976,23 @@ export default function TradePlanner() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Label>Minimum reward-to-risk rule</Label>
+                <Select value={String(minRR)} onValueChange={(v) => setMinRR(Number(v))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1.5, 2, 2.5, 3].map((r) => (
+                      <SelectItem key={r} value={String(r)}>
+                        {r}:1
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
             <div className="flex flex-wrap gap-2">
               {targets.map((t, i) => (
                 <Button
@@ -932,36 +1011,7 @@ export default function TradePlanner() {
                 <p className="text-xs text-muted-foreground">Set a valid entry and stop to see target options.</p>
               ) : null}
             </div>
-          </Step>
 
-          <Step n={9} title="Check reward-to-risk" hint="Your minimum rule decides whether this is worth taking.">
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div>
-                <Label>Reward per share</Label>
-                <p className="text-lg font-semibold">
-                  {risk.rewardPerShare === null ? '—' : money(risk.rewardPerShare)}
-                </p>
-              </div>
-              <div>
-                <Label>Reward-to-risk</Label>
-                <p className="text-lg font-semibold">{risk.rewardRisk === null ? '—' : `${risk.rewardRisk}:1`}</p>
-              </div>
-              <div>
-                <Label>Minimum rule</Label>
-                <Select value={String(minRR)} onValueChange={(v) => setMinRR(Number(v))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1.5, 2, 2.5, 3].map((r) => (
-                      <SelectItem key={r} value={String(r)}>
-                        {r}:1
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             {risk.rewardRiskStatus === 'BELOW_RULE' ? (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
@@ -991,9 +1041,23 @@ export default function TradePlanner() {
                 </AlertDescription>
               </Alert>
             ) : null}
-          </Step>
 
-          <Step n={10} title="Qualify the trade" hint="Every element has to be in place.">
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={() => setOpenStage(5)}>
+                Next: does the trade qualify
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </PlannerStage>
+
+          <PlannerStage
+            n={5}
+            title="Does the trade qualify?"
+            summary={qualification.headline}
+            complete={qualification.verdict === 'QUALIFIES'}
+            open={openStage === 5}
+            onToggle={() => toggleStage(5)}
+          >
             <div className={cn('rounded-lg border p-3', VERDICT_TONE[qualification.verdict])}>
               <p className="text-sm font-bold">{VERDICT_LABEL[qualification.verdict]}</p>
               <p className="text-sm">{qualification.headline}</p>
@@ -1015,7 +1079,7 @@ export default function TradePlanner() {
             </ul>
             {qualification.skipTradeReason ? (
               <Alert variant="destructive">
-                <AlertTitle>SKIP TRADE</AlertTitle>
+                <AlertTitle>Skip this trade</AlertTitle>
                 <AlertDescription>{qualification.skipTradeReason}</AlertDescription>
               </Alert>
             ) : null}
@@ -1026,16 +1090,43 @@ export default function TradePlanner() {
             <div className="flex flex-wrap gap-2">
               <Button onClick={handleSave} disabled={isSaving || !canSave}>
                 <Save className="mr-2 h-4 w-4" />
-                Save this plan
+                {!symbol
+                  ? 'Add a symbol first'
+                  : entryNum <= 0
+                    ? 'Set the entry first'
+                    : stopNum <= 0 || risk.invalidStop
+                      ? 'Set a valid stop first'
+                      : targetNum <= entryNum
+                        ? 'Set the target first'
+                        : !heatGate.allowed
+                          ? 'Blocked by your heat limit'
+                          : 'Save this plan'}
               </Button>
               <Button asChild variant="outline">
-                <Link to="/swingedge/paper">
+                <Link to="/swingedge/paper-trading">
                   Go to Paper Trading
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
-          </Step>
+          </PlannerStage>
+
+          <HowToUse
+            id="planner-how-to"
+            title="How to use this screen"
+            description="Five decisions, one at a time."
+            steps={[
+              'Confirm your trading capital and risk per trade on the trading settings page before you plan anything.',
+              'Work through the five stages in order. Each one closes to a single line once it is settled.',
+              'The stop comes from the invalidation level, never from the share count you want.',
+              'Check the dollar risk in the bar at the top. That figure is what you are truly risking.',
+              'Save the plan, then open it in Paper Trading to practise it.',
+            ]}
+            tips={[
+              'If a plan would push your total open risk past your portfolio limit, it is blocked on purpose.',
+              'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
+            ]}
+          />
         </div>
 
         <div className="space-y-4">
