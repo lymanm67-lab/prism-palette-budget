@@ -454,6 +454,25 @@ export default function StockAnalyzer() {
 
           {readiness && <TradeReadinessCard readiness={readiness} />}
 
+          {readiness && (readiness.band === 'READY' || readiness.band === 'QUALIFIED') && (
+            <Card className="border-prism-teal/40">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Ready to execute in Thinkorswim</CardTitle>
+                <CardDescription>
+                  Build the plan first — the guide fills in your own share count, entry, stop and target from it. The
+                  sample guide below practises the same order steps.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap items-center gap-2">
+                <Button size="sm" asChild>
+                  <Link to={`/swingedge/planner?symbol=${symbol}`}>Build the plan, then get the guide</Link>
+                </Button>
+                <ExecutionGuideButton label="Open the sample training guide" />
+              </CardContent>
+            </Card>
+          )}
+
+
           <CandlePatternCard analysis={analysis.candles} advanced={settings.advanced_mode} />
 
           <TrackRecordCard record={trackRecord} />
