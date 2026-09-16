@@ -1129,73 +1129,94 @@ export default function TradePlanner() {
           />
         </div>
 
-        <div className="space-y-4">
-          <MultiTimeframeCard result={mtf} />
+        <div className="space-y-3">
+          <CollapsibleSection
+            id="planner-rules-side"
+            title="Your rules, checked"
+            description={ruleChecks.some((c) => c.status === 'FAIL') ? 'One of your rules is not met.' : 'Every rule you wrote, checked against this plan.'}
+            defaultOpen={false}
+          >
+            <RuleChecklistCard checks={ruleChecks} />
+          </CollapsibleSection>
 
-          <RuleChecklistCard checks={ruleChecks} />
-
-          <TrackRecordCard record={trackRecord} />
-
-          <RiskFirstCard
-            entry={entryNum}
-            invalidation={structure.invalidationLevel}
-            stop={stopNum}
-            riskPerShare={risk.riskPerShare}
-            shares={risk.shares}
-            plannedLoss={risk.plannedLoss}
-            percentOfAccount={risk.percentOfAccount}
-            target={targetNum}
-            rewardRisk={risk.rewardRisk}
-            rewardRiskStatus={risk.rewardRiskStatus}
-          />
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Portfolio risk</CardTitle>
-              <CardDescription>
-                Open risk {money(portfolio.openRisk)} of an allowed {money(portfolio.maxTotalOpenRisk)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+          <CollapsibleSection
+            id="planner-heat-side"
+            title="Portfolio risk and heat"
+            description={
+              heatGate.allowed
+                ? `${money(heat.openRisk)} at risk now of ${money(heat.maxHeatDollars)} allowed`
+                : 'This plan is over your limit.'
+            }
+            defaultOpen={!heatGate.allowed}
+            className={cn(!heatGate.allowed && 'border-destructive')}
+          >
+            <div className="space-y-2 text-sm">
               <p>
-                This trade adds {money(portfolio.newTradeRisk)} for a total of {money(portfolio.projectedTotal)}.
+                Open risk {money(portfolio.openRisk)} of an allowed {money(portfolio.maxTotalOpenRisk)}. This trade
+                adds {money(portfolio.newTradeRisk)} for a total of {money(portfolio.projectedTotal)}.
               </p>
               {portfolio.message ? <p className="font-semibold text-destructive">{portfolio.message}</p> : null}
-            </CardContent>
-          </Card>
-
-          <Card className={cn(!heatGate.allowed && 'border-destructive')}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Portfolio heat and sector limits</CardTitle>
-              <CardDescription>
-                {money(heat.openRisk)} at risk now of {money(heat.maxHeatDollars)} allowed —{' '}
-                {money(heat.riskAvailable)} still available
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
               <p>
-                This trade adds {money(heatGate.addedRisk)} of risk and ties up{' '}
-                {money(heatGate.addedCapital)}, taking heat to {heatGate.projectedHeatPct.toFixed(2)}%
-                of your account.
+                Heat goes to {heatGate.projectedHeatPct.toFixed(2)}% of your account, tying up{' '}
+                {money(heatGate.addedCapital)}. {money(heat.riskAvailable)} still available.
               </p>
               {heatGate.reasons.map((r) => (
-                <p
-                  key={r}
-                  className={cn(!heatGate.allowed && 'font-semibold text-destructive')}
-                >
+                <p key={r} className={cn(!heatGate.allowed && 'font-semibold text-destructive')}>
                   {r}
                 </p>
               ))}
               <p className="text-xs text-muted-foreground">
-                Heat counts money at risk, not money invested. Sector money exposure and sector risk
-                are checked separately.
+                Heat counts money at risk, not money invested. Sector money exposure and sector risk are checked
+                separately.
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </CollapsibleSection>
 
+          <CollapsibleSection
+            id="planner-mtf-side"
+            title="Multi-timeframe alignment"
+            description="Weekly context, daily setup, 4h confirmation, 1h timing."
+            defaultOpen={false}
+          >
+            <MultiTimeframeCard result={mtf} />
+          </CollapsibleSection>
 
+          <CollapsibleSection
+            id="planner-riskfirst-side"
+            title="Risk before reward"
+            description="The plan read back in risk order."
+            defaultOpen={false}
+          >
+            <RiskFirstCard
+              entry={entryNum}
+              invalidation={structure.invalidationLevel}
+              stop={stopNum}
+              riskPerShare={risk.riskPerShare}
+              shares={risk.shares}
+              plannedLoss={risk.plannedLoss}
+              percentOfAccount={risk.percentOfAccount}
+              target={targetNum}
+              rewardRisk={risk.rewardRisk}
+              rewardRiskStatus={risk.rewardRiskStatus}
+            />
+          </CollapsibleSection>
 
-          <GapRiskCard earningsNote={EARNINGS_UNKNOWN_TEXT} />
+          <CollapsibleSection
+            id="planner-track-side"
+            title="Your recent record"
+            description="How the last few trades of this kind went."
+            defaultOpen={false}
+          >
+            <TrackRecordCard record={trackRecord} />
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            id="planner-gap-side"
+            title="Overnight and event risk"
+            defaultOpen={false}
+          >
+            <GapRiskCard earningsNote={EARNINGS_UNKNOWN_TEXT} />
+          </CollapsibleSection>
 
           <CollapsibleSection id="planner-example" title="The worked example" defaultOpen={false}>
             <div className="space-y-1 text-sm">
