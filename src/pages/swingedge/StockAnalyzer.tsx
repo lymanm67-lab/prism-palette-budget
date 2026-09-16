@@ -331,7 +331,7 @@ export default function StockAnalyzer() {
   const portfolioFit = useMemo(() => {
     if (!analysis) return null;
     const corr = checkCorrelated(
-      { symbol: analysis.symbol, candles: candles ?? undefined },
+      { symbol: analysis.symbol, candles: candleResult?.candles ?? undefined },
       candidateRisk,
     );
     return fitForTrade({
@@ -344,7 +344,7 @@ export default function StockAnalyzer() {
       ).length,
       correlationBasis: corr.pairs[0]?.basis ?? null,
     });
-  }, [analysis, candles, candidateRisk, checkCorrelated, fitForTrade]);
+  }, [analysis, candleResult, candidateRisk, checkCorrelated, fitForTrade]);
 
   const snapshot = useMemo<AnalysisSnapshot | null>(() => {
     if (!analysis) return null;
@@ -519,6 +519,16 @@ export default function StockAnalyzer() {
               symbol={analysis.symbol}
               readiness={entryReadiness}
               onPrepare={prepareConditionalTrade}
+            />
+          )}
+
+          {portfolioFit && (
+            <PortfolioFitCard
+              symbol={analysis.symbol}
+              fit={portfolioFit}
+              individualLabel={
+                entryReadiness ? entryReadiness.statusLabel : readiness ? READINESS_BAND_LABEL[readiness.band] : '—'
+              }
             />
           )}
 
