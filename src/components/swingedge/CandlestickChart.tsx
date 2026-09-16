@@ -436,25 +436,49 @@ export default function CandlestickChart({
   showDirectionStrip = false,
   showTrendLines = false,
   showMovingAverages = false,
+  symbol,
+  assetName,
+  price,
+  change,
+  changePercent,
+  status,
+  confidence,
+  timeframes,
+  activeTimeframe,
+  onTimeframeChange,
+  mtfStrip,
 }: Props) {
   const [visibleCount, setVisibleCount] = useState(visible);
   const [expanded, setExpanded] = useState(false);
 
-  // Overlay visibility — user can hide lines that make the chart busy.
-  const [showMas, setShowMas] = useState(showMovingAverages);
-  const [showTrends, setShowTrends] = useState(showTrendLines);
-  const [showLevels, setShowLevels] = useState(true);
-  const [showStrip, setShowStrip] = useState(showDirectionStrip);
+  // Saved view preferences (mode + which side the price scale sits on).
+  const [prefs, setPrefs] = useState(loadChartPrefs);
+  const mode = prefs.mode;
+  const modeConfig = CHART_MODES[mode];
+
+  const setMode = (next: ChartMode) => setPrefs((p) => ({ ...p, mode: next }));
+  const setScaleSide = (next: PriceScaleSide) => setPrefs((p) => ({ ...p, scaleSide: next }));
+  useEffect(() => saveChartPrefs(prefs), [prefs]);
+
+  // Overlay visibility — the mode sets the defaults, the user can still tweak.
+  const [showMas, setShowMas] = useState(showMovingAverages && modeConfig.movingAverages);
+  const [showTrends, setShowTrends] = useState(showTrendLines && modeConfig.trendLines);
+  const [showLevels, setShowLevels] = useState(modeConfig.levels);
+  const [showStrip, setShowStrip] = useState(showDirectionStrip && modeConfig.directionStrip);
 
   // Reset zoom when the caller changes the default window (e.g. timeframe switch).
   useEffect(() => {
     setVisibleCount(visible);
   }, [visible, candles]);
 
-  // Re-sync overlay defaults if the caller changes what the chart offers.
-  useEffect(() => setShowMas(showMovingAverages), [showMovingAverages]);
-  useEffect(() => setShowTrends(showTrendLines), [showTrendLines]);
-  useEffect(() => setShowStrip(showDirectionStrip), [showDirectionStrip]);
+  // Re-apply the mode defaults whenever the mode, or what the chart offers, changes.
+  useEffect(() => {
+    const cfg = CHART_MODES[mode];
+    setShowMas(showMovingAverages && cfg.movingAverages);
+    setShowTrends(showTrendLines && cfg.trendLines);
+    setShowLevels(cfg.levels);
+    setShowStrip(showDirectionStrip && cfg.directionStrip);
+  }, [mode, showMovingAverages, showTrendLines, showDirectionStrip]);
 
   const maxVisible = candles.length;
   const clamped = Math.min(visibleCount, maxVisible);
