@@ -88,6 +88,12 @@ interface BodyProps {
   height: number;
   showDirectionStrip: boolean;
   scaleSide: PriceScaleSide;
+  /**
+   * Actual market candles, same window as `shown`. Set only when `shown` holds
+   * calculated Heikin Ashi candles: the last-price marker and the tooltips keep
+   * quoting real market prices.
+   */
+  actual?: Candle[];
 }
 
 const fmt = (n: number) =>
