@@ -404,6 +404,19 @@ export default function TradePlanner() {
     [entryNum, stopNum, L, atrValue],
   );
 
+  // Fill the profit target from structure the first time options exist, so the
+  // planner never sits with a blank target after a symbol is loaded.
+  const [targetTouched, setTargetTouched] = useState(Boolean(prefill?.target));
+  useEffect(() => {
+    if (targetTouched || !targets.length) return;
+    const pick = targets.find((t) => Number(t.rewardRisk) >= minRR) ?? targets[0];
+    setTarget(pick.price.toFixed(2));
+    setTargetMethod(pick.method);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targets, minRR, targetTouched]);
+
+
+
   const tighteningStop = suggestedStop !== null && stopNum > suggestedStop;
   const [showWhy, setShowWhy] = useState(false);
   /** Which of the five decisions is open. One at a time, on every screen size. */
@@ -1120,7 +1133,10 @@ export default function TradePlanner() {
                 <Input
                   id="planner-target"
                   value={target}
-                  onChange={(e) => setTarget(e.target.value)}
+                  onChange={(e) => {
+                    setTargetTouched(true);
+                    setTarget(e.target.value);
+                  }}
                   inputMode="decimal"
                 />
               </div>
@@ -1164,6 +1180,7 @@ export default function TradePlanner() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    setTargetTouched(true);
                     setTarget(t.price.toFixed(2));
                     setTargetMethod(t.method);
                   }}
