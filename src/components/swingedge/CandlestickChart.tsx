@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Candle } from '@/lib/swingedge/types';
+import { HEIKIN_ASHI_NOTE, HEIKIN_ASHI_WHAT, HEIKIN_ASHI_WHEN, heikinAshi } from '@/lib/swingedge/heikinAshi';
 import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
 import { buildTrendLines, movingAverages, type TrendLine } from '@/lib/swingedge/trendLines';
 import {
@@ -37,6 +38,15 @@ export interface ChartLevel {
   /** Short code shown on the price scale, e.g. ENT / STP / TGT. */
   short?: string;
 }
+
+/** Which candle drawing the reader is looking at. Standard is authoritative. */
+export type CandleTypeView = 'STANDARD' | 'HEIKIN_ASHI' | 'COMPARE';
+
+const CANDLE_TYPE_LABEL: Record<CandleTypeView, string> = {
+  STANDARD: 'Standard candles',
+  HEIKIN_ASHI: 'Heikin Ashi',
+  COMPARE: 'Compare candles',
+};
 
 export interface ChartTimeframeOption {
   value: string;
@@ -72,6 +82,8 @@ interface Props {
   onTimeframeChange?: (value: string) => void;
   /** Compact multi-timeframe strip rendered under the toolbar. */
   mtfStrip?: ReactNode;
+  /** Told when the reader switches between standard and Heikin Ashi candles. */
+  onCandleTypeChange?: (value: CandleTypeView) => void;
 }
 
 interface MaSeries {
@@ -88,6 +100,12 @@ interface BodyProps {
   height: number;
   showDirectionStrip: boolean;
   scaleSide: PriceScaleSide;
+  /**
+   * Actual market candles, same window as `shown`. Set only when `shown` holds
+   * calculated Heikin Ashi candles: the last-price marker and the tooltips keep
+   * quoting real market prices.
+   */
+  actual?: Candle[];
 }
 
 const fmt = (n: number) =>
@@ -117,6 +135,7 @@ function ChartBody({
   height,
   showDirectionStrip,
   scaleSide,
+  actual,
 }: BodyProps) {
   const [hover, setHover] = useState<number | null>(null);
 
@@ -200,7 +219,10 @@ function ChartBody({
     }
     return new Map(sorted.map((it) => [it.key, it.y]));
   };
-  const lastClose = shown[shown.length - 1].close;
+  // In the Heikin Ashi view the candles are calculated, so the LAST marker keeps
+  // quoting the real market close.
+  const actualLast = actual && actual.length === shown.length ? actual[actual.length - 1] : null;
+  const lastClose = (actualLast ?? shown[shown.length - 1]).close;
   // Scale labels (current price first, then the levels) are centred on their
   // line and nudged apart so two nearby prices stay readable.
   // Grid prices, the last price and every level share one scale, so they are
@@ -324,7 +346,15 @@ function ChartBody({
             <g key={c.datetime} onMouseEnter={() => setHover(i)}>
               <line x1={x + bodyW / 2} x2={x + bodyW / 2} y1={y(c.high)} y2={y(c.low)} stroke={color} strokeWidth={1} />
               <rect x={x} y={top} width={bodyW} height={Math.max(1, bot - top)} fill={color} rx={0.5}>
-                <title>{`${fmtDate(c.datetime)}  O ${fmt(c.open)}  H ${fmt(c.high)}  L ${fmt(c.low)}  C ${fmt(c.close)}  Vol ${c.volume.toLocaleString()}`}</title>
+                <title>
+                  {actual && actual.length === shown.length
+                    ? `${fmtDate(c.datetime)}  HA O ${fmt(c.open)}  HA H ${fmt(c.high)}  HA L ${fmt(c.low)}  HA C ${fmt(
+                        c.close,
+                      )}  ACTUAL CLOSE ${fmt(actual[i].close)}  Vol ${c.volume.toLocaleString()}`
+                    : `${fmtDate(c.datetime)}  O ${fmt(c.open)}  H ${fmt(c.high)}  L ${fmt(c.low)}  C ${fmt(
+                        c.close,
+                      )}  Vol ${c.volume.toLocaleString()}`}
+                </title>
               </rect>
             </g>
           );
@@ -443,10 +473,14 @@ function ChartBody({
 
       <p className="mt-1 text-xs text-muted-foreground" aria-live="polite">
         {hovered
-          ? `${fmtDate(hovered.datetime)} — open ${fmt(hovered.open)}, high ${fmt(hovered.high)}, low ${fmt(
-              hovered.low,
-            )}, close ${fmt(hovered.close)}, volume ${hovered.volume.toLocaleString()}`
-          : `Last session: close ${fmt(last.close)}. Hover a candle for its open, high, low, close and volume.`}
+          ? `${fmtDate(hovered.datetime)} — ${actualLast ? 'smoothed ' : ''}open ${fmt(hovered.open)}, high ${fmt(
+              hovered.high,
+            )}, low ${fmt(hovered.low)}, close ${fmt(hovered.close)}${
+              actual && hover !== null && actual.length === shown.length
+                ? `, actual close ${fmt(actual[hover].close)}`
+                : ''
+            }, volume ${hovered.volume.toLocaleString()}`
+          : `Last session: actual close ${fmt(lastClose)}. Hover a candle for its open, high, low, close and volume.`}
       </p>
     </div>
   );
@@ -480,9 +514,12 @@ export default function CandlestickChart({
   activeTimeframe,
   onTimeframeChange,
   mtfStrip,
+  onCandleTypeChange,
 }: Props) {
   const [visibleCount, setVisibleCount] = useState(visible);
   const [expanded, setExpanded] = useState(false);
+  // Standard candles are always the default and the source of truth.
+  const [candleType, setCandleType] = useState<CandleTypeView>('STANDARD');
 
   // Saved view preferences (mode + which side the price scale sits on).
   const [prefs, setPrefs] = useState(loadChartPrefs);
@@ -519,6 +556,18 @@ export default function CandlestickChart({
   const canZoomOut = clamped < maxVisible;
 
   const shown = useMemo(() => candles.slice(-clamped), [candles, clamped]);
+
+  // Heikin Ashi is calculated from the whole history, then trimmed, so the
+  // visible window matches what a full-history calculation would show.
+  const haShown = useMemo(
+    () => (candleType === 'STANDARD' ? [] : heikinAshi(candles).slice(-clamped)),
+    [candles, clamped, candleType],
+  );
+
+  const changeCandleType = (next: CandleTypeView) => {
+    setCandleType(next);
+    onCandleTypeChange?.(next);
+  };
 
   const strip = useMemo(
     () => (showDirectionStrip && showStrip ? buildDirectionStrip(shown) : []),
@@ -617,6 +666,51 @@ export default function CandlestickChart({
             ))}
           </span>
         </div>
+      )}
+
+      <div className="mb-1 flex flex-wrap items-center gap-2">
+        <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Candle type</span>
+        <span className="flex items-center gap-1" role="group" aria-label="Candle type">
+          {(['STANDARD', 'HEIKIN_ASHI', 'COMPARE'] as CandleTypeView[]).map((t) => (
+            <Button
+              key={t}
+              type="button"
+              size="sm"
+              variant={candleType === t ? 'secondary' : 'outline'}
+              className="h-6 px-2 text-[11px]"
+              onClick={() => changeCandleType(t)}
+              title={
+                t === 'STANDARD'
+                  ? 'Actual market candles — the chart every price and calculation comes from.'
+                  : t === 'HEIKIN_ASHI'
+                    ? HEIKIN_ASHI_WHEN
+                    : 'Show both side by side: actual candles on the left, smoothed on the right.'
+              }
+            >
+              {CANDLE_TYPE_LABEL[t]}
+            </Button>
+          ))}
+        </span>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="h-6 px-2 text-[11px]"
+          onClick={() => changeCandleType(candleType === 'STANDARD' ? 'HEIKIN_ASHI' : 'STANDARD')}
+          title="Quick switch between standard and Heikin Ashi without losing your zoom"
+        >
+          Standard ↔ HA
+        </Button>
+        {candleType !== 'STANDARD' && (
+          <Badge variant="outline" className="text-[10px]" title={HEIKIN_ASHI_NOTE}>
+            Heikin Ashi view · smoothed prices
+          </Badge>
+        )}
+      </div>
+      {candleType !== 'STANDARD' && (
+        <p className="mb-2 text-xs text-muted-foreground">
+          {HEIKIN_ASHI_NOTE} {HEIKIN_ASHI_WHAT}
+        </p>
       )}
 
       {timeframes && timeframes.length > 0 && (
@@ -739,16 +833,49 @@ export default function CandlestickChart({
         </Button>
       </div>
 
-      <ChartBody
-        shown={shown}
-        strip={strip}
-        trendLines={trendLines}
-        maSeries={maSeries}
-        levels={visibleLevels}
-        height={height}
-        showDirectionStrip={showDirectionStrip && showStrip}
-        scaleSide={prefs.scaleSide}
-      />
+      {candleType === 'COMPARE' ? (
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div>
+            <p className="mb-1 text-xs font-medium">Standard candles — actual market prices</p>
+            <ChartBody
+              shown={shown}
+              strip={strip}
+              trendLines={trendLines}
+              maSeries={maSeries}
+              levels={visibleLevels}
+              height={height}
+              showDirectionStrip={showDirectionStrip && showStrip}
+              scaleSide={prefs.scaleSide}
+            />
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-medium">Heikin Ashi — smoothed, for trend confirmation</p>
+            <ChartBody
+              shown={haShown}
+              strip={strip}
+              trendLines={trendLines}
+              maSeries={maSeries}
+              levels={visibleLevels}
+              height={height}
+              showDirectionStrip={showDirectionStrip && showStrip}
+              scaleSide={prefs.scaleSide}
+              actual={shown}
+            />
+          </div>
+        </div>
+      ) : (
+        <ChartBody
+          shown={candleType === 'HEIKIN_ASHI' ? haShown : shown}
+          strip={strip}
+          trendLines={trendLines}
+          maSeries={maSeries}
+          levels={visibleLevels}
+          height={height}
+          showDirectionStrip={showDirectionStrip && showStrip}
+          scaleSide={prefs.scaleSide}
+          actual={candleType === 'HEIKIN_ASHI' ? shown : undefined}
+        />
+      )}
 
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent className="max-w-[95vw] w-[95vw] sm:max-w-[95vw]">
@@ -756,7 +883,8 @@ export default function CandlestickChart({
             <DialogTitle>Price chart — enlarged view</DialogTitle>
           </DialogHeader>
           <ChartBody
-            shown={shown}
+            shown={candleType === 'STANDARD' ? shown : haShown}
+            actual={candleType === 'STANDARD' ? undefined : shown}
             strip={strip}
             trendLines={trendLines}
             maSeries={maSeries}
