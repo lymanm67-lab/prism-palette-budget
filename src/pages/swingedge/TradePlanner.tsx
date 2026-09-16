@@ -410,6 +410,92 @@ export default function TradePlanner() {
 
   const canSave = symbol.length >= 1 && entryNum > 0 && stopNum > 0 && targetNum > entryNum && !risk.invalidStop;
 
+  /* ------------------------------------------------- execution plan working */
+
+  // Entry conditions default to the three plain checks, keyed to the entry the
+  // plan actually uses. They are re-based only while the user has not edited them.
+  useEffect(() => {
+    setConditions((cur) => {
+      if (cur.some((c) => c.id.startsWith('custom-'))) return cur;
+      const base = conditionsFromReadiness(entryNum > 0 ? entryNum : null);
+      if (!cur.length) return base;
+      return cur.map((c) => (c.id === 'price' ? { ...c, text: base[0].text } : c));
+    });
+  }, [entryNum]);
+
+  /** Every reason this plan cannot be typed into Thinkorswim right now. */
+  const executeBlockers = useMemo(() => {
+    const out: string[] = [];
+    if (qualification.verdict !== 'QUALIFIES') out.push(`Trade status is ${VERDICT_LABEL[qualification.verdict]}, not GO.`);
+    if (!entryConfirmed) out.push('Entry has not been confirmed.');
+    if (stopNum <= 0 || risk.invalidStop || quality.quality === 'INVALID') out.push('The stop is not valid.');
+    if (targetNum <= entryNum) out.push('The target is not valid.');
+    if (risk.rewardRiskStatus === 'BELOW_RULE') out.push('Reward-to-risk is below your minimum.');
+    if (!heatGate.allowed) out.push(heatGate.reasons[0] ?? 'Portfolio heat is over your limit.');
+    if (risk.percentOfAccount > settings.risk_per_trade_pct) out.push('Account risk is over your per-trade limit.');
+    if (!earningsChecked) out.push('Earnings timing has not been reviewed.');
+    if (!breaker.assessment.canOpenNewTrade) out.push(breaker.assessment.headline ?? 'Trading is paused today.');
+    return out;
+  }, [
+    qualification.verdict,
+    entryConfirmed,
+    stopNum,
+    risk.invalidStop,
+    risk.rewardRiskStatus,
+    risk.percentOfAccount,
+    quality.quality,
+    targetNum,
+    entryNum,
+    heatGate.allowed,
+    heatGate.reasons,
+    settings.risk_per_trade_pct,
+    earningsChecked,
+    breaker.assessment,
+  ]);
+
+  const canExecuteNow = executeBlockers.length === 0;
+
+  // Beginner Mode defaults a waiting setup to an alert. Arming stays deliberate.
+  const suggestedMode = useMemo(
+    () => executionModeFor(canExecuteNow ? 'GO' : 'WAIT', !settings.advanced_mode),
+    [canExecuteNow, settings.advanced_mode],
+  );
+  const mode = executionMode ?? suggestedMode;
+
+  const planState = useMemo(
+    () =>
+      nextPlanState({
+        mode,
+        status: canExecuteNow ? 'GO' : 'WAIT',
+        planComplete: canSave,
+        conditionsDefined: conditions.some((c) => c.enabled && c.text.length > 0),
+        saved: planSaved,
+      }),
+    [mode, canExecuteNow, canSave, conditions, planSaved],
+  );
+
+  const guideTrade = useMemo(
+    () =>
+      symbol && entryNum > 0 && stopNum > 0
+        ? {
+            symbol: symbol.toUpperCase(),
+            shares: risk.shares ?? null,
+            entryPrice: entryNum,
+            entryOrderType: 'Limit',
+            stopPrice: stopNum,
+            targetPrice: targetNum > 0 ? targetNum : null,
+            timeInForce: 'GTC',
+            riskPerShare: risk.riskPerShare ?? null,
+            totalRisk: risk.plannedLoss ?? null,
+            rewardToRisk: risk.rewardRisk ?? null,
+            filled: false,
+            setup,
+          }
+        : null,
+    [symbol, entryNum, stopNum, targetNum, risk.shares, risk.riskPerShare, risk.plannedLoss, risk.rewardRisk, setup],
+  );
+
+
   const handleSave = async () => {
     if (!canSave) {
       toast.error('Finish the entry, stop and target first');
