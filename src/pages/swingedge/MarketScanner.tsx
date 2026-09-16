@@ -20,14 +20,34 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
+import TradeGeometryPanel from '@/components/swingedge/TradeGeometryPanel';
 import { useTradingSettings, useTradingTitle, useCuratedUniverse } from '@/hooks/use-swingedge';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
 import { useEarningsCalendar, useMacroWindow } from '@/hooks/use-swingedge-events';
 import { assessEventRisk, type EventRiskResult } from '@/lib/swingedge/eventRisk';
+import { assessStop } from '@/lib/swingedge/stops';
+import {
+  computeGeometry,
+  targetCellText,
+  REWARD_MULTIPLES,
+  TARGET_PATH_LABEL,
+  TARGET_QUALITY_LABEL,
+  TARGET_QUALITY_RANK,
+  type GeometryResult,
+  type TargetPath,
+} from '@/lib/swingedge/tradeGeometry';
 import { VERDICT_MEANING, VERDICT_TONE } from '@/lib/swingedge/score';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
+
 
 const money = (n: number | null | undefined) =>
   n === null || n === undefined
@@ -37,12 +57,23 @@ const money = (n: number | null | undefined) =>
 type Filter = 'ALL' | Verdict;
 
 /** Saved combinations of filters, so a routine scan is one click. */
-type Preset = 'NONE' | 'LOW_EVENT_PULLBACKS';
+type Preset = 'NONE' | 'LOW_EVENT_PULLBACKS' | 'CLEAN_2R';
 
 const PRESET_LABEL: Record<Preset, string> = {
   NONE: 'No preset — show everything',
   LOW_EVENT_PULLBACKS: 'Low event risk pullbacks',
+  CLEAN_2R: 'Clean 2R setups',
 };
+
+const PATH_TONE: Record<TargetPath, string> = {
+  CLEAR: 'text-emerald-500',
+  PARTIALLY_BLOCKED: 'text-amber-500',
+  BLOCKED: 'text-destructive',
+  INSUFFICIENT_DATA: 'text-muted-foreground',
+};
+
+const PATH_CHOICES: ('ANY' | TargetPath)[] = ['ANY', 'CLEAR', 'PARTIALLY_BLOCKED', 'BLOCKED'];
+
 
 const BIAS_TONE: Record<string, string> = {
   UP: 'text-emerald-500',
@@ -74,6 +105,19 @@ export default function MarketScanner() {
   const [running, setRunning] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>('ALL');
   const [preset, setPreset] = useState<Preset>('NONE');
+  // Beginner mode is fixed at 2R; advanced mode may change the multiple.
+  const [rewardMultiple, setRewardMultiple] = useState<number>(2);
+  const [minRR, setMinRR] = useState<string>('ANY');
+  const [minRToRes, setMinRToRes] = useState<string>('ANY');
+  const [pathFilter, setPathFilter] = useState<'ANY' | TargetPath>('ANY');
+  const [minQuality, setMinQuality] = useState<string>('ANY');
+  const [geometryFor, setGeometryFor] = useState<string | null>(null);
+
+  const multiple = settings.advanced_mode ? rewardMultiple : 2;
+  const maxDollarRisk = useMemo(
+    () => Math.round(((settings.trading_capital * settings.risk_per_trade_pct) / 100) * 100) / 100,
+    [settings.trading_capital, settings.risk_per_trade_pct],
+  );
 
   const selected = useMemo(() => {
     if (source === 'CURATED') return universe.map((u) => u.symbol);
@@ -101,6 +145,37 @@ export default function MarketScanner() {
     return out;
   }, [rows, earnings.bySymbol, macroEvents, settings.advanced_mode]);
 
+  /**
+   * Entry / stop / target geometry per row. Recomputed whenever the scan data,
+   * the reward multiple, or the risk settings change, so a target can never be
+   * left over from an older entry or stop.
+   */
+  const geometryBySymbol = useMemo(() => {
+    const out: Record<string, GeometryResult> = {};
+    for (const r of rows) {
+      if (!r.levels) continue;
+      const entry = r.levels.estimatedEntry;
+      const stop = r.levels.estimatedStop;
+      const stopRead = assessStop({
+        entry,
+        stop,
+        atrValue: r.atr,
+        structureLevel: r.support,
+        rewardRisk: null,
+        setup: r.setup,
+      });
+      out[r.symbol] = computeGeometry({
+        entry,
+        stop,
+        resistance: r.resistance,
+        rewardMultiple: multiple,
+        stopQuality: stopRead.quality,
+        maxDollarRisk,
+      });
+    }
+    return out;
+  }, [rows, multiple, maxDollarRisk]);
+
   const shown = useMemo(() => {
     let list = filter === 'ALL' ? rows : rows.filter((r) => r.verdict === filter);
     if (preset === 'LOW_EVENT_PULLBACKS') {
@@ -113,10 +188,59 @@ export default function MarketScanner() {
         return lowEvent && pullback && upBias && worthStudying;
       });
     }
+    if (preset === 'CLEAN_2R') {
+      list = list.filter((r) => {
+        const g = geometryBySymbol[r.symbol];
+        if (!g) return false;
+        const ev = eventBySymbol[r.symbol];
+        const eventOk = !ev || ev.band === 'LOW' || ev.band === 'MODERATE';
+        const setupOk = r.setup !== 'NONE';
+        const worthStudying = r.verdict === 'QUALIFIES' || r.verdict === 'WATCH';
+        return (
+          setupOk &&
+          worthStudying &&
+          eventOk &&
+          g.targetState === 'ACTIONABLE' &&
+          g.targetPath === 'CLEAR' &&
+          (g.rewardRisk ?? 0) >= 2 &&
+          (g.rToResistance ?? 0) >= 1.5 &&
+          TARGET_QUALITY_RANK[g.targetQuality] >= TARGET_QUALITY_RANK.ACCEPTABLE
+        );
+      });
+    }
+    if (minRR !== 'ANY') {
+      const min = Number(minRR);
+      list = list.filter((r) => (geometryBySymbol[r.symbol]?.rewardRisk ?? -1) >= min);
+    }
+    if (minRToRes !== 'ANY') {
+      const min = Number(minRToRes);
+      list = list.filter((r) => (geometryBySymbol[r.symbol]?.rToResistance ?? -1) >= min);
+    }
+    if (pathFilter !== 'ANY') {
+      list = list.filter((r) => geometryBySymbol[r.symbol]?.targetPath === pathFilter);
+    }
+    if (minQuality !== 'ANY') {
+      const min = TARGET_QUALITY_RANK[minQuality as keyof typeof TARGET_QUALITY_RANK];
+      list = list.filter(
+        (r) =>
+          TARGET_QUALITY_RANK[geometryBySymbol[r.symbol]?.targetQuality ?? 'INSUFFICIENT_DATA'] >= min,
+      );
+    }
     return [...list].sort(
       (a, b) => VERDICT_RANK[a.verdict] - VERDICT_RANK[b.verdict] || b.score - a.score,
     );
-  }, [rows, filter, preset, eventBySymbol]);
+  }, [
+    rows,
+    filter,
+    preset,
+    eventBySymbol,
+    geometryBySymbol,
+    minRR,
+    minRToRes,
+    pathFilter,
+    minQuality,
+  ]);
+
 
   const counts = useMemo(() => {
     const base: Record<Verdict, number> = {
@@ -204,6 +328,7 @@ export default function MarketScanner() {
               <SelectContent>
                 <SelectItem value="NONE">{PRESET_LABEL.NONE}</SelectItem>
                 <SelectItem value="LOW_EVENT_PULLBACKS">{PRESET_LABEL.LOW_EVENT_PULLBACKS}</SelectItem>
+                <SelectItem value="CLEAN_2R">{PRESET_LABEL.CLEAN_2R}</SelectItem>
               </SelectContent>
             </Select>
             {preset === 'LOW_EVENT_PULLBACKS' && (
@@ -211,7 +336,113 @@ export default function MarketScanner() {
                 Pullbacks that qualify or are forming, with an upward tendency and a clear calendar.
               </span>
             )}
+            {preset === 'CLEAN_2R' && (
+              <span className="text-xs text-muted-foreground">
+                Valid setups with a defensible stop, at least 2 : 1 reward to risk, a clear path to
+                the target, resistance at least 1.5R away, and a calendar that is no worse than
+                moderate.
+              </span>
+            )}
           </div>
+
+          <div className="flex flex-wrap items-end gap-3 border-t border-border pt-3">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground" htmlFor="reward-multiple">
+                Target multiple
+              </label>
+              <Select
+                value={String(multiple)}
+                onValueChange={(v) => setRewardMultiple(Number(v))}
+                disabled={!settings.advanced_mode}
+              >
+                <SelectTrigger className="w-32" id="reward-multiple" aria-label="Target multiple">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REWARD_MULTIPLES.map((m) => (
+                    <SelectItem key={m} value={String(m)}>
+                      {m}R
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Minimum R:R</label>
+              <Select value={minRR} onValueChange={setMinRR}>
+                <SelectTrigger className="w-32" aria-label="Minimum reward to risk">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  {['1.5', '2', '2.5', '3'].map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v} : 1 or better
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Minimum R to resistance</label>
+              <Select value={minRToRes} onValueChange={setMinRToRes}>
+                <SelectTrigger className="w-40" aria-label="Minimum R to resistance">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  {['1', '1.5', '2'].map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v}R or more
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Target path</label>
+              <Select
+                value={pathFilter}
+                onValueChange={(v) => setPathFilter(v as 'ANY' | TargetPath)}
+              >
+                <SelectTrigger className="w-40" aria-label="Target path">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PATH_CHOICES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p === 'ANY' ? 'Any' : TARGET_PATH_LABEL[p]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Minimum target quality</label>
+              <Select value={minQuality} onValueChange={setMinQuality}>
+                <SelectTrigger className="w-40" aria-label="Minimum target quality">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  <SelectItem value="ACCEPTABLE">Acceptable or better</SelectItem>
+                  <SelectItem value="STRONG">Strong only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Targets use entry + (risk per share × {multiple}) and are checked against the nearest
+            recorded resistance.
+            {settings.advanced_mode
+              ? ''
+              : ' Beginner mode keeps the multiple at 2R — turn on advanced mode in settings to change it.'}
+          </p>
+
           <p className="text-xs text-muted-foreground">
             {selected.length} symbols · read {4} at a time in {batches} batch
             {batches === 1 ? '' : 'es'} · your allowance is {settings.api_minute_limit} calls a
@@ -261,31 +492,54 @@ export default function MarketScanner() {
                     <TableHead>Event risk</TableHead>
                     <TableHead className="text-right">Est. entry</TableHead>
                     <TableHead className="text-right">Est. stop</TableHead>
-                    <TableHead className="text-right">Est. target</TableHead>
                     <TableHead className="text-right">Est. risk / share</TableHead>
+                    <TableHead className="text-right">Est. target</TableHead>
+                    <TableHead className="text-right">Resistance</TableHead>
+                    <TableHead className="text-right">R to resistance</TableHead>
+                    <TableHead>Target path</TableHead>
                     <TableHead className="text-right">Est. R:R</TableHead>
+                    <TableHead className="text-right">Max shares</TableHead>
                     <TableHead />
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {shown.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={14} className="py-8 text-center text-sm text-muted-foreground">
+                      <TableCell colSpan={18} className="py-8 text-center text-sm text-muted-foreground">
                         {isFetching
                           ? 'Scanning…'
-                          : preset === 'LOW_EVENT_PULLBACKS'
+                          : preset !== 'NONE'
                             ? 'No names match this preset. That is a valid result.'
                             : 'No rows with this status.'}
                       </TableCell>
                     </TableRow>
                   )}
                   {shown.map((r) => {
-                    const risk = r.levels
-                      ? Math.round((r.levels.estimatedEntry - r.levels.estimatedStop) * 100) / 100
-                      : null;
+                    const g = geometryBySymbol[r.symbol] ?? null;
                     const ev = eventBySymbol[r.symbol] ?? null;
                     const days = ev?.earnings.daysUntil ?? null;
+                    const targetTip = g
+                      ? [
+                          'TARGET CALCULATION',
+                          `Entry: ${money(g.entry)}`,
+                          `Stop: ${money(g.stop)}`,
+                          `Risk per share: ${money(g.riskPerShare)}`,
+                          `Reward multiple: ${g.rewardMultiple}R`,
+                          `Mathematical target: ${money(g.mathematicalTarget)}`,
+                          `Method: ${g.targetMethod}`,
+                          `Nearest resistance: ${g.resistance === null ? 'not recorded' : money(g.resistance)}`,
+                          `R to resistance: ${g.rToResistance === null ? 'not recorded' : `${g.rToResistance.toFixed(2)}R`}`,
+                          `Target path: ${TARGET_PATH_LABEL[g.targetPath]}`,
+                          `Target quality: ${TARGET_QUALITY_LABEL[g.targetQuality]}`,
+                          g.targetConfidence === 'LOW' ? 'Target confidence: LOW' : '',
+                          g.targetStateNote ?? '',
+                        ]
+                          .filter(Boolean)
+                          .join('\n')
+                      : 'No entry or stop estimate for this name yet.';
                     return (
+
                       <TableRow key={r.symbol}>
                         <TableCell className="font-medium">{r.symbol}</TableCell>
                         <TableCell>
@@ -342,20 +596,62 @@ export default function MarketScanner() {
                           )}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(r.levels?.estimatedEntry)}
+                          {money(g?.entry ?? r.levels?.estimatedEntry)}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(r.levels?.estimatedStop)}
+                          {money(g?.stop ?? r.levels?.estimatedStop)}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(r.levels?.estimatedTarget)}
+                          {money(g?.riskPerShare)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {g ? (
+                            <button
+                              type="button"
+                              onClick={() => setGeometryFor(r.symbol)}
+                              title={targetTip}
+                              className="italic text-muted-foreground underline decoration-dotted underline-offset-2 hover:text-foreground"
+                            >
+                              {targetCellText(g)}
+                            </button>
+                          ) : (
+                            <span className="italic text-muted-foreground">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(risk)}
+                          {g?.resistance === null || g === null ? 'Not recorded' : money(g.resistance)}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {g?.rToResistance === null || g === null ? (
+                            <span className="text-muted-foreground">Not recorded</span>
+                          ) : (
+                            <span className={g.resistanceTooClose ? 'text-destructive' : ''}>
+                              {g.rToResistance.toFixed(2)}R
+                              {g.resistanceTooClose ? ' · too close' : ''}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {g ? (
+                            <button
+                              type="button"
+                              onClick={() => setGeometryFor(r.symbol)}
+                              title={g.targetPathReason}
+                              className={`${PATH_TONE[g.targetPath]} underline decoration-dotted underline-offset-2`}
+                            >
+                              {TARGET_PATH_LABEL[g.targetPath]}
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {r.levels ? `${r.levels.projectedRewardRisk.toFixed(1)} : 1` : '—'}
+                          {g?.rewardRisk == null ? '—' : `${g.rewardRisk.toFixed(1)} : 1`}
                         </TableCell>
+                        <TableCell className="text-right italic text-muted-foreground">
+                          {g?.maxShares ?? '—'}
+                        </TableCell>
+
                         <TableCell className="text-right">
                           <Button asChild size="sm" variant="ghost">
                             <Link to={`/swingedge/analyzer?symbol=${r.symbol}`}>
@@ -375,8 +671,25 @@ export default function MarketScanner() {
 
       <p className="text-xs italic text-muted-foreground">
         Every entry, stop, target and reward-to-risk shown here is an estimate from the chart, shown
-        in italics. Planned numbers are the ones you set yourself in the Trade Planner.
+        in italics. Planned numbers are the ones you set yourself in the Trade Planner. Click a
+        target or target path to see the full trade geometry.
       </p>
+
+      <Dialog open={geometryFor !== null} onOpenChange={(v) => !v && setGeometryFor(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{geometryFor ?? ''} — trade geometry</DialogTitle>
+            <DialogDescription>
+              Where you would enter, where you would be wrong, what stands in the way, and where you
+              would take profit.
+            </DialogDescription>
+          </DialogHeader>
+          {geometryFor && geometryBySymbol[geometryFor] && (
+            <TradeGeometryPanel symbol={geometryFor} geometry={geometryBySymbol[geometryFor]} />
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       {running.length > 0 && rows.length > 0 && (
         <Card className="border-primary/20">
