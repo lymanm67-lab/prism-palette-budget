@@ -32,6 +32,7 @@ import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
 import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
+import SetupAdvisorPanel from '@/components/swingedge/SetupAdvisorPanel';
 import type { Json } from '@/integrations/supabase/types';
 import {
   clearSnapshot,
