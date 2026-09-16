@@ -545,6 +545,18 @@ export default function CandlestickChart({
 
   const shown = useMemo(() => candles.slice(-clamped), [candles, clamped]);
 
+  // Heikin Ashi is calculated from the whole history, then trimmed, so the
+  // visible window matches what a full-history calculation would show.
+  const haShown = useMemo(
+    () => (candleType === 'STANDARD' ? [] : heikinAshi(candles).slice(-clamped)),
+    [candles, clamped, candleType],
+  );
+
+  const changeCandleType = (next: CandleTypeView) => {
+    setCandleType(next);
+    onCandleTypeChange?.(next);
+  };
+
   const strip = useMemo(
     () => (showDirectionStrip && showStrip ? buildDirectionStrip(shown) : []),
     [shown, showDirectionStrip, showStrip],
