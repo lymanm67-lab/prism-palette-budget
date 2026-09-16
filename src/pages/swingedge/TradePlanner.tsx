@@ -24,6 +24,8 @@ import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import AiMentorCard from '@/components/swingedge/AiMentorCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
+import PlannerStage from '@/components/swingedge/PlannerStage';
+import PlannerSummaryBar from '@/components/swingedge/PlannerSummaryBar';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
 import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
