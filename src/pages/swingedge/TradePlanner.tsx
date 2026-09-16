@@ -558,8 +558,22 @@ export default function TradePlanner() {
           : override
             ? overrideReason || 'Advanced Mode override'
             : null,
+        execution_mode: mode,
+        plan_state: mode === 'EXECUTE_NOW' ? planState : 'WAITING_FOR_CONDITION',
+        condition_mode: conditionMode,
+        entry_conditions: mode === 'EXECUTE_NOW' ? null : conditions.filter((c) => c.enabled),
+        cancel_conditions: cancelCondition ? [{ text: cancelCondition }] : null,
+        analysis_snapshot: prepSnapshot ?? null,
+        armed_at: mode === 'ARM_FOR_LATER' ? new Date().toISOString() : null,
+        last_revalidated_at: new Date().toISOString(),
+        expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       });
-      toast.success('Plan saved');
+      setPlanSaved(true);
+      toast.success(
+        mode === 'EXECUTE_NOW'
+          ? 'Plan saved. Type the order in Thinkorswim using these values.'
+          : `Plan saved as ${EXECUTION_MODE_LABEL[mode].toLowerCase()}.`,
+      );
     } catch {
       toast.error('Could not save that plan');
     }
