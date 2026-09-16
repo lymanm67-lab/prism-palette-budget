@@ -687,11 +687,14 @@ export default function TradePlanner() {
                 notice: L?.notice ?? null,
                 multiTimeframe: mtf
                   ? {
-                      state: mtf.state,
+                      alignment: mtf.alignmentLabel,
+                      decision: mtf.decision,
+                      dailyThesis: mtf.dailyThesis,
                       rows: mtf.rows.map((r) => ({
-                        timeframe: r.label ?? r.key,
+                        timeframe: r.label,
                         trend: r.metrics?.trend ?? null,
-                        status: r.status ?? null,
+                        state: r.stateLabel,
+                        available: r.available,
                       })),
                     }
                   : null,
