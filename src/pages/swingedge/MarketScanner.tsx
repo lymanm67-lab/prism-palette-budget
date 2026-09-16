@@ -328,6 +328,7 @@ export default function MarketScanner() {
               <SelectContent>
                 <SelectItem value="NONE">{PRESET_LABEL.NONE}</SelectItem>
                 <SelectItem value="LOW_EVENT_PULLBACKS">{PRESET_LABEL.LOW_EVENT_PULLBACKS}</SelectItem>
+                <SelectItem value="CLEAN_2R">{PRESET_LABEL.CLEAN_2R}</SelectItem>
               </SelectContent>
             </Select>
             {preset === 'LOW_EVENT_PULLBACKS' && (
@@ -335,7 +336,113 @@ export default function MarketScanner() {
                 Pullbacks that qualify or are forming, with an upward tendency and a clear calendar.
               </span>
             )}
+            {preset === 'CLEAN_2R' && (
+              <span className="text-xs text-muted-foreground">
+                Valid setups with a defensible stop, at least 2 : 1 reward to risk, a clear path to
+                the target, resistance at least 1.5R away, and a calendar that is no worse than
+                moderate.
+              </span>
+            )}
           </div>
+
+          <div className="flex flex-wrap items-end gap-3 border-t border-border pt-3">
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground" htmlFor="reward-multiple">
+                Target multiple
+              </label>
+              <Select
+                value={String(multiple)}
+                onValueChange={(v) => setRewardMultiple(Number(v))}
+                disabled={!settings.advanced_mode}
+              >
+                <SelectTrigger className="w-32" id="reward-multiple" aria-label="Target multiple">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {REWARD_MULTIPLES.map((m) => (
+                    <SelectItem key={m} value={String(m)}>
+                      {m}R
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Minimum R:R</label>
+              <Select value={minRR} onValueChange={setMinRR}>
+                <SelectTrigger className="w-32" aria-label="Minimum reward to risk">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  {['1.5', '2', '2.5', '3'].map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v} : 1 or better
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Minimum R to resistance</label>
+              <Select value={minRToRes} onValueChange={setMinRToRes}>
+                <SelectTrigger className="w-40" aria-label="Minimum R to resistance">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  {['1', '1.5', '2'].map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v}R or more
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Target path</label>
+              <Select
+                value={pathFilter}
+                onValueChange={(v) => setPathFilter(v as 'ANY' | TargetPath)}
+              >
+                <SelectTrigger className="w-40" aria-label="Target path">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PATH_CHOICES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p === 'ANY' ? 'Any' : TARGET_PATH_LABEL[p]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Minimum target quality</label>
+              <Select value={minQuality} onValueChange={setMinQuality}>
+                <SelectTrigger className="w-40" aria-label="Minimum target quality">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  <SelectItem value="ACCEPTABLE">Acceptable or better</SelectItem>
+                  <SelectItem value="STRONG">Strong only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Targets use entry + (risk per share × {multiple}) and are checked against the nearest
+            recorded resistance.
+            {settings.advanced_mode
+              ? ''
+              : ' Beginner mode keeps the multiple at 2R — turn on advanced mode in settings to change it.'}
+          </p>
+
           <p className="text-xs text-muted-foreground">
             {selected.length} symbols · read {4} at a time in {batches} batch
             {batches === 1 ? '' : 'es'} · your allowance is {settings.api_minute_limit} calls a
