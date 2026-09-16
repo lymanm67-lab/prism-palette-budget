@@ -630,6 +630,21 @@ export default function CandlestickChart({
                   </label>
                 )}
               </div>
+              <p className="mb-1.5 mt-3 text-xs font-medium">Price scale</p>
+              <div className="flex items-center gap-1">
+                {(['LEFT', 'RIGHT'] as PriceScaleSide[]).map((side) => (
+                  <Button
+                    key={side}
+                    type="button"
+                    size="sm"
+                    variant={prefs.scaleSide === side ? 'secondary' : 'outline'}
+                    className="h-6 flex-1 px-2 text-[11px]"
+                    onClick={() => setScaleSide(side)}
+                  >
+                    {side === 'LEFT' ? 'Left' : 'Right'}
+                  </Button>
+                ))}
+              </div>
             </PopoverContent>
           </Popover>
         )}
