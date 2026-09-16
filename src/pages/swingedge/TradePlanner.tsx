@@ -32,6 +32,7 @@ import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
 import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
+import type { Json } from '@/integrations/supabase/types';
 import {
   clearSnapshot,
   plannerPrefill,
@@ -562,9 +563,10 @@ export default function TradePlanner() {
         execution_mode: mode,
         plan_state: mode === 'EXECUTE_NOW' ? planState : 'WAITING_FOR_CONDITION',
         condition_mode: conditionMode,
-        entry_conditions: mode === 'EXECUTE_NOW' ? null : conditions.filter((c) => c.enabled),
+        entry_conditions:
+          mode === 'EXECUTE_NOW' ? null : (JSON.parse(JSON.stringify(conditions.filter((c) => c.enabled))) as Json),
         cancel_conditions: cancelCondition ? [{ text: cancelCondition }] : null,
-        analysis_snapshot: prepSnapshot ?? null,
+        analysis_snapshot: prepSnapshot ? (JSON.parse(JSON.stringify(prepSnapshot)) as Json) : null,
         armed_at: mode === 'ARM_FOR_LATER' ? new Date().toISOString() : null,
         last_revalidated_at: new Date().toISOString(),
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
