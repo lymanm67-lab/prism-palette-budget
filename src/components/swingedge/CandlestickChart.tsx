@@ -461,10 +461,14 @@ function ChartBody({
 
       <p className="mt-1 text-xs text-muted-foreground" aria-live="polite">
         {hovered
-          ? `${fmtDate(hovered.datetime)} — open ${fmt(hovered.open)}, high ${fmt(hovered.high)}, low ${fmt(
-              hovered.low,
-            )}, close ${fmt(hovered.close)}, volume ${hovered.volume.toLocaleString()}`
-          : `Last session: close ${fmt(last.close)}. Hover a candle for its open, high, low, close and volume.`}
+          ? `${fmtDate(hovered.datetime)} — ${actualLast ? 'smoothed ' : ''}open ${fmt(hovered.open)}, high ${fmt(
+              hovered.high,
+            )}, low ${fmt(hovered.low)}, close ${fmt(hovered.close)}${
+              actual && hover !== null && actual.length === shown.length
+                ? `, actual close ${fmt(actual[hover].close)}`
+                : ''
+            }, volume ${hovered.volume.toLocaleString()}`
+          : `Last session: actual close ${fmt(lastClose)}. Hover a candle for its open, high, low, close and volume.`}
       </p>
     </div>
   );
