@@ -492,10 +492,15 @@ export default function MarketScanner() {
                     <TableHead>Event risk</TableHead>
                     <TableHead className="text-right">Est. entry</TableHead>
                     <TableHead className="text-right">Est. stop</TableHead>
-                    <TableHead className="text-right">Est. target</TableHead>
                     <TableHead className="text-right">Est. risk / share</TableHead>
+                    <TableHead className="text-right">Est. target</TableHead>
+                    <TableHead className="text-right">Resistance</TableHead>
+                    <TableHead className="text-right">R to resistance</TableHead>
+                    <TableHead>Target path</TableHead>
                     <TableHead className="text-right">Est. R:R</TableHead>
+                    <TableHead className="text-right">Max shares</TableHead>
                     <TableHead />
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
