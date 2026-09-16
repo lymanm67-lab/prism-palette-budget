@@ -757,7 +757,44 @@ function TicketCard({
               <li key={s}>{s}</li>
             ))}
           </ol>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                const trade = {
+                  symbol: ticket.symbol,
+                  shares: ticket.approved_shares,
+                  entryPrice: ticket.planned_entry,
+                  entryOrderType: 'Limit' as const,
+                  stopPrice: ticket.planned_stop,
+                  targetPrice: ticket.planned_target,
+                  timeInForce: 'GTC',
+                  riskPerShare: ticket.risk_per_share,
+                  totalRisk: ticket.max_dollar_risk,
+                  rewardToRisk: ticket.reward_risk,
+                  filled: ticket.actual_entry !== null,
+                  setup: ticket.setup_type,
+                };
+                navigator.clipboard
+                  .writeText(ticketOrderText(trade))
+                  .then(() =>
+                    toast.success(
+                      'Order text copied — Thinkorswim opens next. Paste or type these exact values into the paperMoney trade ticket.',
+                    ),
+                  )
+                  .catch(() =>
+                    toast.info('Thinkorswim is opening — type the ticket values from this card into the trade ticket.'),
+                  )
+                  .finally(() =>
+                    window.open(thinkorswimWebUrl(ticket.symbol), '_blank', 'noopener,noreferrer'),
+                  );
+              }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              Open in Thinkorswim
+            </Button>
             <ExecutionGuideButton
               trade={{
                 symbol: ticket.symbol,
