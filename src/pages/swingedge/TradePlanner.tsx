@@ -269,7 +269,7 @@ export default function TradePlanner() {
   );
 
   // Portfolio heat, sector exposure and sector heat gates.
-  const { summary: heat, checkTrade } = usePortfolioHeat();
+  const { summary: heat, checkTrade, checkCorrelated, fitForTrade } = usePortfolioHeat();
   const heatGate = useMemo(
     () =>
       checkTrade({
@@ -281,6 +281,39 @@ export default function TradePlanner() {
       }),
     [checkTrade, symbol, risk.shares, entryNum, stopNum],
   );
+
+  // Portfolio fit — a good trade can still be a bad addition. Graded separately
+  // from trade quality and never blended into the readiness score.
+  const [fitOverrideReason, setFitOverrideReason] = useState('');
+
+  const correlationRead = useMemo(
+    () =>
+      checkCorrelated(
+        { symbol: symbol.toUpperCase(), candles: L?.candles ?? undefined },
+        risk.plannedLoss ?? 0,
+      ),
+    [checkCorrelated, symbol, L?.candles, risk.plannedLoss],
+  );
+
+  const portfolioFit = useMemo(
+    () =>
+      fitForTrade({
+        symbol: symbol.toUpperCase(),
+        sector: null,
+        risk: risk.plannedLoss && risk.plannedLoss > 0 ? risk.plannedLoss : null,
+        correlationBand: correlationRead.worstBand,
+        correlatedPositionCount: correlationRead.pairs.filter(
+          (p) => p.band === 'HIGH' || p.band === 'VERY_HIGH',
+        ).length,
+        correlationBasis: correlationRead.pairs[0]?.basis ?? null,
+      }),
+    [fitForTrade, symbol, risk.plannedLoss, correlationRead],
+  );
+
+  const fitOverrideRecorded =
+    portfolioFit.overrideAllowed && fitOverrideReason.trim().length >= 4;
+
+  const fitBlocksExecution = portfolioFit.blocksGo && !fitOverrideRecorded;
 
   // The owner's own rulebook, checked against this plan as it is built, plus the
   // guardrails that speak up on their own. Nothing here calls an AI model.
@@ -459,6 +492,10 @@ export default function TradePlanner() {
     if (targetNum <= entryNum) out.push('The target is not valid.');
     if (risk.rewardRiskStatus === 'BELOW_RULE') out.push('Reward-to-risk is below your minimum.');
     if (!heatGate.allowed) out.push(heatGate.reasons[0] ?? 'Portfolio heat is over your limit.');
+    if (fitBlocksExecution)
+      out.push(
+        `Portfolio fit is ${portfolioFit.stateLabel.toLowerCase()} — ${portfolioFit.reasons[0] ?? 'concentration is over your limit.'}`,
+      );
     if (risk.percentOfAccount > settings.risk_per_trade_pct) out.push('Account risk is over your per-trade limit.');
     if (!earningsChecked) out.push('Earnings timing has not been reviewed.');
     if (!breaker.assessment.canOpenNewTrade) out.push(breaker.assessment.headline ?? 'Trading is paused today.');
