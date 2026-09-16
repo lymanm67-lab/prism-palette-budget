@@ -283,9 +283,21 @@ export default function TrainingWeek() {
               </li>
             ))}
           </ul>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/swingedge/practice">Open the Practice Lab</Link>
-          </Button>
+          {COURSE_HANDOUTS.filter((h) => h.week === weekNumber).map((h) => (
+            <p key={h.guideKey} className="text-sm">
+              <span className="font-medium">Handout: </span>
+              {h.title} — {h.description}
+            </p>
+          ))}
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/swingedge/practice">Open the Practice Lab</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/swingedge/execution-guides">Open this week's execution guide</Link>
+            </Button>
+          </div>
+
         </CardContent>
       </Card>
 
