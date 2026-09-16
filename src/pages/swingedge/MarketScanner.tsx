@@ -168,7 +168,6 @@ export default function MarketScanner() {
         entry,
         stop,
         resistance: r.resistance,
-        resistanceIsRecorded: r.resistance !== null,
         rewardMultiple: multiple,
         stopQuality: stopRead.quality,
         maxDollarRisk,
