@@ -410,6 +410,40 @@ export default function StockAnalyzer() {
                   ]}
                 />
               )}
+
+              {/* Plain-words key for the three trade prices drawn on the chart. */}
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm">
+                <span className="flex items-center gap-2">
+                  <span className="h-0 w-4 border-t-2 border-dashed" style={{ borderColor: 'hsl(var(--foreground))' }} />
+                  <span className="text-muted-foreground">Entry</span>
+                  <span className="font-semibold tabular-nums">
+                    {levels ? money(levels.estimatedEntry) : 'not estimated'}
+                  </span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="h-0 w-4 border-t-2 border-dashed" style={{ borderColor: 'hsl(var(--destructive))' }} />
+                  <span className="text-muted-foreground">Stop loss</span>
+                  <span className="font-semibold tabular-nums">
+                    {levels ? money(levels.estimatedStop) : 'not estimated'}
+                  </span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="h-0 w-4 border-t-2 border-dashed" style={{ borderColor: 'hsl(var(--prism-lime))' }} />
+                  <span className="text-muted-foreground">Target</span>
+                  <span className="font-semibold tabular-nums">
+                    {levels ? money(levels.estimatedTarget) : 'not estimated'}
+                  </span>
+                </span>
+                {levels ? (
+                  <span className="text-xs text-muted-foreground">
+                    Target is {levels.projectedRewardRisk} times the risk above the entry — an estimate, not a plan.
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    These appear once the daily chart gives a usable stop distance.
+                  </span>
+                )}
+              </div>
             </CardContent>
           </Card>
 
