@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, ArrowRight, BellRing, ClipboardList, Eye, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BellRing, ChevronDown, ClipboardList, Eye, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +32,20 @@ export default function EntryReadinessCard({
   onPrepare: () => void;
 }) {
   const { status } = readiness;
+  // Every section starts closed; the user opens the ones they want to read.
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+
+  const sectionHeader = (key: string, label: string) => (
+    <button
+      type="button"
+      onClick={() => setOpen((o) => ({ ...o, [key]: !o[key] }))}
+      aria-expanded={!!open[key]}
+      className="flex w-full items-center justify-between gap-2 text-left text-sm font-semibold hover:text-foreground/80"
+    >
+      {label}
+      <ChevronDown className={cn('h-4 w-4 shrink-0 transition-transform', open[key] && 'rotate-180')} />
+    </button>
+  );
 
   return (
     <Card className={cn('border-2', TONE[status].split(' ').find((c) => c.startsWith('border-')))}>
@@ -44,19 +59,25 @@ export default function EntryReadinessCard({
         <CardDescription>{readiness.headline}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
-          {readiness.rows.map((r) => (
-            <div key={r.label} className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1">
-              <span className="text-xs text-muted-foreground">{r.label}</span>
-              <span className="text-sm font-semibold tabular-nums">{r.value}</span>
-            </div>
-          ))}
-        </div>
+        {sectionHeader('details', 'Readiness details')}
+        {open.details && (
+          <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+            {readiness.rows.map((r) => (
+              <div key={r.label} className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1">
+                <span className="text-xs text-muted-foreground">{r.label}</span>
+                <span className="text-sm font-semibold tabular-nums">{r.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {readiness.waitingFor.length > 0 && (
+          <>
+            {sectionHeader('waiting', 'What are we waiting for?')}
+            {open.waiting && (
           <div className="rounded-lg border border-prism-amber/40 bg-prism-amber/10 p-3">
             <p className="flex items-center gap-2 text-sm font-semibold text-prism-amber">
-              <AlertTriangle className="h-4 w-4" /> What are we waiting for?
+              <AlertTriangle className="h-4 w-4" /> Waiting on:
             </p>
             <ul className="mt-2 space-y-1 text-sm">
               {readiness.waitingFor.map((w) => (
@@ -67,8 +88,12 @@ export default function EntryReadinessCard({
               ))}
             </ul>
           </div>
+            )}
+          </>
         )}
 
+        {sectionHeader('actions', 'What you can do next')}
+        {open.actions && (
         <div className="flex flex-wrap items-center gap-2">
           {status === 'GO' && (
             <Button size="sm" asChild>
@@ -114,6 +139,7 @@ export default function EntryReadinessCard({
             The Analyzer decides whether to prepare. The Trade Planner decides how to stage it.
           </span>
         </div>
+        )}
       </CardContent>
     </Card>
   );
