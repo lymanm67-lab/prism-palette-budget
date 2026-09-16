@@ -183,8 +183,12 @@ function ChartBody({
   const lastClose = shown[shown.length - 1].close;
   // Scale labels (current price first, then the levels) are centred on their
   // line and nudged apart so two nearby prices stay readable.
+  // Grid prices, the last price and every level share one scale, so they are
+  // spaced together — no two prices can ever print on top of each other.
+  const gridPrices = [hi, lo];
   const scaleLabelY = spreadLabels(
     [
+      ...gridPrices.map((p, i) => ({ key: `__grid${i}`, y: y(p) + 3 })),
       { key: '__last', y: y(lastClose) + 3 },
       ...activeLevels.map((l) => ({ key: l.label, y: y(l.value) + 3 })),
     ],
