@@ -24,12 +24,13 @@ const CHART_INTERVALS: { value: SwingInterval; label: string }[] = [
 ];
 import { directionalBias } from '@/lib/swingedge/directionalBias';
 import { conditionsFromNow } from '@/lib/swingedge/historicalMatch';
-import { scoreTradeReadiness, type ReadinessItemKey } from '@/lib/swingedge/tradeReadiness';
+import { scoreTradeReadiness, READINESS_BAND_LABEL, type ReadinessItemKey } from '@/lib/swingedge/tradeReadiness';
 import DirectionalBiasCard from '@/components/swingedge/DirectionalBiasCard';
 import EventRiskCard from '@/components/swingedge/EventRiskCard';
 import TradeReadinessCard from '@/components/swingedge/TradeReadinessCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import MultiTimeframeCard from '@/components/swingedge/MultiTimeframeCard';
+import MtfStatusStrip from '@/components/swingedge/MtfStatusStrip';
 import { useMultiTimeframe } from '@/hooks/use-swingedge-mtf';
 import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import HowToUse from '@/components/swingedge/HowToUse';
