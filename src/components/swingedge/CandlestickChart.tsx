@@ -63,6 +63,8 @@ interface Props {
   changePercent?: number | null;
   /** Short signal / status text, e.g. "GO" or "WATCH". */
   status?: string | null;
+  /** Plain decision verdict shown beside the status: GO = yes, WAIT = hold, STOP = no. */
+  decision?: 'GO' | 'WAIT' | 'STOP' | null;
   /** Confidence text shown next to the status. */
   confidence?: string | null;
   timeframes?: ChartTimeframeOption[];
@@ -458,6 +460,7 @@ export default function CandlestickChart({
   change,
   changePercent,
   status,
+  decision,
   confidence,
   timeframes,
   activeTimeframe,
