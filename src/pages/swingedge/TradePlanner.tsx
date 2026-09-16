@@ -85,32 +85,6 @@ const VERDICT_TONE: Record<Verdict, string> = {
   DOES_NOT_QUALIFY: 'bg-destructive/10 text-destructive border-destructive/40',
 };
 
-function Step({
-  n,
-  title,
-  hint,
-  children,
-}: {
-  n: number;
-  title: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
-            {n}
-          </span>
-          {title}
-        </CardTitle>
-        {hint ? <CardDescription>{hint}</CardDescription> : null}
-      </CardHeader>
-      <CardContent className="space-y-3">{children}</CardContent>
-    </Card>
-  );
-}
 
 export default function TradePlanner() {
   useTradingTitle('Trade Planner');
