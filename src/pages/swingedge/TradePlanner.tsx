@@ -374,6 +374,9 @@ export default function TradePlanner() {
 
   const tighteningStop = suggestedStop !== null && stopNum > suggestedStop;
   const [showWhy, setShowWhy] = useState(false);
+  /** Which of the five decisions is open. One at a time, on every screen size. */
+  const [openStage, setOpenStage] = useState(1);
+  const toggleStage = (n: number) => setOpenStage((cur) => (cur === n ? 0 : n));
 
   const suggestInvalidation = () => {
     if (structure.invalidationLevel === null) {
