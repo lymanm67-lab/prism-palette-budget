@@ -506,22 +506,40 @@ export default function MarketScanner() {
                 <TableBody>
                   {shown.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={14} className="py-8 text-center text-sm text-muted-foreground">
+                      <TableCell colSpan={18} className="py-8 text-center text-sm text-muted-foreground">
                         {isFetching
                           ? 'Scanning…'
-                          : preset === 'LOW_EVENT_PULLBACKS'
+                          : preset !== 'NONE'
                             ? 'No names match this preset. That is a valid result.'
                             : 'No rows with this status.'}
                       </TableCell>
                     </TableRow>
                   )}
                   {shown.map((r) => {
-                    const risk = r.levels
-                      ? Math.round((r.levels.estimatedEntry - r.levels.estimatedStop) * 100) / 100
-                      : null;
+                    const g = geometryBySymbol[r.symbol] ?? null;
                     const ev = eventBySymbol[r.symbol] ?? null;
                     const days = ev?.earnings.daysUntil ?? null;
+                    const targetTip = g
+                      ? [
+                          'TARGET CALCULATION',
+                          `Entry: ${money(g.entry)}`,
+                          `Stop: ${money(g.stop)}`,
+                          `Risk per share: ${money(g.riskPerShare)}`,
+                          `Reward multiple: ${g.rewardMultiple}R`,
+                          `Mathematical target: ${money(g.mathematicalTarget)}`,
+                          `Method: ${g.targetMethod}`,
+                          `Nearest resistance: ${g.resistance === null ? 'not recorded' : money(g.resistance)}`,
+                          `R to resistance: ${g.rToResistance === null ? 'not recorded' : `${g.rToResistance.toFixed(2)}R`}`,
+                          `Target path: ${TARGET_PATH_LABEL[g.targetPath]}`,
+                          `Target quality: ${TARGET_QUALITY_LABEL[g.targetQuality]}`,
+                          g.targetConfidence === 'LOW' ? 'Target confidence: LOW' : '',
+                          g.targetStateNote ?? '',
+                        ]
+                          .filter(Boolean)
+                          .join('\n')
+                      : 'No entry or stop estimate for this name yet.';
                     return (
+
                       <TableRow key={r.symbol}>
                         <TableCell className="font-medium">{r.symbol}</TableCell>
                         <TableCell>
