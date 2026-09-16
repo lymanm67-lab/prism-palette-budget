@@ -20,6 +20,7 @@ import {
   type LiquidityTier,
 } from '@/lib/swingedge/execution';
 import type { Candle } from '@/lib/swingedge/types';
+import type { Json } from '@/integrations/supabase/types';
 
 
 const num = (v: unknown): number => Number(v ?? 0);
@@ -125,9 +126,9 @@ export interface TradePlanRow {
   execution_mode?: string | null;
   plan_state?: string | null;
   condition_mode?: string | null;
-  entry_conditions?: unknown | null;
-  cancel_conditions?: unknown | null;
-  analysis_snapshot?: unknown | null;
+  entry_conditions?: Json | null;
+  cancel_conditions?: Json | null;
+  analysis_snapshot?: Json | null;
   armed_at?: string | null;
   last_revalidated_at?: string | null;
   expires_at?: string | null;

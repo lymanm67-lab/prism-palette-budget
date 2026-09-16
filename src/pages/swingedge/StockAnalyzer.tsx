@@ -332,7 +332,7 @@ export default function StockAnalyzer() {
 
   // Was anything material different when this trade was armed?
   const armedReview = useMemo(() => {
-    const stored = armedPlan?.analysis_snapshot as AnalysisSnapshot | null | undefined;
+    const stored = armedPlan?.analysis_snapshot as unknown as AnalysisSnapshot | null | undefined;
     if (!stored || !snapshot) return null;
     return armedNeedsReview(stored, { ...snapshot, priceExtended });
   }, [armedPlan, snapshot, priceExtended]);
