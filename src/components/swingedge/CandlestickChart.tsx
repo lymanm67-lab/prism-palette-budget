@@ -209,22 +209,74 @@ function ChartBody({
         aria-label={`Candlestick chart, ${shown.length} sessions, last close ${fmt(last.close)}`}
         onMouseLeave={() => setHover(null)}
       >
-        {/* grid lines at min / mid / max */}
+        {/* price scale: a thin divider plus grid prices, on the chosen side only */}
+        <line
+          x1={scaleSide === 'RIGHT' ? W - padR : padL}
+          x2={scaleSide === 'RIGHT' ? W - padR : padL}
+          y1={0}
+          y2={priceH}
+          stroke="hsl(var(--border))"
+        />
         {[lo, (lo + hi) / 2, hi].map((p) => (
           <g key={p}>
             <line x1={padL} x2={W - padR} y1={y(p)} y2={y(p)} stroke="hsl(var(--border))" strokeDasharray="2 4" />
-            <text x={W - padR + 6} y={clampY(y(p) + 3)} fontSize={10} className="fill-muted-foreground">
+            <text
+              x={scaleX}
+              y={clampY(y(p) + 3)}
+              fontSize={9}
+              textAnchor={scaleAnchor}
+              className="fill-muted-foreground"
+            >
               {fmt(p)}
             </text>
           </g>
         ))}
 
-        {/* level lines */}
+        {/* current price — subtle, and clearly not one of the plan levels */}
+        <line
+          x1={padL}
+          x2={W - padR}
+          y1={y(lastClose)}
+          y2={y(lastClose)}
+          stroke="hsl(var(--foreground))"
+          strokeWidth={1}
+          strokeDasharray="1 3"
+          opacity={0.5}
+        />
+        <text
+          x={scaleX}
+          y={scaleLabelY.get('__last') ?? clampY(y(lastClose) + 3)}
+          fontSize={9}
+          fontWeight={600}
+          textAnchor={scaleAnchor}
+          className="fill-foreground"
+        >
+          LAST {fmt(lastClose)}
+        </text>
+
+        {/* plan levels: thin dashed lines, compact labels parked on the scale */}
         {activeLevels.map((l) => (
           <g key={l.label}>
-            <line x1={padL} x2={W - padR} y1={y(l.value)} y2={y(l.value)} stroke={l.color} strokeWidth={1.25} strokeDasharray="6 3" />
-            <text x={padL + 2} y={levelLabelY.get(l.label) ?? y(l.value) - 3} fontSize={9} fill={l.color}>
-              {l.label} {fmt(l.value)}
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={y(l.value)}
+              y2={y(l.value)}
+              stroke={l.color}
+              strokeWidth={1}
+              strokeDasharray="6 4"
+              opacity={0.85}
+            >
+              <title>{`${l.label} ${fmt(l.value)}`}</title>
+            </line>
+            <text
+              x={scaleX}
+              y={scaleLabelY.get(l.label) ?? clampY(y(l.value) + 3)}
+              fontSize={9}
+              textAnchor={scaleAnchor}
+              fill={l.color}
+            >
+              {shortCode(l)} {fmt(l.value)}
             </text>
           </g>
         ))}
