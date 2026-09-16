@@ -671,8 +671,25 @@ export default function MarketScanner() {
 
       <p className="text-xs italic text-muted-foreground">
         Every entry, stop, target and reward-to-risk shown here is an estimate from the chart, shown
-        in italics. Planned numbers are the ones you set yourself in the Trade Planner.
+        in italics. Planned numbers are the ones you set yourself in the Trade Planner. Click a
+        target or target path to see the full trade geometry.
       </p>
+
+      <Dialog open={geometryFor !== null} onOpenChange={(v) => !v && setGeometryFor(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{geometryFor ?? ''} — trade geometry</DialogTitle>
+            <DialogDescription>
+              Where you would enter, where you would be wrong, what stands in the way, and where you
+              would take profit.
+            </DialogDescription>
+          </DialogHeader>
+          {geometryFor && geometryBySymbol[geometryFor] && (
+            <TradeGeometryPanel symbol={geometryFor} geometry={geometryBySymbol[geometryFor]} />
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       {running.length > 0 && rows.length > 0 && (
         <Card className="border-primary/20">
