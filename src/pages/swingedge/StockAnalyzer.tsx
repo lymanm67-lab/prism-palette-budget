@@ -233,6 +233,16 @@ export default function StockAnalyzer() {
     setParams({ symbol: next });
   };
 
+  // One plain answer on the chart: yes trade it, hold and wait, or no.
+  const decision = useMemo<'GO' | 'WAIT' | 'STOP' | null>(() => {
+    if (!analysis) return null;
+    const signal = analysis.hybrid.signal;
+    const band = readiness?.band ?? null;
+    if (signal === 'STOP' || band === 'NOT_READY') return 'STOP';
+    if (signal === 'GO' && (band === 'READY' || band === 'QUALIFIED')) return 'GO';
+    return 'WAIT';
+  }, [analysis, readiness]);
+
   const levels = analysis?.technical.levels ?? null;
   const coveragePct = analysis
     ? Math.round(((analysis.assetType === 'ETF' ? analysis.etf?.coverage : analysis.fundamental?.coverage) ?? 0) * 100)
@@ -396,6 +406,7 @@ export default function StockAnalyzer() {
                   assetName={analysis.assetType === 'ETF' ? 'Fund' : 'Company'}
                   price={analysis.technical.price}
                   status={readiness ? READINESS_BAND_LABEL[readiness.band] : null}
+                  decision={decision}
                   confidence={readiness ? `${readiness.score}/100 readiness` : null}
                   timeframes={CHART_INTERVALS}
                   activeTimeframe={chartInterval}
