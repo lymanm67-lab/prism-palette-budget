@@ -668,16 +668,16 @@ export default function CandlestickChart({
         </div>
       )}
 
-      <div className="mb-1 flex flex-wrap items-center gap-2">
-        <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Candle type</span>
+      <div className="mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/40 px-2.5 py-2">
+        <span className="text-xs font-semibold text-foreground">Candle type</span>
         <span className="flex items-center gap-1" role="group" aria-label="Candle type">
           {(['STANDARD', 'HEIKIN_ASHI', 'COMPARE'] as CandleTypeView[]).map((t) => (
             <Button
               key={t}
               type="button"
               size="sm"
-              variant={candleType === t ? 'secondary' : 'outline'}
-              className="h-6 px-2 text-[11px]"
+              variant={candleType === t ? 'default' : 'outline'}
+              className="h-8 px-3 text-xs font-semibold"
               onClick={() => changeCandleType(t)}
               title={
                 t === 'STANDARD'
@@ -691,6 +691,7 @@ export default function CandlestickChart({
             </Button>
           ))}
         </span>
+
         <Button
           type="button"
           size="sm"
