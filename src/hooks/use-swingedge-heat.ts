@@ -16,10 +16,21 @@ import {
 } from '@/lib/swingedge/portfolioHeat';
 import {
   checkCorrelation,
+  type CorrelationBand,
   type CorrelationConfig,
   type CorrelationLimit,
   type SymbolProfile,
 } from '@/lib/swingedge/correlation';
+import {
+  familyFor,
+  groupByFamily,
+  type FamilyMember,
+} from '@/lib/swingedge/exposureFamily';
+import {
+  assessPortfolioFit,
+  type FitLimits,
+  type PortfolioFitResult,
+} from '@/lib/swingedge/portfolioFit';
 
 interface OpenTradeRow {
   id: string;
@@ -136,6 +147,63 @@ export function usePortfolioHeat() {
   const sharesWithinHeat = useCallback(
     (entry: number, stop: number) => maxSharesWithinHeat(entry, stop, summary),
     [summary],
+  );
+
+  /** Open positions grouped by exposure family, so related funds read as one bet. */
+  const familyMembers: FamilyMember[] = useMemo(
+    () =>
+      summary.positions.map((p) => ({
+        symbol: p.symbol,
+        family: familyFor(p.symbol, p.sector),
+        risk: p.currentRisk,
+      })),
+    [summary.positions],
+  );
+
+  const familyBreakdown = useMemo(() => groupByFamily(familyMembers), [familyMembers]);
+
+  const fitLimits: FitLimits = useMemo(
+    () => ({
+      tradingCapital: settings.trading_capital,
+      maxPortfolioHeatPct: settings.max_portfolio_risk_pct,
+      // The exposure-family ceiling reuses the sector heat limit until a separate
+      // family limit is set in Advanced Mode.
+      maxFamilyHeatPct: settings.max_sector_heat_pct ?? 2.5,
+    }),
+    [settings.trading_capital, settings.max_portfolio_risk_pct, settings.max_sector_heat_pct],
+  );
+
+  /**
+   * Grades a candidate as a portfolio addition. Correlation is passed in when it
+   * has been measured; it is never assumed.
+   */
+  const fitForTrade = useCallback(
+    (candidate: {
+      symbol: string;
+      sector?: string | null;
+      risk: number | null;
+      correlationBand?: CorrelationBand | null;
+      correlatedPositionCount?: number;
+      correlationBasis?: string | null;
+      eventConcentrated?: boolean;
+      eventDetail?: string | null;
+    }): PortfolioFitResult =>
+      assessPortfolioFit({
+        candidate: { symbol: candidate.symbol, sector: candidate.sector, risk: candidate.risk },
+        openPositions: summary.positions.map((p) => ({
+          symbol: p.symbol,
+          sector: p.sector,
+          risk: p.currentRisk,
+        })),
+        limits: fitLimits,
+        correlationBand: candidate.correlationBand ?? null,
+        correlatedPositionCount: candidate.correlatedPositionCount ?? 0,
+        correlationBasis: candidate.correlationBasis ?? null,
+        eventConcentrated: candidate.eventConcentrated ?? false,
+        eventDetail: candidate.eventDetail ?? null,
+        beginner: !settings.advanced_mode,
+      }),
+    [summary.positions, fitLimits, settings.advanced_mode],
   );
 
   /** Snapshot today's heat reading so history is reviewable later. */
