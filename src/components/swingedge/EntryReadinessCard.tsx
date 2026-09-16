@@ -61,16 +61,20 @@ export default function EntryReadinessCard({
       <CardContent className="space-y-4">
         {sectionHeader('details', 'Readiness details')}
         {open.details && (
-        <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
-          {readiness.rows.map((r) => (
-            <div key={r.label} className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1">
-              <span className="text-xs text-muted-foreground">{r.label}</span>
-              <span className="text-sm font-semibold tabular-nums">{r.value}</span>
-            </div>
-          ))}
-        </div>
+          <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+            {readiness.rows.map((r) => (
+              <div key={r.label} className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1">
+                <span className="text-xs text-muted-foreground">{r.label}</span>
+                <span className="text-sm font-semibold tabular-nums">{r.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {readiness.waitingFor.length > 0 && (
+          <>
+            {sectionHeader('waiting', 'What are we waiting for?')}
+            {open.waiting && (
           <div className="rounded-lg border border-prism-amber/40 bg-prism-amber/10 p-3">
             <p className="flex items-center gap-2 text-sm font-semibold text-prism-amber">
               <AlertTriangle className="h-4 w-4" /> What are we waiting for?
