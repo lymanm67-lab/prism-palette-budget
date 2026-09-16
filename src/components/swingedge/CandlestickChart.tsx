@@ -668,6 +668,51 @@ export default function CandlestickChart({
         </div>
       )}
 
+      <div className="mb-1 flex flex-wrap items-center gap-2">
+        <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Candle type</span>
+        <span className="flex items-center gap-1" role="group" aria-label="Candle type">
+          {(['STANDARD', 'HEIKIN_ASHI', 'COMPARE'] as CandleTypeView[]).map((t) => (
+            <Button
+              key={t}
+              type="button"
+              size="sm"
+              variant={candleType === t ? 'secondary' : 'outline'}
+              className="h-6 px-2 text-[11px]"
+              onClick={() => changeCandleType(t)}
+              title={
+                t === 'STANDARD'
+                  ? 'Actual market candles — the chart every price and calculation comes from.'
+                  : t === 'HEIKIN_ASHI'
+                    ? HEIKIN_ASHI_WHEN
+                    : 'Show both side by side: actual candles on the left, smoothed on the right.'
+              }
+            >
+              {CANDLE_TYPE_LABEL[t]}
+            </Button>
+          ))}
+        </span>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="h-6 px-2 text-[11px]"
+          onClick={() => changeCandleType(candleType === 'STANDARD' ? 'HEIKIN_ASHI' : 'STANDARD')}
+          title="Quick switch between standard and Heikin Ashi without losing your zoom"
+        >
+          Standard ↔ HA
+        </Button>
+        {candleType !== 'STANDARD' && (
+          <Badge variant="outline" className="text-[10px]" title={HEIKIN_ASHI_NOTE}>
+            Heikin Ashi view · smoothed prices
+          </Badge>
+        )}
+      </div>
+      {candleType !== 'STANDARD' && (
+        <p className="mb-2 text-xs text-muted-foreground">
+          {HEIKIN_ASHI_NOTE} {HEIKIN_ASHI_WHAT}
+        </p>
+      )}
+
       {timeframes && timeframes.length > 0 && (
         <div className="mb-1 flex flex-wrap items-center gap-1" role="group" aria-label="Chart timeframe">
           {timeframes.map((t) => (
@@ -788,16 +833,49 @@ export default function CandlestickChart({
         </Button>
       </div>
 
-      <ChartBody
-        shown={shown}
-        strip={strip}
-        trendLines={trendLines}
-        maSeries={maSeries}
-        levels={visibleLevels}
-        height={height}
-        showDirectionStrip={showDirectionStrip && showStrip}
-        scaleSide={prefs.scaleSide}
-      />
+      {candleType === 'COMPARE' ? (
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div>
+            <p className="mb-1 text-xs font-medium">Standard candles — actual market prices</p>
+            <ChartBody
+              shown={shown}
+              strip={strip}
+              trendLines={trendLines}
+              maSeries={maSeries}
+              levels={visibleLevels}
+              height={height}
+              showDirectionStrip={showDirectionStrip && showStrip}
+              scaleSide={prefs.scaleSide}
+            />
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-medium">Heikin Ashi — smoothed, for trend confirmation</p>
+            <ChartBody
+              shown={haShown}
+              strip={strip}
+              trendLines={trendLines}
+              maSeries={maSeries}
+              levels={visibleLevels}
+              height={height}
+              showDirectionStrip={showDirectionStrip && showStrip}
+              scaleSide={prefs.scaleSide}
+              actual={shown}
+            />
+          </div>
+        </div>
+      ) : (
+        <ChartBody
+          shown={candleType === 'HEIKIN_ASHI' ? haShown : shown}
+          strip={strip}
+          trendLines={trendLines}
+          maSeries={maSeries}
+          levels={visibleLevels}
+          height={height}
+          showDirectionStrip={showDirectionStrip && showStrip}
+          scaleSide={prefs.scaleSide}
+          actual={candleType === 'HEIKIN_ASHI' ? shown : undefined}
+        />
+      )}
 
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent className="max-w-[95vw] w-[95vw] sm:max-w-[95vw]">
@@ -805,7 +883,8 @@ export default function CandlestickChart({
             <DialogTitle>Price chart — enlarged view</DialogTitle>
           </DialogHeader>
           <ChartBody
-            shown={shown}
+            shown={candleType === 'STANDARD' ? shown : haShown}
+            actual={candleType === 'STANDARD' ? undefined : shown}
             strip={strip}
             trendLines={trendLines}
             maSeries={maSeries}
