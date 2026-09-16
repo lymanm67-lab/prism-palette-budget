@@ -22,6 +22,8 @@ import { useTrainingProgress } from '@/hooks/use-swingedge-training';
 import { TRAINING_WEEKS, weekCompletion } from '@/lib/swingedge/training';
 import { curriculumFor, drillCount, lessonsForDay } from '@/lib/swingedge/curriculum';
 import { THINKORSWIM_WEEK_FOCUS } from '@/lib/swingedge/practice';
+import { COURSE_HANDOUTS } from '@/lib/swingedge/thinkorswimGuide';
+
 
 
 interface CounterState {
