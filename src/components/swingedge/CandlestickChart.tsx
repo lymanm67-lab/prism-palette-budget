@@ -172,19 +172,27 @@ function ChartBody({
   // Spread stacked labels apart so nearby text never overlaps. Lines stay at
   // their true price; only the text moves, to just below the previous label.
   const spreadLabels = (items: { key: string; y: number }[], minGap = 12) => {
-    const sorted = [...items].sort((a, b) => a.y - b.y);
+    // Clamp first, then push down: clamping afterwards would stack every label
+    // that sits near the top edge back on top of each other.
+    const sorted = items
+      .map((it) => ({ ...it, y: clampY(it.y) }))
+      .sort((a, b) => a.y - b.y);
     let last = -Infinity;
     for (const it of sorted) {
       if (it.y < last + minGap) it.y = last + minGap;
       last = it.y;
     }
-    return new Map(sorted.map((it) => [it.key, clampY(it.y)]));
+    return new Map(sorted.map((it) => [it.key, Math.min(it.y, priceH - 2)]));
   };
   const lastClose = shown[shown.length - 1].close;
   // Scale labels (current price first, then the levels) are centred on their
   // line and nudged apart so two nearby prices stay readable.
+  // Grid prices, the last price and every level share one scale, so they are
+  // spaced together — no two prices can ever print on top of each other.
+  const gridPrices = [hi, lo];
   const scaleLabelY = spreadLabels(
     [
+      ...gridPrices.map((p, i) => ({ key: `__grid${i}`, y: y(p) + 3 })),
       { key: '__last', y: y(lastClose) + 3 },
       ...activeLevels.map((l) => ({ key: l.label, y: y(l.value) + 3 })),
     ],
@@ -217,12 +225,20 @@ function ChartBody({
           y2={priceH}
           stroke="hsl(var(--border))"
         />
-        {[lo, (lo + hi) / 2, hi].map((p) => (
-          <g key={p}>
+        <line
+          x1={padL}
+          x2={W - padR}
+          y1={y((lo + hi) / 2)}
+          y2={y((lo + hi) / 2)}
+          stroke="hsl(var(--border))"
+          strokeDasharray="2 4"
+        />
+        {gridPrices.map((p, i) => (
+          <g key={`grid-${i}`}>
             <line x1={padL} x2={W - padR} y1={y(p)} y2={y(p)} stroke="hsl(var(--border))" strokeDasharray="2 4" />
             <text
               x={scaleX}
-              y={clampY(y(p) + 3)}
+              y={scaleLabelY.get(`__grid${i}`) ?? clampY(y(p) + 3)}
               fontSize={9}
               textAnchor={scaleAnchor}
               className="fill-muted-foreground"
@@ -508,8 +524,8 @@ export default function CandlestickChart({
   );
 
   const visibleLevels = showLevels ? levels : [];
-  const overlayCount =
-    (showMovingAverages ? 1 : 0) + (showTrendLines ? 1 : 0) + (levels.length ? 1 : 0) + (showDirectionStrip ? 1 : 0);
+  // The lines menu also holds the price-scale side, so it is always available.
+  const overlayCount = 1;
 
   if (!shown.length) {
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
@@ -630,6 +646,21 @@ export default function CandlestickChart({
                   </label>
                 )}
               </div>
+              <p className="mb-1.5 mt-3 text-xs font-medium">Price scale</p>
+              <div className="flex items-center gap-1">
+                {(['LEFT', 'RIGHT'] as PriceScaleSide[]).map((side) => (
+                  <Button
+                    key={side}
+                    type="button"
+                    size="sm"
+                    variant={prefs.scaleSide === side ? 'secondary' : 'outline'}
+                    className="h-6 flex-1 px-2 text-[11px]"
+                    onClick={() => setScaleSide(side)}
+                  >
+                    {side === 'LEFT' ? 'Left' : 'Right'}
+                  </Button>
+                ))}
+              </div>
             </PopoverContent>
           </Popover>
         )}
@@ -678,6 +709,7 @@ export default function CandlestickChart({
         levels={visibleLevels}
         height={height}
         showDirectionStrip={showDirectionStrip && showStrip}
+        scaleSide={prefs.scaleSide}
       />
 
       <Dialog open={expanded} onOpenChange={setExpanded}>
@@ -693,6 +725,7 @@ export default function CandlestickChart({
             levels={visibleLevels}
             height={600}
             showDirectionStrip={showDirectionStrip && showStrip}
+            scaleSide={prefs.scaleSide}
           />
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
