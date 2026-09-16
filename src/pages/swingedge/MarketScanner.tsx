@@ -57,12 +57,23 @@ const money = (n: number | null | undefined) =>
 type Filter = 'ALL' | Verdict;
 
 /** Saved combinations of filters, so a routine scan is one click. */
-type Preset = 'NONE' | 'LOW_EVENT_PULLBACKS';
+type Preset = 'NONE' | 'LOW_EVENT_PULLBACKS' | 'CLEAN_2R';
 
 const PRESET_LABEL: Record<Preset, string> = {
   NONE: 'No preset — show everything',
   LOW_EVENT_PULLBACKS: 'Low event risk pullbacks',
+  CLEAN_2R: 'Clean 2R setups',
 };
+
+const PATH_TONE: Record<TargetPath, string> = {
+  CLEAR: 'text-emerald-500',
+  PARTIALLY_BLOCKED: 'text-amber-500',
+  BLOCKED: 'text-destructive',
+  INSUFFICIENT_DATA: 'text-muted-foreground',
+};
+
+const PATH_CHOICES: ('ANY' | TargetPath)[] = ['ANY', 'CLEAR', 'PARTIALLY_BLOCKED', 'BLOCKED'];
+
 
 const BIAS_TONE: Record<string, string> = {
   UP: 'text-emerald-500',
