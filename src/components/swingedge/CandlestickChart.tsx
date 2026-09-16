@@ -207,7 +207,10 @@ function ChartBody({
     }
     return new Map(sorted.map((it) => [it.key, it.y]));
   };
-  const lastClose = shown[shown.length - 1].close;
+  // In the Heikin Ashi view the candles are calculated, so the LAST marker keeps
+  // quoting the real market close.
+  const actualLast = actual && actual.length === shown.length ? actual[actual.length - 1] : null;
+  const lastClose = (actualLast ?? shown[shown.length - 1]).close;
   // Scale labels (current price first, then the levels) are centred on their
   // line and nudged apart so two nearby prices stay readable.
   // Grid prices, the last price and every level share one scale, so they are
