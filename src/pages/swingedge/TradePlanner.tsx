@@ -32,6 +32,7 @@ import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
 import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
+import SetupAdvisorPanel from '@/components/swingedge/SetupAdvisorPanel';
 import type { Json } from '@/integrations/supabase/types';
 import {
   clearSnapshot,
@@ -159,14 +160,25 @@ export default function TradePlanner() {
   const [cancelCondition, setCancelCondition] = useState('');
   const [planSaved, setPlanSaved] = useState(false);
 
-  // Suggested setup and entry follow the loaded chart until the user types,
-  // unless the Analyzer already handed over its own numbers.
+  // The setup is set automatically from the loaded chart — including "no clear
+  // setup" — until the owner picks one themselves or the Analyzer handed one over.
+  const [setupTouched, setSetupTouched] = useState(Boolean(prefill?.setup));
+  const [setupAutoApplied, setSetupAutoApplied] = useState(false);
+  const chooseSetup = (s: SetupState) => {
+    setSetupTouched(true);
+    setSetupAutoApplied(false);
+    setSetup(s);
+  };
+
   useEffect(() => {
-    if (!L || prefill) return;
-    if (L.setup !== 'NONE') setSetup(L.setup);
+    if (!L) return;
+    if (!setupTouched) {
+      setSetup(L.setup);
+      setSetupAutoApplied(true);
+    }
     if (!entry && L.snapshot) setEntry(L.snapshot.price.toFixed(2));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [L?.setup, L?.snapshot?.price]);
+  }, [L?.setup, L?.snapshot?.price, setupTouched]);
 
   // The handover is consumed once, so a refresh does not silently re-apply it.
   useEffect(() => {
@@ -636,7 +648,7 @@ export default function TradePlanner() {
               </div>
               <div>
                 <Label>Setup</Label>
-                <Select value={setup} onValueChange={(v) => setSetup(v as SetupState)}>
+                <Select value={setup} onValueChange={(v) => chooseSetup(v as SetupState)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -658,6 +670,37 @@ export default function TradePlanner() {
                 {L.snapshot.resistance ? money(L.snapshot.resistance) : '—'}
               </p>
             ) : null}
+
+            <SetupAdvisorPanel
+              symbol={symbol}
+              detected={L?.setup ?? null}
+              chosen={setup}
+              onChoose={chooseSetup}
+              price={L?.snapshot?.price ?? null}
+              autoApplied={setupAutoApplied}
+              context={{
+                snapshot: L?.snapshot ?? null,
+                swingLow: L?.swingLow ?? null,
+                pullbackLow: L?.pullbackLow ?? null,
+                breakoutLevel: L?.breakoutLevel ?? null,
+                retestLow: L?.retestLow ?? null,
+                notice: L?.notice ?? null,
+                multiTimeframe: mtf
+                  ? {
+                      alignment: mtf.alignmentLabel,
+                      decision: mtf.decision,
+                      dailyThesis: mtf.dailyThesis,
+                      rows: mtf.rows.map((r) => ({
+                        timeframe: r.label,
+                        trend: r.metrics?.trend ?? null,
+                        state: r.stateLabel,
+                        available: r.available,
+                      })),
+                    }
+                  : null,
+              }}
+            />
+
             <div className="flex justify-end">
               <Button size="sm" variant="outline" onClick={() => setOpenStage(2)}>
                 Next: what proves me wrong
