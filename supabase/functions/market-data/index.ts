@@ -100,7 +100,6 @@ Deno.serve(async (req) => {
   const symbol = (body.symbol ?? '').trim().toUpperCase();
 
   try {
-    if (action === 'fundamentals') {
     // Earnings for many symbols at once. The provider's calendar is one CSV for
     // the whole market, so a scan costs a single call instead of one per name.
     if (action === 'earnings_batch') {
@@ -135,7 +134,8 @@ Deno.serve(async (req) => {
       } as unknown as Json);
     }
 
-    if (!symbol) return json({ error: 'symbol is required' }, 400);
+    if (action === 'fundamentals') {
+      if (!symbol) return json({ error: 'symbol is required' }, 400);
       const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
       const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
       const hint = (body.assetType ?? '').toUpperCase();
