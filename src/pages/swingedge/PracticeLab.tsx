@@ -38,6 +38,8 @@ import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import NextStepsCard from '@/components/swingedge/NextStepsCard';
+import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
+
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
