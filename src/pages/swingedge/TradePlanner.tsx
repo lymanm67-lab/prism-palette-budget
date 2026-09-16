@@ -44,6 +44,7 @@ import {
   executionModeFor,
   nextPlanState,
   EXECUTION_MODE_LABEL,
+  PLAN_STATE_LABEL,
   type ConditionMode,
   type EntryCondition,
   type ExecutionMode,
