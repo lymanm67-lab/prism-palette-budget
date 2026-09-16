@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, ArrowRight, BellRing, ClipboardList, Eye, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BellRing, ChevronDown, ClipboardList, Eye, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
