@@ -696,12 +696,13 @@ export default function CandlestickChart({
           type="button"
           size="sm"
           variant="ghost"
-          className="h-6 px-2 text-[11px]"
+          className="h-8 px-2 text-xs"
           onClick={() => changeCandleType(candleType === 'STANDARD' ? 'HEIKIN_ASHI' : 'STANDARD')}
           title="Quick switch between standard and Heikin Ashi without losing your zoom"
         >
           Standard ↔ HA
         </Button>
+
         {candleType !== 'STANDARD' && (
           <Badge variant="outline" className="text-[10px]" title={HEIKIN_ASHI_NOTE}>
             Heikin Ashi view · smoothed prices
