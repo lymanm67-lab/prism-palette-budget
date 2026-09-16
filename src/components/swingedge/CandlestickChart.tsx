@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { Candle } from '@/lib/swingedge/types';
+import { HEIKIN_ASHI_NOTE, HEIKIN_ASHI_WHAT, HEIKIN_ASHI_WHEN, heikinAshi } from '@/lib/swingedge/heikinAshi';
 import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
 import { buildTrendLines, movingAverages, type TrendLine } from '@/lib/swingedge/trendLines';
 import {
@@ -37,6 +38,15 @@ export interface ChartLevel {
   /** Short code shown on the price scale, e.g. ENT / STP / TGT. */
   short?: string;
 }
+
+/** Which candle drawing the reader is looking at. Standard is authoritative. */
+export type CandleTypeView = 'STANDARD' | 'HEIKIN_ASHI' | 'COMPARE';
+
+const CANDLE_TYPE_LABEL: Record<CandleTypeView, string> = {
+  STANDARD: 'Standard candles',
+  HEIKIN_ASHI: 'Heikin Ashi',
+  COMPARE: 'Compare candles',
+};
 
 export interface ChartTimeframeOption {
   value: string;
