@@ -105,6 +105,19 @@ export default function MarketScanner() {
   const [running, setRunning] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>('ALL');
   const [preset, setPreset] = useState<Preset>('NONE');
+  // Beginner mode is fixed at 2R; advanced mode may change the multiple.
+  const [rewardMultiple, setRewardMultiple] = useState<number>(2);
+  const [minRR, setMinRR] = useState<string>('ANY');
+  const [minRToRes, setMinRToRes] = useState<string>('ANY');
+  const [pathFilter, setPathFilter] = useState<'ANY' | TargetPath>('ANY');
+  const [minQuality, setMinQuality] = useState<string>('ANY');
+  const [geometryFor, setGeometryFor] = useState<string | null>(null);
+
+  const multiple = settings.advanced_mode ? rewardMultiple : 2;
+  const maxDollarRisk = useMemo(
+    () => Math.round(((settings.trading_capital * settings.risk_per_trade_pct) / 100) * 100) / 100,
+    [settings.trading_capital, settings.risk_per_trade_pct],
+  );
 
   const selected = useMemo(() => {
     if (source === 'CURATED') return universe.map((u) => u.symbol);
@@ -132,6 +145,38 @@ export default function MarketScanner() {
     return out;
   }, [rows, earnings.bySymbol, macroEvents, settings.advanced_mode]);
 
+  /**
+   * Entry / stop / target geometry per row. Recomputed whenever the scan data,
+   * the reward multiple, or the risk settings change, so a target can never be
+   * left over from an older entry or stop.
+   */
+  const geometryBySymbol = useMemo(() => {
+    const out: Record<string, GeometryResult> = {};
+    for (const r of rows) {
+      if (!r.levels) continue;
+      const entry = r.levels.estimatedEntry;
+      const stop = r.levels.estimatedStop;
+      const stopRead = assessStop({
+        entry,
+        stop,
+        atrValue: r.atr,
+        structureLevel: r.support,
+        rewardRisk: null,
+        setup: r.setup,
+      });
+      out[r.symbol] = computeGeometry({
+        entry,
+        stop,
+        resistance: r.resistance,
+        resistanceIsRecorded: r.resistance !== null,
+        rewardMultiple: multiple,
+        stopQuality: stopRead.quality,
+        maxDollarRisk,
+      });
+    }
+    return out;
+  }, [rows, multiple, maxDollarRisk]);
+
   const shown = useMemo(() => {
     let list = filter === 'ALL' ? rows : rows.filter((r) => r.verdict === filter);
     if (preset === 'LOW_EVENT_PULLBACKS') {
@@ -144,10 +189,59 @@ export default function MarketScanner() {
         return lowEvent && pullback && upBias && worthStudying;
       });
     }
+    if (preset === 'CLEAN_2R') {
+      list = list.filter((r) => {
+        const g = geometryBySymbol[r.symbol];
+        if (!g) return false;
+        const ev = eventBySymbol[r.symbol];
+        const eventOk = !ev || ev.band === 'LOW' || ev.band === 'MODERATE';
+        const setupOk = r.setup !== 'NONE';
+        const worthStudying = r.verdict === 'QUALIFIES' || r.verdict === 'WATCH';
+        return (
+          setupOk &&
+          worthStudying &&
+          eventOk &&
+          g.targetState === 'ACTIONABLE' &&
+          g.targetPath === 'CLEAR' &&
+          (g.rewardRisk ?? 0) >= 2 &&
+          (g.rToResistance ?? 0) >= 1.5 &&
+          TARGET_QUALITY_RANK[g.targetQuality] >= TARGET_QUALITY_RANK.ACCEPTABLE
+        );
+      });
+    }
+    if (minRR !== 'ANY') {
+      const min = Number(minRR);
+      list = list.filter((r) => (geometryBySymbol[r.symbol]?.rewardRisk ?? -1) >= min);
+    }
+    if (minRToRes !== 'ANY') {
+      const min = Number(minRToRes);
+      list = list.filter((r) => (geometryBySymbol[r.symbol]?.rToResistance ?? -1) >= min);
+    }
+    if (pathFilter !== 'ANY') {
+      list = list.filter((r) => geometryBySymbol[r.symbol]?.targetPath === pathFilter);
+    }
+    if (minQuality !== 'ANY') {
+      const min = TARGET_QUALITY_RANK[minQuality as keyof typeof TARGET_QUALITY_RANK];
+      list = list.filter(
+        (r) =>
+          TARGET_QUALITY_RANK[geometryBySymbol[r.symbol]?.targetQuality ?? 'INSUFFICIENT_DATA'] >= min,
+      );
+    }
     return [...list].sort(
       (a, b) => VERDICT_RANK[a.verdict] - VERDICT_RANK[b.verdict] || b.score - a.score,
     );
-  }, [rows, filter, preset, eventBySymbol]);
+  }, [
+    rows,
+    filter,
+    preset,
+    eventBySymbol,
+    geometryBySymbol,
+    minRR,
+    minRToRes,
+    pathFilter,
+    minQuality,
+  ]);
+
 
   const counts = useMemo(() => {
     const base: Record<Verdict, number> = {
