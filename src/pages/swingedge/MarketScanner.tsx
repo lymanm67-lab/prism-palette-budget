@@ -31,7 +31,7 @@ import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import TradeGeometryPanel from '@/components/swingedge/TradeGeometryPanel';
 import { useTradingSettings, useTradingTitle, useCuratedUniverse } from '@/hooks/use-swingedge';
-import { useScoredSymbols, useWatchlists, type ScoredSymbol } from '@/hooks/use-swingedge-lists';
+import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
 import { useEarningsCalendar, useMacroWindow } from '@/hooks/use-swingedge-events';
 import { assessEventRisk, type EventRiskResult } from '@/lib/swingedge/eventRisk';
 import { assessStop } from '@/lib/swingedge/stops';
