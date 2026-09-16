@@ -644,6 +644,9 @@ export default function TradePlanner() {
         armed_at: mode === 'ARM_FOR_LATER' ? new Date().toISOString() : null,
         last_revalidated_at: new Date().toISOString(),
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+        portfolio_fit: portfolioFit.state,
+        portfolio_fit_snapshot: JSON.parse(JSON.stringify(portfolioFit)) as Json,
+        fit_override_reason: fitOverrideRecorded ? fitOverrideReason.trim() : null,
       });
       setPlanSaved(true);
       toast.success(
@@ -1406,6 +1409,49 @@ export default function TradePlanner() {
             defaultOpen={false}
           >
             <RuleChecklistCard checks={ruleChecks} />
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            id="planner-portfolio-fit"
+            title="Portfolio impact"
+            description={`Portfolio fit: ${portfolioFit.stateLabel}`}
+            defaultOpen={portfolioFit.blocksGo || portfolioFit.state === 'CAUTION'}
+            className={cn(portfolioFit.blocksGo && 'border-destructive')}
+          >
+            <div className="space-y-3">
+              <PortfolioImpactPanel
+                fit={portfolioFit}
+                individualLabel={VERDICT_LABEL[qualification.verdict]}
+                finalNote={
+                  fitBlocksExecution
+                    ? 'Final status: this plan cannot be marked Go until the concentration comes down.'
+                    : fitOverrideRecorded
+                      ? 'Override recorded — this warning stays with the plan and the journal.'
+                      : undefined
+                }
+                showExistingNote={portfolioFit.similarSymbols.length > 0}
+              />
+              {portfolioFit.overrideAllowed && portfolioFit.blocksGo && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="planner-fit-override">
+                    Advanced Mode override — why are you accepting this concentration?
+                  </Label>
+                  <Textarea
+                    id="planner-fit-override"
+                    value={fitOverrideReason}
+                    onChange={(e) => setFitOverrideReason(e.target.value)}
+                    placeholder="Written overrides are saved with the plan."
+                    rows={2}
+                  />
+                </div>
+              )}
+              {!portfolioFit.overrideAllowed && portfolioFit.blocksGo && (
+                <p className="text-xs text-muted-foreground">
+                  Beginner Mode does not allow an override here. Close or reduce a related position,
+                  or lower the risk on this one.
+                </p>
+              )}
+            </div>
           </CollapsibleSection>
 
           <CollapsibleSection
