@@ -20,14 +20,34 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
+import TradeGeometryPanel from '@/components/swingedge/TradeGeometryPanel';
 import { useTradingSettings, useTradingTitle, useCuratedUniverse } from '@/hooks/use-swingedge';
-import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
+import { useScoredSymbols, useWatchlists, type ScoredSymbol } from '@/hooks/use-swingedge-lists';
 import { useEarningsCalendar, useMacroWindow } from '@/hooks/use-swingedge-events';
 import { assessEventRisk, type EventRiskResult } from '@/lib/swingedge/eventRisk';
+import { assessStop } from '@/lib/swingedge/stops';
+import {
+  computeGeometry,
+  targetCellText,
+  REWARD_MULTIPLES,
+  TARGET_PATH_LABEL,
+  TARGET_QUALITY_LABEL,
+  TARGET_QUALITY_RANK,
+  type GeometryResult,
+  type TargetPath,
+} from '@/lib/swingedge/tradeGeometry';
 import { VERDICT_MEANING, VERDICT_TONE } from '@/lib/swingedge/score';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
+
 
 const money = (n: number | null | undefined) =>
   n === null || n === undefined
