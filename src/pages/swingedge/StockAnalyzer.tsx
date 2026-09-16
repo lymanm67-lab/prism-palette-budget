@@ -19,6 +19,8 @@ import { readChart } from '@/lib/swingedge/chartReading';
 import { currentDirection } from '@/lib/swingedge/directionStrip';
 import type { SwingInterval } from '@/lib/swingedge/types';
 import EntryReadinessCard from '@/components/swingedge/EntryReadinessCard';
+import PortfolioFitCard from '@/components/swingedge/PortfolioFitCard';
+import { usePortfolioHeat } from '@/hooks/use-swingedge-heat';
 import ArmedTradeStrip from '@/components/swingedge/ArmedTradeStrip';
 import { buildEntryReadiness, armedNeedsReview } from '@/lib/swingedge/conditionalStaging';
 import { buildAnalysisSnapshot, stashSnapshot, type AnalysisSnapshot } from '@/lib/swingedge/analysisSnapshot';
@@ -322,6 +324,28 @@ export default function StockAnalyzer() {
     );
   }, [analysis, mtf, readiness, levels, geometry, eventView.result, priceExtended, settings.advanced_mode, haDaily]);
 
+  // Portfolio fit. Risk here is the per-trade allowance, since share count is
+  // decided in the Planner. A good trade can still be a bad addition.
+  const { checkCorrelated, fitForTrade } = usePortfolioHeat();
+  const candidateRisk = (settings.trading_capital * settings.risk_per_trade_pct) / 100;
+  const portfolioFit = useMemo(() => {
+    if (!analysis) return null;
+    const corr = checkCorrelated(
+      { symbol: analysis.symbol, candles: candleResult?.candles ?? undefined },
+      candidateRisk,
+    );
+    return fitForTrade({
+      symbol: analysis.symbol,
+      sector: null,
+      risk: candidateRisk,
+      correlationBand: corr.worstBand,
+      correlatedPositionCount: corr.pairs.filter(
+        (p) => p.band === 'HIGH' || p.band === 'VERY_HIGH',
+      ).length,
+      correlationBasis: corr.pairs[0]?.basis ?? null,
+    });
+  }, [analysis, candleResult, candidateRisk, checkCorrelated, fitForTrade]);
+
   const snapshot = useMemo<AnalysisSnapshot | null>(() => {
     if (!analysis) return null;
     const rowState = (key: string) => mtf?.rows.find((r) => r.key === key)?.state ?? null;
@@ -495,6 +519,16 @@ export default function StockAnalyzer() {
               symbol={analysis.symbol}
               readiness={entryReadiness}
               onPrepare={prepareConditionalTrade}
+            />
+          )}
+
+          {portfolioFit && (
+            <PortfolioFitCard
+              symbol={analysis.symbol}
+              fit={portfolioFit}
+              individualLabel={
+                entryReadiness ? entryReadiness.statusLabel : readiness ? READINESS_BAND_LABEL[readiness.band] : '—'
+              }
             />
           )}
 

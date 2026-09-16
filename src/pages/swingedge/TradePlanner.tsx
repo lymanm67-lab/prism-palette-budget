@@ -32,6 +32,7 @@ import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
 import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
+import PortfolioImpactPanel from '@/components/swingedge/PortfolioImpactPanel';
 import SetupAdvisorPanel from '@/components/swingedge/SetupAdvisorPanel';
 import type { Json } from '@/integrations/supabase/types';
 import {
@@ -269,7 +270,7 @@ export default function TradePlanner() {
   );
 
   // Portfolio heat, sector exposure and sector heat gates.
-  const { summary: heat, checkTrade } = usePortfolioHeat();
+  const { summary: heat, checkTrade, checkCorrelated, fitForTrade } = usePortfolioHeat();
   const heatGate = useMemo(
     () =>
       checkTrade({
@@ -281,6 +282,39 @@ export default function TradePlanner() {
       }),
     [checkTrade, symbol, risk.shares, entryNum, stopNum],
   );
+
+  // Portfolio fit — a good trade can still be a bad addition. Graded separately
+  // from trade quality and never blended into the readiness score.
+  const [fitOverrideReason, setFitOverrideReason] = useState('');
+
+  const correlationRead = useMemo(
+    () =>
+      checkCorrelated(
+        { symbol: symbol.toUpperCase(), candles: L?.candles ?? undefined },
+        risk.plannedLoss ?? 0,
+      ),
+    [checkCorrelated, symbol, L?.candles, risk.plannedLoss],
+  );
+
+  const portfolioFit = useMemo(
+    () =>
+      fitForTrade({
+        symbol: symbol.toUpperCase(),
+        sector: null,
+        risk: risk.plannedLoss && risk.plannedLoss > 0 ? risk.plannedLoss : null,
+        correlationBand: correlationRead.worstBand,
+        correlatedPositionCount: correlationRead.pairs.filter(
+          (p) => p.band === 'HIGH' || p.band === 'VERY_HIGH',
+        ).length,
+        correlationBasis: correlationRead.pairs[0]?.basis ?? null,
+      }),
+    [fitForTrade, symbol, risk.plannedLoss, correlationRead],
+  );
+
+  const fitOverrideRecorded =
+    portfolioFit.overrideAllowed && fitOverrideReason.trim().length >= 4;
+
+  const fitBlocksExecution = portfolioFit.blocksGo && !fitOverrideRecorded;
 
   // The owner's own rulebook, checked against this plan as it is built, plus the
   // guardrails that speak up on their own. Nothing here calls an AI model.
@@ -459,6 +493,10 @@ export default function TradePlanner() {
     if (targetNum <= entryNum) out.push('The target is not valid.');
     if (risk.rewardRiskStatus === 'BELOW_RULE') out.push('Reward-to-risk is below your minimum.');
     if (!heatGate.allowed) out.push(heatGate.reasons[0] ?? 'Portfolio heat is over your limit.');
+    if (fitBlocksExecution)
+      out.push(
+        `Portfolio fit is ${portfolioFit.stateLabel.toLowerCase()} — ${portfolioFit.reasons[0] ?? 'concentration is over your limit.'}`,
+      );
     if (risk.percentOfAccount > settings.risk_per_trade_pct) out.push('Account risk is over your per-trade limit.');
     if (!earningsChecked) out.push('Earnings timing has not been reviewed.');
     if (!breaker.assessment.canOpenNewTrade) out.push(breaker.assessment.headline ?? 'Trading is paused today.');
@@ -475,6 +513,9 @@ export default function TradePlanner() {
     entryNum,
     heatGate.allowed,
     heatGate.reasons,
+    fitBlocksExecution,
+    portfolioFit.stateLabel,
+    portfolioFit.reasons,
     settings.risk_per_trade_pct,
     earningsChecked,
     breaker.assessment,
@@ -548,6 +589,14 @@ export default function TradePlanner() {
       toast.error(heatGate.reasons[0]);
       return;
     }
+    if (fitBlocksExecution) {
+      toast.error(
+        portfolioFit.overrideAllowed
+          ? 'Portfolio fit is poor. Write an override reason to save this plan anyway.'
+          : `Portfolio fit is ${portfolioFit.stateLabel.toLowerCase()}. Close or reduce a related position first.`,
+      );
+      return;
+    }
     try {
       await savePlan({
         symbol: symbol.toUpperCase(),
@@ -595,6 +644,9 @@ export default function TradePlanner() {
         armed_at: mode === 'ARM_FOR_LATER' ? new Date().toISOString() : null,
         last_revalidated_at: new Date().toISOString(),
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+        portfolio_fit: portfolioFit.state,
+        portfolio_fit_snapshot: JSON.parse(JSON.stringify(portfolioFit)) as Json,
+        fit_override_reason: fitOverrideRecorded ? fitOverrideReason.trim() : null,
       });
       setPlanSaved(true);
       toast.success(
@@ -1357,6 +1409,49 @@ export default function TradePlanner() {
             defaultOpen={false}
           >
             <RuleChecklistCard checks={ruleChecks} />
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            id="planner-portfolio-fit"
+            title="Portfolio impact"
+            description={`Portfolio fit: ${portfolioFit.stateLabel}`}
+            defaultOpen={portfolioFit.blocksGo || portfolioFit.state === 'CAUTION'}
+            className={cn(portfolioFit.blocksGo && 'border-destructive')}
+          >
+            <div className="space-y-3">
+              <PortfolioImpactPanel
+                fit={portfolioFit}
+                individualLabel={VERDICT_LABEL[qualification.verdict]}
+                finalNote={
+                  fitBlocksExecution
+                    ? 'Final status: this plan cannot be marked Go until the concentration comes down.'
+                    : fitOverrideRecorded
+                      ? 'Override recorded — this warning stays with the plan and the journal.'
+                      : undefined
+                }
+                showExistingNote={portfolioFit.similarSymbols.length > 0}
+              />
+              {portfolioFit.overrideAllowed && portfolioFit.blocksGo && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="planner-fit-override">
+                    Advanced Mode override — why are you accepting this concentration?
+                  </Label>
+                  <Textarea
+                    id="planner-fit-override"
+                    value={fitOverrideReason}
+                    onChange={(e) => setFitOverrideReason(e.target.value)}
+                    placeholder="Written overrides are saved with the plan."
+                    rows={2}
+                  />
+                </div>
+              )}
+              {!portfolioFit.overrideAllowed && portfolioFit.blocksGo && (
+                <p className="text-xs text-muted-foreground">
+                  Beginner Mode does not allow an override here. Close or reduce a related position,
+                  or lower the risk on this one.
+                </p>
+              )}
+            </div>
           </CollapsibleSection>
 
           <CollapsibleSection
