@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import CandlestickChart from '@/components/swingedge/CandlestickChart';
+import HeikinAshiCard, { heikinAshiSummary, type HeikinAshiTimeframeInput } from '@/components/swingedge/HeikinAshiCard';
+import { HA_CONFIRMATION_LABEL } from '@/lib/swingedge/heikinAshi';
 import ReadThisChartCard from '@/components/swingedge/ReadThisChartCard';
 import { readChart } from '@/lib/swingedge/chartReading';
 import { currentDirection } from '@/lib/swingedge/directionStrip';
@@ -118,7 +120,7 @@ export default function StockAnalyzer() {
   const { record: trackRecord } = useTrackRecord(symbol, analysis?.technical.setup ?? null);
 
   // Weekly context, daily setup, 4-hour confirmation and 1-hour entry timing.
-  const { result: mtf } = useMultiTimeframe(symbol, candleResult?.candles, {
+  const { result: mtf, candles: mtfCandles } = useMultiTimeframe(symbol, candleResult?.candles, {
     price: analysis?.technical.price ?? null,
     entryZone: analysis?.entryZone ?? null,
   });
@@ -271,6 +273,24 @@ export default function StockAnalyzer() {
     });
   }, [analysis, levels]);
 
+  // Heikin Ashi — secondary trend confirmation only. Calculated from the same
+  // candles; never used for entry, stop, target or any execution price.
+  const haTimeframes = useMemo<HeikinAshiTimeframeInput[]>(() => {
+    const trendOf = (key: string) => mtf?.rows.find((r) => r.key === key)?.metrics.trend ?? null;
+    return [
+      { key: 'WEEKLY', label: 'Weekly (context)', candles: mtfCandles.weekly, regularTrend: trendOf('WEEKLY') },
+      { key: 'DAILY', label: 'Daily', candles: mtfCandles.daily, regularTrend: trendOf('DAILY') },
+      { key: 'H4', label: '4 hour', candles: mtfCandles.h4, regularTrend: trendOf('H4') },
+      { key: 'H1', label: '1 hour', candles: mtfCandles.h1, regularTrend: trendOf('H1') },
+      { key: 'M15', label: '15 minute', candles: mtfCandles.m15, regularTrend: trendOf('M15'), optional: true },
+    ];
+  }, [mtf, mtfCandles]);
+
+  const haDaily = useMemo(
+    () => heikinAshiSummary(mtfCandles.daily, mtf?.rows.find((r) => r.key === 'DAILY')?.metrics.trend ?? null),
+    [mtfCandles.daily, mtf],
+  );
+
   const priceExtended = mtf?.priceExtended ?? false;
 
   const entryReadiness = useMemo(() => {
@@ -294,13 +314,13 @@ export default function StockAnalyzer() {
         targetPath: geometry?.targetPath ?? null,
         targetPathReason: geometry?.targetPathReason ?? null,
         eventBand: eventView.result?.band ?? null,
-        haConfirmation: null,
+        haConfirmation: haDaily.confirmation ? HA_CONFIRMATION_LABEL[haDaily.confirmation] : null,
         priceExtended,
         entryZone: analysis.entryZone ?? null,
       },
       !settings.advanced_mode,
     );
-  }, [analysis, mtf, readiness, levels, geometry, eventView.result, priceExtended, settings.advanced_mode]);
+  }, [analysis, mtf, readiness, levels, geometry, eventView.result, priceExtended, settings.advanced_mode, haDaily]);
 
   const snapshot = useMemo<AnalysisSnapshot | null>(() => {
     if (!analysis) return null;
@@ -621,6 +641,8 @@ export default function StockAnalyzer() {
           </div>
 
           <MultiTimeframeCard result={mtf} />
+
+          <HeikinAshiCard timeframes={haTimeframes} />
 
           {readiness && <TradeReadinessCard readiness={readiness} />}
 
