@@ -132,6 +132,10 @@ export interface TradePlanRow {
   armed_at?: string | null;
   last_revalidated_at?: string | null;
   expires_at?: string | null;
+  /** Portfolio fit at save time — trade quality and portfolio fit stay separate. */
+  portfolio_fit?: string | null;
+  portfolio_fit_snapshot?: Json | null;
+  fit_override_reason?: string | null;
   created_at: string;
 }
 
