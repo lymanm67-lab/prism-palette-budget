@@ -30,7 +30,12 @@ export function useMultiTimeframe(
   symbol: string | null,
   dailyCandles: Candle[] | undefined,
   opts: UseMultiTimeframeOptions = {},
-): { result: MultiTimeframeResult | null; isLoading: boolean } {
+): {
+  result: MultiTimeframeResult | null;
+  isLoading: boolean;
+  /** The same candles the reading used, for secondary views like Heikin Ashi. */
+  candles: { weekly: Candle[]; daily: Candle[]; h4: Candle[]; h1: Candle[]; m15: Candle[] };
+} {
   const { settings } = useTradingSettings();
   const enabled = !!symbol && opts.enabled !== false;
 
@@ -63,5 +68,16 @@ export function useMultiTimeframe(
     });
   }, [symbol, dailyCandles, intraday, settings.advanced_mode, opts.price, opts.entryZone]);
 
-  return { result, isLoading: enabled && isLoading };
+  const byTimeframe = useMemo(() => {
+    const daily = dailyCandles ?? [];
+    return {
+      weekly: daily.length ? toWeekly(daily) : [],
+      daily,
+      h4: intraday?.h4 ?? [],
+      h1: intraday?.h1 ?? [],
+      m15: intraday?.m15 ?? [],
+    };
+  }, [dailyCandles, intraday]);
+
+  return { result, isLoading: enabled && isLoading, candles: byTimeframe };
 }
