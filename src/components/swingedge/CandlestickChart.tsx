@@ -334,7 +334,15 @@ function ChartBody({
             <g key={c.datetime} onMouseEnter={() => setHover(i)}>
               <line x1={x + bodyW / 2} x2={x + bodyW / 2} y1={y(c.high)} y2={y(c.low)} stroke={color} strokeWidth={1} />
               <rect x={x} y={top} width={bodyW} height={Math.max(1, bot - top)} fill={color} rx={0.5}>
-                <title>{`${fmtDate(c.datetime)}  O ${fmt(c.open)}  H ${fmt(c.high)}  L ${fmt(c.low)}  C ${fmt(c.close)}  Vol ${c.volume.toLocaleString()}`}</title>
+                <title>
+                  {actual && actual.length === shown.length
+                    ? `${fmtDate(c.datetime)}  HA O ${fmt(c.open)}  HA H ${fmt(c.high)}  HA L ${fmt(c.low)}  HA C ${fmt(
+                        c.close,
+                      )}  ACTUAL CLOSE ${fmt(actual[i].close)}  Vol ${c.volume.toLocaleString()}`
+                    : `${fmtDate(c.datetime)}  O ${fmt(c.open)}  H ${fmt(c.high)}  L ${fmt(c.low)}  C ${fmt(
+                        c.close,
+                      )}  Vol ${c.volume.toLocaleString()}`}
+                </title>
               </rect>
             </g>
           );
