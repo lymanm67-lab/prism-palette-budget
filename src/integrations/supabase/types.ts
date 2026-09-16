@@ -12421,6 +12421,8 @@ export type Database = {
           bias_confidence: string | null
           bias_direction: string | null
           breakeven_trigger: string | null
+          common_driver: string | null
+          correlation_state: string | null
           created_at: string
           current_price: number | null
           earnings_ack: boolean
@@ -12437,6 +12439,8 @@ export type Database = {
           exit_price: number | null
           exit_reason: string | null
           exit_time: string | null
+          exposure_family: string | null
+          fit_override_reason: string | null
           gap_difference: number | null
           household_id: string
           id: string
@@ -12454,12 +12458,17 @@ export type Database = {
           planned_entry: number | null
           planned_loss: number | null
           planned_stop: number | null
+          portfolio_fit: string | null
+          portfolio_heat_after: number | null
+          portfolio_heat_before: number | null
           practice_session_id: string | null
           readiness_score: number | null
           realized_pl: number | null
           revalidated_at: string | null
           rules_followed: boolean | null
           sector: string | null
+          sector_heat_after: number | null
+          sector_heat_before: number | null
           setup_type: string | null
           shares: number
           signal_quality: string | null
@@ -12482,6 +12491,8 @@ export type Database = {
           bias_confidence?: string | null
           bias_direction?: string | null
           breakeven_trigger?: string | null
+          common_driver?: string | null
+          correlation_state?: string | null
           created_at?: string
           current_price?: number | null
           earnings_ack?: boolean
@@ -12498,6 +12509,8 @@ export type Database = {
           exit_price?: number | null
           exit_reason?: string | null
           exit_time?: string | null
+          exposure_family?: string | null
+          fit_override_reason?: string | null
           gap_difference?: number | null
           household_id: string
           id?: string
@@ -12515,12 +12528,17 @@ export type Database = {
           planned_entry?: number | null
           planned_loss?: number | null
           planned_stop?: number | null
+          portfolio_fit?: string | null
+          portfolio_heat_after?: number | null
+          portfolio_heat_before?: number | null
           practice_session_id?: string | null
           readiness_score?: number | null
           realized_pl?: number | null
           revalidated_at?: string | null
           rules_followed?: boolean | null
           sector?: string | null
+          sector_heat_after?: number | null
+          sector_heat_before?: number | null
           setup_type?: string | null
           shares: number
           signal_quality?: string | null
@@ -12543,6 +12561,8 @@ export type Database = {
           bias_confidence?: string | null
           bias_direction?: string | null
           breakeven_trigger?: string | null
+          common_driver?: string | null
+          correlation_state?: string | null
           created_at?: string
           current_price?: number | null
           earnings_ack?: boolean
@@ -12559,6 +12579,8 @@ export type Database = {
           exit_price?: number | null
           exit_reason?: string | null
           exit_time?: string | null
+          exposure_family?: string | null
+          fit_override_reason?: string | null
           gap_difference?: number | null
           household_id?: string
           id?: string
@@ -12576,12 +12598,17 @@ export type Database = {
           planned_entry?: number | null
           planned_loss?: number | null
           planned_stop?: number | null
+          portfolio_fit?: string | null
+          portfolio_heat_after?: number | null
+          portfolio_heat_before?: number | null
           practice_session_id?: string | null
           readiness_score?: number | null
           realized_pl?: number | null
           revalidated_at?: string | null
           rules_followed?: boolean | null
           sector?: string | null
+          sector_heat_after?: number | null
+          sector_heat_before?: number | null
           setup_type?: string | null
           shares?: number
           signal_quality?: string | null
@@ -12974,6 +13001,7 @@ export type Database = {
           entry_conditions: Json | null
           execution_mode: string | null
           expires_at: string | null
+          fit_override_reason: string | null
           household_id: string
           id: string
           invalidation: string | null
@@ -12983,6 +13011,8 @@ export type Database = {
           planned_entry: number
           planned_stop: number
           planned_target: number
+          portfolio_fit: string | null
+          portfolio_fit_snapshot: Json | null
           position_value: number | null
           potential_gain: number | null
           reward_risk: number | null
@@ -13016,6 +13046,7 @@ export type Database = {
           entry_conditions?: Json | null
           execution_mode?: string | null
           expires_at?: string | null
+          fit_override_reason?: string | null
           household_id: string
           id?: string
           invalidation?: string | null
@@ -13025,6 +13056,8 @@ export type Database = {
           planned_entry: number
           planned_stop: number
           planned_target: number
+          portfolio_fit?: string | null
+          portfolio_fit_snapshot?: Json | null
           position_value?: number | null
           potential_gain?: number | null
           reward_risk?: number | null
@@ -13058,6 +13091,7 @@ export type Database = {
           entry_conditions?: Json | null
           execution_mode?: string | null
           expires_at?: string | null
+          fit_override_reason?: string | null
           household_id?: string
           id?: string
           invalidation?: string | null
@@ -13067,6 +13101,8 @@ export type Database = {
           planned_entry?: number
           planned_stop?: number
           planned_target?: number
+          portfolio_fit?: string | null
+          portfolio_fit_snapshot?: Json | null
           position_value?: number | null
           potential_gain?: number | null
           reward_risk?: number | null
@@ -13228,8 +13264,10 @@ export type Database = {
           data_mode: string
           household_id: string
           id: string
+          log_fit_overrides: boolean | null
           market_overview_symbols: string[]
           max_correlated_risk_pct: number
+          max_family_heat_pct: number | null
           max_portfolio_risk_pct: number
           max_sector_capital_exposure_pct: number
           max_sector_heat_pct: number
@@ -13259,8 +13297,10 @@ export type Database = {
           data_mode?: string
           household_id: string
           id?: string
+          log_fit_overrides?: boolean | null
           market_overview_symbols?: string[]
           max_correlated_risk_pct?: number
+          max_family_heat_pct?: number | null
           max_portfolio_risk_pct?: number
           max_sector_capital_exposure_pct?: number
           max_sector_heat_pct?: number
@@ -13290,8 +13330,10 @@ export type Database = {
           data_mode?: string
           household_id?: string
           id?: string
+          log_fit_overrides?: boolean | null
           market_overview_symbols?: string[]
           max_correlated_risk_pct?: number
+          max_family_heat_pct?: number | null
           max_portfolio_risk_pct?: number
           max_sector_capital_exposure_pct?: number
           max_sector_heat_pct?: number
