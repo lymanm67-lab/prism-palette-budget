@@ -1,12 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Maximize2, Minimize2, SlidersHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import type { Candle } from '@/lib/swingedge/types';
 import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
 import { buildTrendLines, movingAverages, type TrendLine } from '@/lib/swingedge/trendLines';
+import {
+  CHART_MODES,
+  CHART_MODE_ORDER,
+  loadChartPrefs,
+  saveChartPrefs,
+  type ChartMode,
+  type PriceScaleSide,
+} from '@/lib/swingedge/chartModes';
 
 const UP = 'hsl(var(--prism-lime))';
 const DOWN = 'hsl(var(--destructive))';
@@ -24,6 +34,13 @@ export interface ChartLevel {
   label: string;
   value: number | null | undefined;
   color: string; // css color, e.g. 'hsl(var(--prism-teal))'
+  /** Short code shown on the price scale, e.g. ENT / STP / TGT. */
+  short?: string;
+}
+
+export interface ChartTimeframeOption {
+  value: string;
+  label: string;
 }
 
 interface Props {
@@ -38,6 +55,21 @@ interface Props {
   showTrendLines?: boolean;
   /** Draw the 20 EMA and 50 SMA curves over the candles. */
   showMovingAverages?: boolean;
+  // ---- compact toolbar (all optional; omitted parts are simply not shown) ----
+  symbol?: string;
+  assetName?: string;
+  price?: number | null;
+  change?: number | null;
+  changePercent?: number | null;
+  /** Short signal / status text, e.g. "GO" or "WATCH". */
+  status?: string | null;
+  /** Confidence text shown next to the status. */
+  confidence?: string | null;
+  timeframes?: ChartTimeframeOption[];
+  activeTimeframe?: string;
+  onTimeframeChange?: (value: string) => void;
+  /** Compact multi-timeframe strip rendered under the toolbar. */
+  mtfStrip?: ReactNode;
 }
 
 interface MaSeries {
@@ -53,17 +85,37 @@ interface BodyProps {
   levels: ChartLevel[];
   height: number;
   showDirectionStrip: boolean;
+  scaleSide: PriceScaleSide;
 }
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
 const fmtDate = (iso: string) => iso.slice(0, 10);
 
+/** Short code for the price scale, so labels stay narrow and readable. */
+const shortCode = (l: ChartLevel) =>
+  l.short ??
+  l.label
+    .replace(/^est\.?\s*/i, '')
+    .split(/\s+/)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('')
+    .slice(0, 3);
+
 /**
  * The chart itself — candles, volume pane, levels, averages, trend lines.
  * Rendered inline and again inside the enlarge dialog at a bigger size.
  */
-function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDirectionStrip }: BodyProps) {
+function ChartBody({
+  shown,
+  strip,
+  trendLines,
+  maSeries,
+  levels,
+  height,
+  showDirectionStrip,
+  scaleSide,
+}: BodyProps) {
   const [hover, setHover] = useState<number | null>(null);
 
   const W = 800;
@@ -72,9 +124,14 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
   const stripH = showDirectionStrip ? 14 : 0;
   const priceH = H - volH - stripH - 24; // 24px date strip
   const volTop = priceH + stripH;
-  const padL = 8;
-  const padR = 56; // room for price labels
+  // The price scale sits on one side only; the other side keeps a hair of padding
+  // so candles never touch the frame.
+  const scaleW = 70;
+  const padL = scaleSide === 'LEFT' ? scaleW : 8;
+  const padR = scaleSide === 'RIGHT' ? scaleW : 8;
   const plotW = W - padL - padR;
+  const scaleX = scaleSide === 'RIGHT' ? W - padR + 5 : padL - 5;
+  const scaleAnchor = scaleSide === 'RIGHT' ? 'start' : 'end';
 
   const { lo, hi, maxVol, activeLevels } = useMemo(() => {
     if (!shown.length) return { lo: 0, hi: 0, maxVol: 0, activeLevels: [] as (ChartLevel & { value: number })[] };
@@ -123,7 +180,16 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
     }
     return new Map(sorted.map((it) => [it.key, clampY(it.y)]));
   };
-  const levelLabelY = spreadLabels(activeLevels.map((l) => ({ key: l.label, y: y(l.value) - 3 })));
+  const lastClose = shown[shown.length - 1].close;
+  // Scale labels (current price first, then the levels) are centred on their
+  // line and nudged apart so two nearby prices stay readable.
+  const scaleLabelY = spreadLabels(
+    [
+      { key: '__last', y: y(lastClose) + 3 },
+      ...activeLevels.map((l) => ({ key: l.label, y: y(l.value) + 3 })),
+    ],
+    11,
+  );
   const trendLabelY = spreadLabels(
     trendLines.map((t) => ({
       key: t.kind,
@@ -143,22 +209,74 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
         aria-label={`Candlestick chart, ${shown.length} sessions, last close ${fmt(last.close)}`}
         onMouseLeave={() => setHover(null)}
       >
-        {/* grid lines at min / mid / max */}
+        {/* price scale: a thin divider plus grid prices, on the chosen side only */}
+        <line
+          x1={scaleSide === 'RIGHT' ? W - padR : padL}
+          x2={scaleSide === 'RIGHT' ? W - padR : padL}
+          y1={0}
+          y2={priceH}
+          stroke="hsl(var(--border))"
+        />
         {[lo, (lo + hi) / 2, hi].map((p) => (
           <g key={p}>
             <line x1={padL} x2={W - padR} y1={y(p)} y2={y(p)} stroke="hsl(var(--border))" strokeDasharray="2 4" />
-            <text x={W - padR + 6} y={clampY(y(p) + 3)} fontSize={10} className="fill-muted-foreground">
+            <text
+              x={scaleX}
+              y={clampY(y(p) + 3)}
+              fontSize={9}
+              textAnchor={scaleAnchor}
+              className="fill-muted-foreground"
+            >
               {fmt(p)}
             </text>
           </g>
         ))}
 
-        {/* level lines */}
+        {/* current price — subtle, and clearly not one of the plan levels */}
+        <line
+          x1={padL}
+          x2={W - padR}
+          y1={y(lastClose)}
+          y2={y(lastClose)}
+          stroke="hsl(var(--foreground))"
+          strokeWidth={1}
+          strokeDasharray="1 3"
+          opacity={0.5}
+        />
+        <text
+          x={scaleX}
+          y={scaleLabelY.get('__last') ?? clampY(y(lastClose) + 3)}
+          fontSize={9}
+          fontWeight={600}
+          textAnchor={scaleAnchor}
+          className="fill-foreground"
+        >
+          LAST {fmt(lastClose)}
+        </text>
+
+        {/* plan levels: thin dashed lines, compact labels parked on the scale */}
         {activeLevels.map((l) => (
           <g key={l.label}>
-            <line x1={padL} x2={W - padR} y1={y(l.value)} y2={y(l.value)} stroke={l.color} strokeWidth={1.25} strokeDasharray="6 3" />
-            <text x={padL + 2} y={levelLabelY.get(l.label) ?? y(l.value) - 3} fontSize={9} fill={l.color}>
-              {l.label} {fmt(l.value)}
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={y(l.value)}
+              y2={y(l.value)}
+              stroke={l.color}
+              strokeWidth={1}
+              strokeDasharray="6 4"
+              opacity={0.85}
+            >
+              <title>{`${l.label} ${fmt(l.value)}`}</title>
+            </line>
+            <text
+              x={scaleX}
+              y={scaleLabelY.get(l.label) ?? clampY(y(l.value) + 3)}
+              fontSize={9}
+              textAnchor={scaleAnchor}
+              fill={l.color}
+            >
+              {shortCode(l)} {fmt(l.value)}
             </text>
           </g>
         ))}
@@ -318,25 +436,49 @@ export default function CandlestickChart({
   showDirectionStrip = false,
   showTrendLines = false,
   showMovingAverages = false,
+  symbol,
+  assetName,
+  price,
+  change,
+  changePercent,
+  status,
+  confidence,
+  timeframes,
+  activeTimeframe,
+  onTimeframeChange,
+  mtfStrip,
 }: Props) {
   const [visibleCount, setVisibleCount] = useState(visible);
   const [expanded, setExpanded] = useState(false);
 
-  // Overlay visibility — user can hide lines that make the chart busy.
-  const [showMas, setShowMas] = useState(showMovingAverages);
-  const [showTrends, setShowTrends] = useState(showTrendLines);
-  const [showLevels, setShowLevels] = useState(true);
-  const [showStrip, setShowStrip] = useState(showDirectionStrip);
+  // Saved view preferences (mode + which side the price scale sits on).
+  const [prefs, setPrefs] = useState(loadChartPrefs);
+  const mode = prefs.mode;
+  const modeConfig = CHART_MODES[mode];
+
+  const setMode = (next: ChartMode) => setPrefs((p) => ({ ...p, mode: next }));
+  const setScaleSide = (next: PriceScaleSide) => setPrefs((p) => ({ ...p, scaleSide: next }));
+  useEffect(() => saveChartPrefs(prefs), [prefs]);
+
+  // Overlay visibility — the mode sets the defaults, the user can still tweak.
+  const [showMas, setShowMas] = useState(showMovingAverages && modeConfig.movingAverages);
+  const [showTrends, setShowTrends] = useState(showTrendLines && modeConfig.trendLines);
+  const [showLevels, setShowLevels] = useState(modeConfig.levels);
+  const [showStrip, setShowStrip] = useState(showDirectionStrip && modeConfig.directionStrip);
 
   // Reset zoom when the caller changes the default window (e.g. timeframe switch).
   useEffect(() => {
     setVisibleCount(visible);
   }, [visible, candles]);
 
-  // Re-sync overlay defaults if the caller changes what the chart offers.
-  useEffect(() => setShowMas(showMovingAverages), [showMovingAverages]);
-  useEffect(() => setShowTrends(showTrendLines), [showTrendLines]);
-  useEffect(() => setShowStrip(showDirectionStrip), [showDirectionStrip]);
+  // Re-apply the mode defaults whenever the mode, or what the chart offers, changes.
+  useEffect(() => {
+    const cfg = CHART_MODES[mode];
+    setShowMas(showMovingAverages && cfg.movingAverages);
+    setShowTrends(showTrendLines && cfg.trendLines);
+    setShowLevels(cfg.levels);
+    setShowStrip(showDirectionStrip && cfg.directionStrip);
+  }, [mode, showMovingAverages, showTrendLines, showDirectionStrip]);
 
   const maxVisible = candles.length;
   const clamped = Math.min(visibleCount, maxVisible);
@@ -373,8 +515,75 @@ export default function CandlestickChart({
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
   }
 
+  const changeTone =
+    typeof change === 'number' || typeof changePercent === 'number'
+      ? (change ?? changePercent ?? 0) >= 0
+        ? 'text-prism-lime'
+        : 'text-destructive'
+      : 'text-muted-foreground';
+
   return (
     <div className="w-full">
+      {/* Compact toolbar: who, what price, which mode. */}
+      {(symbol || typeof price === 'number' || status || timeframes?.length) && (
+        <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5">
+          {symbol && <span className="text-sm font-bold tracking-tight">{symbol}</span>}
+          {assetName && (
+            <span className="max-w-[14rem] truncate text-[11px] text-muted-foreground">{assetName}</span>
+          )}
+          {typeof price === 'number' && <span className="text-sm font-semibold">{fmt(price)}</span>}
+          {(typeof change === 'number' || typeof changePercent === 'number') && (
+            <span className={cn('text-[11px] font-semibold', changeTone)}>
+              {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change.toFixed(2)}` : ''}
+              {typeof changePercent === 'number'
+                ? ` ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`
+                : ''}
+            </span>
+          )}
+          {status && (
+            <Badge variant="outline" className="text-[10px] font-semibold">
+              {status}
+              {confidence ? <span className="ml-1 text-muted-foreground">· {confidence}</span> : null}
+            </Badge>
+          )}
+
+          <span className="ml-auto flex items-center gap-1" role="group" aria-label="Chart mode">
+            {CHART_MODE_ORDER.map((m) => (
+              <Button
+                key={m}
+                type="button"
+                size="sm"
+                variant={mode === m ? 'default' : 'ghost'}
+                className="h-6 px-2 text-[11px]"
+                onClick={() => setMode(m)}
+                title={CHART_MODES[m].description}
+              >
+                {CHART_MODES[m].label}
+              </Button>
+            ))}
+          </span>
+        </div>
+      )}
+
+      {timeframes && timeframes.length > 0 && (
+        <div className="mb-1 flex flex-wrap items-center gap-1" role="group" aria-label="Chart timeframe">
+          {timeframes.map((t) => (
+            <Button
+              key={t.value}
+              type="button"
+              size="sm"
+              variant={activeTimeframe === t.value ? 'secondary' : 'outline'}
+              className="h-6 px-2 text-[11px]"
+              onClick={() => onTimeframeChange?.(t.value)}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {mtfStrip ? <div className="mb-2">{mtfStrip}</div> : null}
+
       <div className="mb-1 flex items-center justify-end gap-1">
         <span className="mr-1 text-[11px] text-muted-foreground" aria-live="polite">
           Showing {shown.length} of {candles.length}
