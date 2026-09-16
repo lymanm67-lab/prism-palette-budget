@@ -172,7 +172,7 @@ function ChartBody({
   const clampY = (n: number) => Math.max(10, Math.min(priceH - 4, n));
 
   // Spread stacked labels apart so nearby text never overlaps. Lines stay at
-  // their true price; only the text moves, to just below the previous label.
+  // their true price; only the text moves.
   const spreadLabels = (items: { key: string; y: number }[], minGap = 12) => {
     // Clamp first, then push down: clamping afterwards would stack every label
     // that sits near the top edge back on top of each other.
@@ -184,7 +184,21 @@ function ChartBody({
       if (it.y < last + minGap) it.y = last + minGap;
       last = it.y;
     }
-    return new Map(sorted.map((it) => [it.key, Math.min(it.y, priceH - 2)]));
+    // The downward push has no headroom at the bottom edge (a stop or support
+    // below every candle lands exactly on the lowest grid price), so when the
+    // last label overflows, push the whole cluster back up instead of clamping
+    // two labels onto the same spot.
+    const bottom = priceH - 2;
+    if (sorted.length > 0 && sorted[sorted.length - 1].y > bottom) {
+      let next = Infinity;
+      for (let i = sorted.length - 1; i >= 0; i--) {
+        const it = sorted[i];
+        const ceiling = Math.min(bottom, next - minGap);
+        if (it.y > ceiling) it.y = Math.max(10, ceiling);
+        next = it.y;
+      }
+    }
+    return new Map(sorted.map((it) => [it.key, it.y]));
   };
   const lastClose = shown[shown.length - 1].close;
   // Scale labels (current price first, then the levels) are centred on their
