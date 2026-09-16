@@ -180,7 +180,16 @@ function ChartBody({
     }
     return new Map(sorted.map((it) => [it.key, clampY(it.y)]));
   };
-  const levelLabelY = spreadLabels(activeLevels.map((l) => ({ key: l.label, y: y(l.value) - 3 })));
+  const lastClose = shown[shown.length - 1].close;
+  // Scale labels (current price first, then the levels) are centred on their
+  // line and nudged apart so two nearby prices stay readable.
+  const scaleLabelY = spreadLabels(
+    [
+      { key: '__last', y: y(lastClose) + 3 },
+      ...activeLevels.map((l) => ({ key: l.label, y: y(l.value) + 3 })),
+    ],
+    11,
+  );
   const trendLabelY = spreadLabels(
     trendLines.map((t) => ({
       key: t.kind,
