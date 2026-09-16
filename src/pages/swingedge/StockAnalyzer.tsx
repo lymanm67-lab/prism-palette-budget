@@ -452,6 +452,33 @@ export default function StockAnalyzer() {
             </Badge>
           </div>
 
+          {armedPlan && (
+            <ArmedTradeStrip
+              symbol={analysis.symbol}
+              planState={(armedPlan.plan_state as string | null) ?? null}
+              entryCondition={
+                Array.isArray(armedPlan.entry_conditions) && armedPlan.entry_conditions.length
+                  ? (armedPlan.entry_conditions as { text?: string }[])
+                      .map((c) => c.text)
+                      .filter(Boolean)
+                      .join(' AND ')
+                  : null
+              }
+              lastRevalidatedAt={(armedPlan.last_revalidated_at as string | null) ?? null}
+              needsReview={!!armedReview?.needsReview}
+              reviewReasons={armedReview?.reasons ?? []}
+            />
+          )}
+
+          {entryReadiness && (
+            <EntryReadinessCard
+              symbol={analysis.symbol}
+              readiness={entryReadiness}
+              onPrepare={prepareConditionalTrade}
+            />
+          )}
+
+
           <Card className="border-border/60 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
