@@ -139,6 +139,7 @@ export default function EntryReadinessCard({
             The Analyzer decides whether to prepare. The Trade Planner decides how to stage it.
           </span>
         </div>
+        )}
       </CardContent>
     </Card>
   );
