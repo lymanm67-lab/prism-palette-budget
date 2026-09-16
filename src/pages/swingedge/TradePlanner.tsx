@@ -160,14 +160,25 @@ export default function TradePlanner() {
   const [cancelCondition, setCancelCondition] = useState('');
   const [planSaved, setPlanSaved] = useState(false);
 
-  // Suggested setup and entry follow the loaded chart until the user types,
-  // unless the Analyzer already handed over its own numbers.
+  // The setup is set automatically from the loaded chart — including "no clear
+  // setup" — until the owner picks one themselves or the Analyzer handed one over.
+  const [setupTouched, setSetupTouched] = useState(Boolean(prefill?.setup));
+  const [setupAutoApplied, setSetupAutoApplied] = useState(false);
+  const chooseSetup = (s: SetupState) => {
+    setSetupTouched(true);
+    setSetupAutoApplied(false);
+    setSetup(s);
+  };
+
   useEffect(() => {
-    if (!L || prefill) return;
-    if (L.setup !== 'NONE') setSetup(L.setup);
+    if (!L) return;
+    if (!setupTouched) {
+      setSetup(L.setup);
+      setSetupAutoApplied(true);
+    }
     if (!entry && L.snapshot) setEntry(L.snapshot.price.toFixed(2));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [L?.setup, L?.snapshot?.price]);
+  }, [L?.setup, L?.snapshot?.price, setupTouched]);
 
   // The handover is consumed once, so a refresh does not silently re-apply it.
   useEffect(() => {
