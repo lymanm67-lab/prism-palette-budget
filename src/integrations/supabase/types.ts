@@ -11549,6 +11549,69 @@ export type Database = {
         }
         Relationships: []
       }
+      se_execution_guides: {
+        Row: {
+          created_at: string
+          downloaded_at: string | null
+          execution_ticket_id: string | null
+          guide_key: string
+          guide_kind: string
+          guide_version: string
+          household_id: string
+          id: string
+          notes: string | null
+          orientation: string
+          paper_trade_id: string | null
+          printed_at: string | null
+          saved_to: string
+          symbol: string | null
+          title: string
+          trade_plan_id: string | null
+          trade_values: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          downloaded_at?: string | null
+          execution_ticket_id?: string | null
+          guide_key: string
+          guide_kind: string
+          guide_version?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          orientation?: string
+          paper_trade_id?: string | null
+          printed_at?: string | null
+          saved_to?: string
+          symbol?: string | null
+          title: string
+          trade_plan_id?: string | null
+          trade_values?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          downloaded_at?: string | null
+          execution_ticket_id?: string | null
+          guide_key?: string
+          guide_kind?: string
+          guide_version?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          orientation?: string
+          paper_trade_id?: string | null
+          printed_at?: string | null
+          saved_to?: string
+          symbol?: string | null
+          title?: string
+          trade_plan_id?: string | null
+          trade_values?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       se_execution_tickets: {
         Row: {
           actual_entry: number | null

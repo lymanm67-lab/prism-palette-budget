@@ -1249,7 +1249,51 @@ export default function TradePlanner() {
           riskPerTradePct: settings.risk_per_trade_pct,
         }}
       />
-          <NextStepsCard
+
+      <Card className="border-prism-teal/40">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Execute it in Thinkorswim</CardTitle>
+          <CardDescription>
+            {qualification.verdict === 'QUALIFIES'
+              ? 'This plan qualifies. The guide fills in your symbol, share count, entry, stop and target so you can type the order correctly.'
+              : 'The guide opens once the plan qualifies. Until then you can open the sample training guide to practise the order steps.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-2">
+          <ExecutionGuideButton
+            trade={
+              qualification.verdict === 'QUALIFIES' && symbol && entryNum > 0 && stopNum > 0
+                ? {
+                    symbol,
+                    shares: risk.shares ?? null,
+                    entryPrice: entryNum,
+                    entryOrderType: 'Limit',
+                    stopPrice: stopNum,
+                    targetPrice: targetNum > 0 ? targetNum : null,
+                    timeInForce: 'GTC',
+                    riskPerShare: risk.riskPerShare ?? null,
+                    totalRisk: risk.plannedLoss ?? null,
+                    rewardToRisk: risk.rewardRisk ?? null,
+                    filled: false,
+                    setup,
+                  }
+                : null
+            }
+            variant={qualification.verdict === 'QUALIFIES' ? 'default' : 'outline'}
+            label={
+              qualification.verdict === 'QUALIFIES'
+                ? 'View step by step Thinkorswim guide'
+                : 'Open the sample training guide'
+            }
+          />
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/swingedge/execution-guides">All execution guides</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <NextStepsCard
+
         summary="You have a plan with share size and dollar risk. Nothing is decided until you take it into a practice trade and record it."
         steps={[
           { label: 'Open the trade on paper at your planned entry', to: '/swingedge/paper-trading', cta: 'Open Paper Trading' },
