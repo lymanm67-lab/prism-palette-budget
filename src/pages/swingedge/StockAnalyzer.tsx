@@ -371,26 +371,11 @@ export default function StockAnalyzer() {
                   </Badge>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-1 pt-1" role="group" aria-label="Chart timeframe">
-                {CHART_INTERVALS.map((i) => (
-                  <Button
-                    key={i.value}
-                    type="button"
-                    size="sm"
-                    variant={chartInterval === i.value ? 'default' : 'outline'}
-                    className="h-7 px-2.5 text-xs"
-                    onClick={() => setChartInterval(i.value)}
-                  >
-                    {i.label}
-                  </Button>
-                ))}
-              </div>
               <p className="text-xs text-muted-foreground">
                 The chart the signal is reading. Dashed flat lines mark support, resistance and the estimated entry,
-                stop and target — these come from the daily chart, whatever timeframe you view. The two sloping
-                dashed lines are trend lines fitted through recent swing highs and lows, and the smooth curves are
-                the 20 EMA (teal) and 50 SMA (amber). The strip under the candles shows which way price was moving
-                in each window — green up, red down, grey sideways.
+                stop and target — these come from the daily chart, whatever timeframe you view, and their prices sit
+                on the price scale. Learning mode adds trend lines and the direction strip, Trader mode keeps the two
+                averages, Execution mode shows price and your levels only.
               </p>
             </CardHeader>
             <CardContent>
@@ -404,12 +389,21 @@ export default function StockAnalyzer() {
                   showTrendLines
                   showMovingAverages
                   candles={chartResult?.candles ?? []}
+                  symbol={analysis.symbol}
+                  assetName={analysis.assetType === 'ETF' ? 'Fund' : 'Company'}
+                  price={analysis.technical.price}
+                  status={readiness ? READINESS_BAND_LABEL[readiness.band] : null}
+                  confidence={readiness ? `${readiness.score}/100 readiness` : null}
+                  timeframes={CHART_INTERVALS}
+                  activeTimeframe={chartInterval}
+                  onTimeframeChange={(v) => setChartInterval(v as SwingInterval)}
+                  mtfStrip={<MtfStatusStrip result={mtf} />}
                   levels={[
-                    { label: 'Support', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
-                    { label: 'Resistance', value: analysis.technical.resistance, color: 'hsl(var(--prism-amber))' },
-                    { label: 'Est. entry', value: levels?.estimatedEntry, color: 'hsl(var(--foreground))' },
-                    { label: 'Est. stop', value: levels?.estimatedStop, color: 'hsl(var(--destructive))' },
-                    { label: 'Est. target', value: levels?.estimatedTarget, color: 'hsl(var(--prism-lime))' },
+                    { label: 'Support', short: 'SUP', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
+                    { label: 'Resistance', short: 'RES', value: analysis.technical.resistance, color: 'hsl(var(--prism-amber))' },
+                    { label: 'Est. entry', short: 'ENT', value: levels?.estimatedEntry, color: 'hsl(var(--foreground))' },
+                    { label: 'Est. stop', short: 'STP', value: levels?.estimatedStop, color: 'hsl(var(--destructive))' },
+                    { label: 'Est. target', short: 'TGT', value: levels?.estimatedTarget, color: 'hsl(var(--prism-lime))' },
                   ]}
                 />
               )}
