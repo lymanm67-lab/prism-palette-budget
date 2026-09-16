@@ -596,20 +596,62 @@ export default function MarketScanner() {
                           )}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(r.levels?.estimatedEntry)}
+                          {money(g?.entry ?? r.levels?.estimatedEntry)}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(r.levels?.estimatedStop)}
+                          {money(g?.stop ?? r.levels?.estimatedStop)}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(r.levels?.estimatedTarget)}
+                          {money(g?.riskPerShare)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {g ? (
+                            <button
+                              type="button"
+                              onClick={() => setGeometryFor(r.symbol)}
+                              title={targetTip}
+                              className="italic text-muted-foreground underline decoration-dotted underline-offset-2 hover:text-foreground"
+                            >
+                              {targetCellText(g)}
+                            </button>
+                          ) : (
+                            <span className="italic text-muted-foreground">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {money(risk)}
+                          {g?.resistance === null || g === null ? 'Not recorded' : money(g.resistance)}
+                        </TableCell>
+                        <TableCell className="text-right text-xs">
+                          {g?.rToResistance === null || g === null ? (
+                            <span className="text-muted-foreground">Not recorded</span>
+                          ) : (
+                            <span className={g.resistanceTooClose ? 'text-destructive' : ''}>
+                              {g.rToResistance.toFixed(2)}R
+                              {g.resistanceTooClose ? ' · too close' : ''}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {g ? (
+                            <button
+                              type="button"
+                              onClick={() => setGeometryFor(r.symbol)}
+                              title={g.targetPathReason}
+                              className={`${PATH_TONE[g.targetPath]} underline decoration-dotted underline-offset-2`}
+                            >
+                              {TARGET_PATH_LABEL[g.targetPath]}
+                            </button>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
-                          {r.levels ? `${r.levels.projectedRewardRisk.toFixed(1)} : 1` : '—'}
+                          {g?.rewardRisk == null ? '—' : `${g.rewardRisk.toFixed(1)} : 1`}
                         </TableCell>
+                        <TableCell className="text-right italic text-muted-foreground">
+                          {g?.maxShares ?? '—'}
+                        </TableCell>
+
                         <TableCell className="text-right">
                           <Button asChild size="sm" variant="ghost">
                             <Link to={`/swingedge/analyzer?symbol=${r.symbol}`}>
