@@ -32,6 +32,7 @@ import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
 import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
+import PortfolioImpactPanel from '@/components/swingedge/PortfolioImpactPanel';
 import SetupAdvisorPanel from '@/components/swingedge/SetupAdvisorPanel';
 import type { Json } from '@/integrations/supabase/types';
 import {
@@ -586,6 +587,14 @@ export default function TradePlanner() {
     }
     if (!heatGate.allowed) {
       toast.error(heatGate.reasons[0]);
+      return;
+    }
+    if (fitBlocksExecution) {
+      toast.error(
+        portfolioFit.overrideAllowed
+          ? 'Portfolio fit is poor. Write an override reason to save this plan anyway.'
+          : `Portfolio fit is ${portfolioFit.stateLabel.toLowerCase()}. Close or reduce a related position first.`,
+      );
       return;
     }
     try {
