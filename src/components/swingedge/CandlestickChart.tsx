@@ -72,6 +72,8 @@ interface Props {
   onTimeframeChange?: (value: string) => void;
   /** Compact multi-timeframe strip rendered under the toolbar. */
   mtfStrip?: ReactNode;
+  /** Told when the reader switches between standard and Heikin Ashi candles. */
+  onCandleTypeChange?: (value: CandleTypeView) => void;
 }
 
 interface MaSeries {
