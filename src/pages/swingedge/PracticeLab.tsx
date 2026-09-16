@@ -38,6 +38,8 @@ import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import NextStepsCard from '@/components/swingedge/NextStepsCard';
+import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
+
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
@@ -755,7 +757,28 @@ function TicketCard({
               <li key={s}>{s}</li>
             ))}
           </ol>
+          <div className="mt-3">
+            <ExecutionGuideButton
+              trade={{
+                symbol: ticket.symbol,
+                shares: ticket.approved_shares,
+                entryPrice: ticket.planned_entry,
+                entryOrderType: 'Limit',
+                stopPrice: ticket.planned_stop,
+                targetPrice: ticket.planned_target,
+                timeInForce: 'GTC',
+                riskPerShare: ticket.risk_per_share,
+                totalRisk: ticket.max_dollar_risk,
+                rewardToRisk: ticket.reward_risk,
+                filled: ticket.actual_entry !== null,
+                setup: ticket.setup_type,
+              }}
+              paperTradeId={ticket.paper_trade_id}
+              executionTicketId={ticket.id}
+            />
+          </div>
         </div>
+
       </CardContent>
     </Card>
   );

@@ -22,6 +22,8 @@ import { useTrainingProgress } from '@/hooks/use-swingedge-training';
 import { TRAINING_WEEKS, weekCompletion } from '@/lib/swingedge/training';
 import { curriculumFor, drillCount, lessonsForDay } from '@/lib/swingedge/curriculum';
 import { THINKORSWIM_WEEK_FOCUS } from '@/lib/swingedge/practice';
+import { COURSE_HANDOUTS } from '@/lib/swingedge/thinkorswimGuide';
+
 
 
 interface CounterState {
@@ -283,9 +285,21 @@ export default function TrainingWeek() {
               </li>
             ))}
           </ul>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/swingedge/practice">Open the Practice Lab</Link>
-          </Button>
+          {COURSE_HANDOUTS.filter((h) => h.week === weekNumber).map((h) => (
+            <p key={h.guideKey} className="text-sm">
+              <span className="font-medium">Handout: </span>
+              {h.title} — {h.description}
+            </p>
+          ))}
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/swingedge/practice">Open the Practice Lab</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/swingedge/execution-guides">Open this week's execution guide</Link>
+            </Button>
+          </div>
+
         </CardContent>
       </Card>
 

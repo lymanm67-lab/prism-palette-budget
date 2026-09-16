@@ -142,6 +142,8 @@ const SwingEdgeWatchlists = lazy(() => import("./pages/swingedge/Watchlists"));
 const SwingEdgePlanner = lazy(() => import("./pages/swingedge/TradePlanner"));
 const SwingEdgePaperTrading = lazy(() => import("./pages/swingedge/PaperTrading"));
 const SwingEdgePracticeLab = lazy(() => import("./pages/swingedge/PracticeLab"));
+const SwingEdgeExecutionGuides = lazy(() => import("./pages/swingedge/ExecutionGuides"));
+
 const SwingEdgeBacktester = lazy(() => import("./pages/swingedge/Backtester"));
 const SwingEdgeJournal = lazy(() => import("./pages/swingedge/TradeJournal"));
 const SwingEdgePerformance = lazy(() => import("./pages/swingedge/Performance"));
@@ -348,6 +350,8 @@ const App = () => (
               <Route path="/swingedge/planner" element={<Suspense fallback={<PageLoader />}><SwingEdgePlanner /></Suspense>} />
               <Route path="/swingedge/paper-trading" element={<Suspense fallback={<PageLoader />}><SwingEdgePaperTrading /></Suspense>} />
               <Route path="/swingedge/practice" element={<Suspense fallback={<PageLoader />}><SwingEdgePracticeLab /></Suspense>} />
+              <Route path="/swingedge/execution-guides" element={<Suspense fallback={<PageLoader />}><SwingEdgeExecutionGuides /></Suspense>} />
+
               <Route path="/swingedge/backtester" element={<Suspense fallback={<PageLoader />}><SwingEdgeBacktester /></Suspense>} />
               <Route path="/swingedge/journal" element={<Suspense fallback={<PageLoader />}><SwingEdgeJournal /></Suspense>} />
               <Route path="/swingedge/performance" element={<Suspense fallback={<PageLoader />}><SwingEdgePerformance /></Suspense>} />
