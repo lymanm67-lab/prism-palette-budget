@@ -508,8 +508,8 @@ export default function CandlestickChart({
   );
 
   const visibleLevels = showLevels ? levels : [];
-  const overlayCount =
-    (showMovingAverages ? 1 : 0) + (showTrendLines ? 1 : 0) + (levels.length ? 1 : 0) + (showDirectionStrip ? 1 : 0);
+  // The lines menu also holds the price-scale side, so it is always available.
+  const overlayCount = 1;
 
   if (!shown.length) {
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
@@ -693,6 +693,7 @@ export default function CandlestickChart({
         levels={visibleLevels}
         height={height}
         showDirectionStrip={showDirectionStrip && showStrip}
+        scaleSide={prefs.scaleSide}
       />
 
       <Dialog open={expanded} onOpenChange={setExpanded}>
@@ -708,6 +709,7 @@ export default function CandlestickChart({
             levels={visibleLevels}
             height={600}
             showDirectionStrip={showDirectionStrip && showStrip}
+            scaleSide={prefs.scaleSide}
           />
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
