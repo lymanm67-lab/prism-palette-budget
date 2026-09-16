@@ -648,7 +648,7 @@ export default function TradePlanner() {
               </div>
               <div>
                 <Label>Setup</Label>
-                <Select value={setup} onValueChange={(v) => setSetup(v as SetupState)}>
+                <Select value={setup} onValueChange={(v) => chooseSetup(v as SetupState)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
