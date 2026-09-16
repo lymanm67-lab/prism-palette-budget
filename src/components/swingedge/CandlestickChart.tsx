@@ -515,8 +515,75 @@ export default function CandlestickChart({
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
   }
 
+  const changeTone =
+    typeof change === 'number' || typeof changePercent === 'number'
+      ? (change ?? changePercent ?? 0) >= 0
+        ? 'text-prism-lime'
+        : 'text-destructive'
+      : 'text-muted-foreground';
+
   return (
     <div className="w-full">
+      {/* Compact toolbar: who, what price, which mode. */}
+      {(symbol || typeof price === 'number' || status || timeframes?.length) && (
+        <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5">
+          {symbol && <span className="text-sm font-bold tracking-tight">{symbol}</span>}
+          {assetName && (
+            <span className="max-w-[14rem] truncate text-[11px] text-muted-foreground">{assetName}</span>
+          )}
+          {typeof price === 'number' && <span className="text-sm font-semibold">{fmt(price)}</span>}
+          {(typeof change === 'number' || typeof changePercent === 'number') && (
+            <span className={cn('text-[11px] font-semibold', changeTone)}>
+              {typeof change === 'number' ? `${change >= 0 ? '+' : ''}${change.toFixed(2)}` : ''}
+              {typeof changePercent === 'number'
+                ? ` ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`
+                : ''}
+            </span>
+          )}
+          {status && (
+            <Badge variant="outline" className="text-[10px] font-semibold">
+              {status}
+              {confidence ? <span className="ml-1 text-muted-foreground">· {confidence}</span> : null}
+            </Badge>
+          )}
+
+          <span className="ml-auto flex items-center gap-1" role="group" aria-label="Chart mode">
+            {CHART_MODE_ORDER.map((m) => (
+              <Button
+                key={m}
+                type="button"
+                size="sm"
+                variant={mode === m ? 'default' : 'ghost'}
+                className="h-6 px-2 text-[11px]"
+                onClick={() => setMode(m)}
+                title={CHART_MODES[m].description}
+              >
+                {CHART_MODES[m].label}
+              </Button>
+            ))}
+          </span>
+        </div>
+      )}
+
+      {timeframes && timeframes.length > 0 && (
+        <div className="mb-1 flex flex-wrap items-center gap-1" role="group" aria-label="Chart timeframe">
+          {timeframes.map((t) => (
+            <Button
+              key={t.value}
+              type="button"
+              size="sm"
+              variant={activeTimeframe === t.value ? 'secondary' : 'outline'}
+              className="h-6 px-2 text-[11px]"
+              onClick={() => onTimeframeChange?.(t.value)}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {mtfStrip ? <div className="mb-2">{mtfStrip}</div> : null}
+
       <div className="mb-1 flex items-center justify-end gap-1">
         <span className="mr-1 text-[11px] text-muted-foreground" aria-live="polite">
           Showing {shown.length} of {candles.length}
