@@ -77,7 +77,7 @@ export default function EntryReadinessCard({
             {open.waiting && (
           <div className="rounded-lg border border-prism-amber/40 bg-prism-amber/10 p-3">
             <p className="flex items-center gap-2 text-sm font-semibold text-prism-amber">
-              <AlertTriangle className="h-4 w-4" /> What are we waiting for?
+              <AlertTriangle className="h-4 w-4" /> Waiting on:
             </p>
             <ul className="mt-2 space-y-1 text-sm">
               {readiness.waitingFor.map((w) => (
@@ -88,8 +88,12 @@ export default function EntryReadinessCard({
               ))}
             </ul>
           </div>
+            )}
+          </>
         )}
 
+        {sectionHeader('actions', 'What you can do next')}
+        {open.actions && (
         <div className="flex flex-wrap items-center gap-2">
           {status === 'GO' && (
             <Button size="sm" asChild>
