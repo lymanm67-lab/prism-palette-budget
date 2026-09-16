@@ -502,9 +502,12 @@ export default function CandlestickChart({
   activeTimeframe,
   onTimeframeChange,
   mtfStrip,
+  onCandleTypeChange,
 }: Props) {
   const [visibleCount, setVisibleCount] = useState(visible);
   const [expanded, setExpanded] = useState(false);
+  // Standard candles are always the default and the source of truth.
+  const [candleType, setCandleType] = useState<CandleTypeView>('STANDARD');
 
   // Saved view preferences (mode + which side the price scale sits on).
   const [prefs, setPrefs] = useState(loadChartPrefs);
