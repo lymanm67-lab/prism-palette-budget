@@ -20,6 +20,7 @@ import {
   type LiquidityTier,
 } from '@/lib/swingedge/execution';
 import type { Candle } from '@/lib/swingedge/types';
+import type { Json } from '@/integrations/supabase/types';
 
 
 const num = (v: unknown): number => Number(v ?? 0);
@@ -121,6 +122,16 @@ export interface TradePlanRow {
   target_method: string | null;
   earnings_reviewed: boolean;
   override_reason: string | null;
+  /* Conditional staging. All optional so older plans keep working untouched. */
+  execution_mode?: string | null;
+  plan_state?: string | null;
+  condition_mode?: string | null;
+  entry_conditions?: Json | null;
+  cancel_conditions?: Json | null;
+  analysis_snapshot?: Json | null;
+  armed_at?: string | null;
+  last_revalidated_at?: string | null;
+  expires_at?: string | null;
   created_at: string;
 }
 
@@ -169,6 +180,15 @@ export function useTradePlans() {
         target_method: p.target_method,
         earnings_reviewed: !!p.earnings_reviewed,
         override_reason: p.override_reason,
+        execution_mode: p.execution_mode ?? null,
+        plan_state: p.plan_state ?? null,
+        condition_mode: p.condition_mode ?? null,
+        entry_conditions: p.entry_conditions ?? null,
+        cancel_conditions: p.cancel_conditions ?? null,
+        analysis_snapshot: p.analysis_snapshot ?? null,
+        armed_at: p.armed_at ?? null,
+        last_revalidated_at: p.last_revalidated_at ?? null,
+        expires_at: p.expires_at ?? null,
         created_at: p.created_at,
       }));
     },
@@ -695,4 +715,36 @@ export function usePaperTradeManagement() {
     closeTrade: closeTrade.mutateAsync,
     isSaving: moveStop.isPending || closeTrade.isPending,
   };
+}
+
+/* ----------------------------------------------------------- armed plans */
+
+/**
+ * Plans staged with a conditional entry — armed, waiting or already triggered.
+ * Read by the Analyzer so it can recognise a symbol you have already staged
+ * instead of inviting you to stage it twice.
+ */
+export function useArmedPlans(symbol?: string | null) {
+  const { household } = useHousehold();
+  const householdId = household?.id;
+  const sym = (symbol ?? '').trim().toUpperCase();
+
+  const query = useQuery({
+    queryKey: ['se-armed-plans', householdId, sym],
+    enabled: !!householdId,
+    queryFn: async () => {
+      let q = supabase
+        .from('se_trade_plans')
+        .select('*')
+        .eq('household_id', householdId!)
+        .in('plan_state', ['READY_TO_ARM', 'WAITING_FOR_CONDITION', 'CONDITION_MET', 'REVALIDATION_REQUIRED'])
+        .order('created_at', { ascending: false });
+      if (sym) q = q.eq('symbol', sym);
+      const { data, error } = await q;
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  return { plans: query.data ?? [], isLoading: query.isLoading, refetch: query.refetch };
 }

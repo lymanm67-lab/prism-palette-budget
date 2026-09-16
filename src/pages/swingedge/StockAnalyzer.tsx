@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Loader2, Minus, Save, Search, Square, TrendingDown, TrendingUp, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,12 @@ import ReadThisChartCard from '@/components/swingedge/ReadThisChartCard';
 import { readChart } from '@/lib/swingedge/chartReading';
 import { currentDirection } from '@/lib/swingedge/directionStrip';
 import type { SwingInterval } from '@/lib/swingedge/types';
+import EntryReadinessCard from '@/components/swingedge/EntryReadinessCard';
+import ArmedTradeStrip from '@/components/swingedge/ArmedTradeStrip';
+import { buildEntryReadiness, armedNeedsReview } from '@/lib/swingedge/conditionalStaging';
+import { buildAnalysisSnapshot, stashSnapshot, type AnalysisSnapshot } from '@/lib/swingedge/analysisSnapshot';
+import { computeGeometry } from '@/lib/swingedge/tradeGeometry';
+import { useArmedPlans } from '@/hooks/use-swingedge-stops';
 
 const CHART_INTERVALS: { value: SwingInterval; label: string }[] = [
   { value: '1week', label: 'Weekly' },
@@ -248,6 +254,96 @@ export default function StockAnalyzer() {
     ? Math.round(((analysis.assetType === 'ETF' ? analysis.etf?.coverage : analysis.fundamental?.coverage) ?? 0) * 100)
     : null;
 
+  /* --------------------------------------------- conditional trade staging */
+
+  const navigate = useNavigate();
+  const { plans: armedPlans } = useArmedPlans(symbol);
+  const armedPlan = armedPlans[0] ?? null;
+
+  // Trade geometry, used only for the target and the path to it. Estimates from
+  // the daily chart, never a plan.
+  const geometry = useMemo(() => {
+    if (!analysis || !levels) return null;
+    return computeGeometry({
+      entry: levels.estimatedEntry,
+      stop: levels.estimatedStop,
+      resistance: analysis.technical.resistance,
+    });
+  }, [analysis, levels]);
+
+  const priceExtended = mtf?.priceExtended ?? false;
+
+  const entryReadiness = useMemo(() => {
+    if (!analysis) return null;
+    const rowState = (key: string) => mtf?.rows.find((r) => r.key === key)?.state ?? null;
+    return buildEntryReadiness(
+      {
+        symbol: analysis.symbol,
+        setup: analysis.technical.setup,
+        signal: analysis.hybrid.signal,
+        readinessScore: readiness?.score ?? null,
+        readinessBand: readiness?.band ?? null,
+        hardGates: readiness?.hardGates ?? [],
+        dailyState: rowState('DAILY'),
+        h4State: rowState('H4'),
+        h1State: rowState('H1'),
+        entryTrigger: levels?.estimatedEntry ?? null,
+        currentPrice: analysis.technical.price,
+        stop: levels?.estimatedStop ?? null,
+        target: geometry?.target ?? levels?.estimatedTarget ?? null,
+        targetPath: geometry?.targetPath ?? null,
+        targetPathReason: geometry?.targetPathReason ?? null,
+        eventBand: eventView.result?.band ?? null,
+        haConfirmation: null,
+        priceExtended,
+        entryZone: analysis.entryZone ?? null,
+      },
+      !settings.advanced_mode,
+    );
+  }, [analysis, mtf, readiness, levels, geometry, eventView.result, priceExtended, settings.advanced_mode]);
+
+  const snapshot = useMemo<AnalysisSnapshot | null>(() => {
+    if (!analysis) return null;
+    const rowState = (key: string) => mtf?.rows.find((r) => r.key === key)?.state ?? null;
+    return buildAnalysisSnapshot({
+      symbol: analysis.symbol,
+      currentPrice: analysis.technical.price,
+      setup: analysis.technical.setup,
+      entryTrigger: levels?.estimatedEntry ?? null,
+      support: analysis.technical.support,
+      resistance: analysis.technical.resistance,
+      stopSuggestion: levels?.estimatedStop ?? null,
+      mathematicalTarget: geometry?.mathematicalTarget ?? null,
+      technicalTarget: geometry?.target ?? null,
+      targetPath: geometry?.targetPath ?? null,
+      targetPathReason: geometry?.targetPathReason ?? null,
+      dailyTrend: rowState('DAILY'),
+      h4Trend: rowState('H4'),
+      h1Trend: rowState('H1'),
+      weeklyContext: rowState('WEEKLY'),
+      haConfirmation: null,
+      directionalBias: bias?.direction ?? null,
+      eventRisk: eventView.result?.band ?? null,
+      signalStatus: analysis.hybrid.signal,
+      readinessScore: readiness?.score ?? null,
+      readinessBand: readiness?.band ?? null,
+    });
+  }, [analysis, mtf, levels, geometry, bias, eventView.result, readiness]);
+
+  // Was anything material different when this trade was armed?
+  const armedReview = useMemo(() => {
+    const stored = armedPlan?.analysis_snapshot as unknown as AnalysisSnapshot | null | undefined;
+    if (!stored || !snapshot) return null;
+    return armedNeedsReview(stored, { ...snapshot, priceExtended });
+  }, [armedPlan, snapshot, priceExtended]);
+
+  const prepareConditionalTrade = () => {
+    if (!snapshot) return;
+    const key = stashSnapshot(snapshot);
+    toast.success('Analysis sent to the Trade Planner.');
+    navigate(`/swingedge/planner?symbol=${encodeURIComponent(snapshot.symbol)}&prep=${encodeURIComponent(key)}`);
+  };
+
   return (
     <div className="space-y-6 p-4 md:p-6">
       <header className="space-y-1">
@@ -355,6 +451,33 @@ export default function StockAnalyzer() {
               Compared with {analysis.sectorSymbol} and {analysis.marketTrendSymbol}
             </Badge>
           </div>
+
+          {armedPlan && (
+            <ArmedTradeStrip
+              symbol={analysis.symbol}
+              planState={(armedPlan.plan_state as string | null) ?? null}
+              entryCondition={
+                Array.isArray(armedPlan.entry_conditions) && armedPlan.entry_conditions.length
+                  ? (armedPlan.entry_conditions as { text?: string }[])
+                      .map((c) => c.text)
+                      .filter(Boolean)
+                      .join(' AND ')
+                  : null
+              }
+              lastRevalidatedAt={(armedPlan.last_revalidated_at as string | null) ?? null}
+              needsReview={!!armedReview?.needsReview}
+              reviewReasons={armedReview?.reasons ?? []}
+            />
+          )}
+
+          {entryReadiness && (
+            <EntryReadinessCard
+              symbol={analysis.symbol}
+              readiness={entryReadiness}
+              onPrepare={prepareConditionalTrade}
+            />
+          )}
+
 
           <Card className="border-border/60 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">

@@ -31,6 +31,25 @@ import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
 import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
+import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
+import type { Json } from '@/integrations/supabase/types';
+import {
+  clearSnapshot,
+  plannerPrefill,
+  readSnapshot,
+  snapshotOrigin,
+  type AnalysisSnapshot,
+} from '@/lib/swingedge/analysisSnapshot';
+import {
+  conditionsFromReadiness,
+  executionModeFor,
+  nextPlanState,
+  EXECUTION_MODE_LABEL,
+  PLAN_STATE_LABEL,
+  type ConditionMode,
+  type EntryCondition,
+  type ExecutionMode,
+} from '@/lib/swingedge/conditionalStaging';
 
 import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import MultiTimeframeCard from '@/components/swingedge/MultiTimeframeCard';
@@ -97,22 +116,31 @@ export default function TradePlanner() {
   const breaker = useCircuitBreaker();
   const points = useReadinessPoints();
 
+  /**
+   * Handed over from the Stock Analyzer. Read synchronously so the pre-filled
+   * numbers are the ones the analysis measured, not the chart's last price.
+   */
+  const prepKey = params.get('prep');
+  const [prepSnapshot] = useState<AnalysisSnapshot | null>(() => readSnapshot(prepKey));
+  const prefill = useMemo(() => (prepSnapshot ? plannerPrefill(prepSnapshot) : null), [prepSnapshot]);
 
-  const [symbol, setSymbol] = useState((params.get('symbol') ?? '').toUpperCase());
+  const [symbol, setSymbol] = useState(
+    (prefill?.symbol || params.get('symbol') || '').toUpperCase(),
+  );
   const levels = useSymbolLevels(symbol);
   const L = levels.data;
 
-  const [setup, setSetup] = useState<SetupState>('PULLBACK');
-  const [entry, setEntry] = useState('');
+  const [setup, setSetup] = useState<SetupState>((prefill?.setup as SetupState) ?? 'PULLBACK');
+  const [entry, setEntry] = useState(prefill?.entry ?? '');
   const [invalidation, setInvalidation] = useState('');
   const [method, setMethod] = useState<StopMethod>('STRUCTURE');
   const [bufferPct, setBufferPct] = useState(0.25);
   const [atrMultiple, setAtrMultiple] = useState(1.5);
   const [pctStop, setPctStop] = useState(3);
-  const [stopInput, setStopInput] = useState('');
+  const [stopInput, setStopInput] = useState(prefill?.stop ?? '');
   const [tightenConfirmed, setTightenConfirmed] = useState(false);
   const [sharesInput, setSharesInput] = useState('');
-  const [target, setTarget] = useState('');
+  const [target, setTarget] = useState(prefill?.target ?? '');
   const [targetMethod, setTargetMethod] = useState<TargetMethod>('REWARD_RISK');
   const [minRR, setMinRR] = useState(2);
   const [entryConfirmed, setEntryConfirmed] = useState(false);
@@ -122,13 +150,29 @@ export default function TradePlanner() {
   const [stopOverride, setStopOverride] = useState(false);
   const [stopJustification, setStopJustification] = useState('');
 
-  // Suggested setup and entry follow the loaded chart until the user types.
+  /* ----------------------------------------------- execution plan (stage 6) */
+
+  const [executionMode, setExecutionMode] = useState<ExecutionMode | null>(null);
+  const [conditionMode, setConditionMode] = useState<ConditionMode>('SIMPLE');
+  const [conditions, setConditions] = useState<EntryCondition[]>([]);
+  const [expiresAt, setExpiresAt] = useState('');
+  const [cancelCondition, setCancelCondition] = useState('');
+  const [planSaved, setPlanSaved] = useState(false);
+
+  // Suggested setup and entry follow the loaded chart until the user types,
+  // unless the Analyzer already handed over its own numbers.
   useEffect(() => {
-    if (!L) return;
+    if (!L || prefill) return;
     if (L.setup !== 'NONE') setSetup(L.setup);
     if (!entry && L.snapshot) setEntry(L.snapshot.price.toFixed(2));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [L?.setup, L?.snapshot?.price]);
+
+  // The handover is consumed once, so a refresh does not silently re-apply it.
+  useEffect(() => {
+    if (prepSnapshot) clearSnapshot(prepKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const entryNum = Number(entry) || 0;
   const atrValue = L?.snapshot?.atr14 ?? null;
@@ -368,6 +412,92 @@ export default function TradePlanner() {
 
   const canSave = symbol.length >= 1 && entryNum > 0 && stopNum > 0 && targetNum > entryNum && !risk.invalidStop;
 
+  /* ------------------------------------------------- execution plan working */
+
+  // Entry conditions default to the three plain checks, keyed to the entry the
+  // plan actually uses. They are re-based only while the user has not edited them.
+  useEffect(() => {
+    setConditions((cur) => {
+      if (cur.some((c) => c.id.startsWith('custom-'))) return cur;
+      const base = conditionsFromReadiness(entryNum > 0 ? entryNum : null);
+      if (!cur.length) return base;
+      return cur.map((c) => (c.id === 'price' ? { ...c, text: base[0].text } : c));
+    });
+  }, [entryNum]);
+
+  /** Every reason this plan cannot be typed into Thinkorswim right now. */
+  const executeBlockers = useMemo(() => {
+    const out: string[] = [];
+    if (qualification.verdict !== 'QUALIFIES') out.push(`Trade status is ${VERDICT_LABEL[qualification.verdict]}, not GO.`);
+    if (!entryConfirmed) out.push('Entry has not been confirmed.');
+    if (stopNum <= 0 || risk.invalidStop || quality.quality === 'INVALID') out.push('The stop is not valid.');
+    if (targetNum <= entryNum) out.push('The target is not valid.');
+    if (risk.rewardRiskStatus === 'BELOW_RULE') out.push('Reward-to-risk is below your minimum.');
+    if (!heatGate.allowed) out.push(heatGate.reasons[0] ?? 'Portfolio heat is over your limit.');
+    if (risk.percentOfAccount > settings.risk_per_trade_pct) out.push('Account risk is over your per-trade limit.');
+    if (!earningsChecked) out.push('Earnings timing has not been reviewed.');
+    if (!breaker.assessment.canOpenNewTrade) out.push(breaker.assessment.headline ?? 'Trading is paused today.');
+    return out;
+  }, [
+    qualification.verdict,
+    entryConfirmed,
+    stopNum,
+    risk.invalidStop,
+    risk.rewardRiskStatus,
+    risk.percentOfAccount,
+    quality.quality,
+    targetNum,
+    entryNum,
+    heatGate.allowed,
+    heatGate.reasons,
+    settings.risk_per_trade_pct,
+    earningsChecked,
+    breaker.assessment,
+  ]);
+
+  const canExecuteNow = executeBlockers.length === 0;
+
+  // Beginner Mode defaults a waiting setup to an alert. Arming stays deliberate.
+  const suggestedMode = useMemo(
+    () => executionModeFor(canExecuteNow ? 'GO' : 'WAIT', !settings.advanced_mode),
+    [canExecuteNow, settings.advanced_mode],
+  );
+  const mode = executionMode ?? suggestedMode;
+
+  const planState = useMemo(
+    () =>
+      nextPlanState({
+        mode,
+        status: canExecuteNow ? 'GO' : 'WAIT',
+        planComplete: canSave,
+        conditionsDefined: conditions.some((c) => c.enabled && c.text.length > 0),
+        saved: planSaved,
+      }),
+    [mode, canExecuteNow, canSave, conditions, planSaved],
+  );
+
+  const guideTrade = useMemo(
+    () =>
+      symbol && entryNum > 0 && stopNum > 0
+        ? {
+            symbol: symbol.toUpperCase(),
+            shares: risk.shares ?? null,
+            entryPrice: entryNum,
+            entryOrderType: 'Limit',
+            stopPrice: stopNum,
+            targetPrice: targetNum > 0 ? targetNum : null,
+            timeInForce: 'GTC',
+            riskPerShare: risk.riskPerShare ?? null,
+            totalRisk: risk.plannedLoss ?? null,
+            rewardToRisk: risk.rewardRisk ?? null,
+            filled: false,
+            setup,
+          }
+        : null,
+    [symbol, entryNum, stopNum, targetNum, risk.shares, risk.riskPerShare, risk.plannedLoss, risk.rewardRisk, setup],
+  );
+
+
   const handleSave = async () => {
     if (!canSave) {
       toast.error('Finish the entry, stop and target first');
@@ -430,8 +560,23 @@ export default function TradePlanner() {
           : override
             ? overrideReason || 'Advanced Mode override'
             : null,
+        execution_mode: mode,
+        plan_state: mode === 'EXECUTE_NOW' ? planState : 'WAITING_FOR_CONDITION',
+        condition_mode: conditionMode,
+        entry_conditions:
+          mode === 'EXECUTE_NOW' ? null : (JSON.parse(JSON.stringify(conditions.filter((c) => c.enabled))) as Json),
+        cancel_conditions: cancelCondition ? [{ text: cancelCondition }] : null,
+        analysis_snapshot: prepSnapshot ? (JSON.parse(JSON.stringify(prepSnapshot)) as Json) : null,
+        armed_at: mode === 'ARM_FOR_LATER' ? new Date().toISOString() : null,
+        last_revalidated_at: new Date().toISOString(),
+        expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       });
-      toast.success('Plan saved');
+      setPlanSaved(true);
+      toast.success(
+        mode === 'EXECUTE_NOW'
+          ? 'Plan saved. Type the order in Thinkorswim using these values.'
+          : `Plan saved as ${EXECUTION_MODE_LABEL[mode].toLowerCase()}.`,
+      );
     } catch {
       toast.error('Could not save that plan');
     }
@@ -1086,6 +1231,45 @@ export default function TradePlanner() {
               </Button>
             </div>
           </PlannerStage>
+
+          <PlannerStage
+            n={6}
+            title="How will this reach Thinkorswim?"
+            summary={`${EXECUTION_MODE_LABEL[mode]} · ${PLAN_STATE_LABEL[planState]}`}
+            complete={planSaved}
+            open={openStage === 6}
+            onToggle={() => toggleStage(6)}
+          >
+            <ExecutionPlanPanel
+              mode={mode}
+              onModeChange={setExecutionMode}
+              canExecuteNow={canExecuteNow}
+              executeBlockers={executeBlockers}
+              waitingFor={executeBlockers}
+              planState={planState}
+              conditions={conditions}
+              onConditionsChange={setConditions}
+              conditionMode={conditionMode}
+              onConditionModeChange={setConditionMode}
+              advanced={!!settings.advanced_mode}
+              expiresAt={expiresAt}
+              onExpiresChange={setExpiresAt}
+              cancelCondition={cancelCondition}
+              onCancelChange={setCancelCondition}
+              trade={guideTrade}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={handleSave} disabled={isSaving || !canSave}>
+                <Save className="mr-2 h-4 w-4" />
+                {mode === 'EXECUTE_NOW'
+                  ? 'Save plan and execute now'
+                  : mode === 'ARM_FOR_LATER'
+                    ? 'Save and arm for later'
+                    : 'Save plan and set alert'}
+              </Button>
+            </div>
+          </PlannerStage>
+
 
           <HowToUse
             id="planner-how-to"

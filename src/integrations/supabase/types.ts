@@ -12962,15 +12962,24 @@ export type Database = {
       }
       se_trade_plans: {
         Row: {
+          analysis_snapshot: Json | null
+          armed_at: string | null
           atr_multiple: number | null
           atr_value: number | null
+          cancel_conditions: Json | null
+          condition_mode: string | null
           created_at: string
           dollar_risk: number | null
           earnings_reviewed: boolean
+          entry_conditions: Json | null
+          execution_mode: string | null
+          expires_at: string | null
           household_id: string
           id: string
           invalidation: string | null
+          last_revalidated_at: string | null
           override_reason: string | null
+          plan_state: string | null
           planned_entry: number
           planned_stop: number
           planned_target: number
@@ -12995,15 +13004,24 @@ export type Database = {
           why_stop_here: string | null
         }
         Insert: {
+          analysis_snapshot?: Json | null
+          armed_at?: string | null
           atr_multiple?: number | null
           atr_value?: number | null
+          cancel_conditions?: Json | null
+          condition_mode?: string | null
           created_at?: string
           dollar_risk?: number | null
           earnings_reviewed?: boolean
+          entry_conditions?: Json | null
+          execution_mode?: string | null
+          expires_at?: string | null
           household_id: string
           id?: string
           invalidation?: string | null
+          last_revalidated_at?: string | null
           override_reason?: string | null
+          plan_state?: string | null
           planned_entry: number
           planned_stop: number
           planned_target: number
@@ -13028,15 +13046,24 @@ export type Database = {
           why_stop_here?: string | null
         }
         Update: {
+          analysis_snapshot?: Json | null
+          armed_at?: string | null
           atr_multiple?: number | null
           atr_value?: number | null
+          cancel_conditions?: Json | null
+          condition_mode?: string | null
           created_at?: string
           dollar_risk?: number | null
           earnings_reviewed?: boolean
+          entry_conditions?: Json | null
+          execution_mode?: string | null
+          expires_at?: string | null
           household_id?: string
           id?: string
           invalidation?: string | null
+          last_revalidated_at?: string | null
           override_reason?: string | null
+          plan_state?: string | null
           planned_entry?: number
           planned_stop?: number
           planned_target?: number
