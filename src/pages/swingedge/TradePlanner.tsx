@@ -114,13 +114,22 @@ export default function TradePlanner() {
   const breaker = useCircuitBreaker();
   const points = useReadinessPoints();
 
+  /**
+   * Handed over from the Stock Analyzer. Read synchronously so the pre-filled
+   * numbers are the ones the analysis measured, not the chart's last price.
+   */
+  const prepKey = params.get('prep');
+  const [prepSnapshot] = useState<AnalysisSnapshot | null>(() => readSnapshot(prepKey));
+  const prefill = useMemo(() => (prepSnapshot ? plannerPrefill(prepSnapshot) : null), [prepSnapshot]);
 
-  const [symbol, setSymbol] = useState((params.get('symbol') ?? '').toUpperCase());
+  const [symbol, setSymbol] = useState(
+    (prefill?.symbol || params.get('symbol') || '').toUpperCase(),
+  );
   const levels = useSymbolLevels(symbol);
   const L = levels.data;
 
-  const [setup, setSetup] = useState<SetupState>('PULLBACK');
-  const [entry, setEntry] = useState('');
+  const [setup, setSetup] = useState<SetupState>((prefill?.setup as SetupState) ?? 'PULLBACK');
+  const [entry, setEntry] = useState(prefill?.entry ?? '');
   const [invalidation, setInvalidation] = useState('');
   const [method, setMethod] = useState<StopMethod>('STRUCTURE');
   const [bufferPct, setBufferPct] = useState(0.25);
