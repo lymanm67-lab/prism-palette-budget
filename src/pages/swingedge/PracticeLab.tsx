@@ -28,6 +28,7 @@ import {
   Brain,
   CheckCircle2,
   ClipboardCheck,
+  ExternalLink,
   Monitor,
   RefreshCw,
   ShieldCheck,
@@ -39,6 +40,7 @@ import HowToUse from '@/components/swingedge/HowToUse';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
+import { thinkorswimWebUrl, ticketOrderText } from '@/lib/swingedge/thinkorswimGuide';
 
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
