@@ -28,6 +28,8 @@ import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge
 import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
 import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
+import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
+
 import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import MultiTimeframeCard from '@/components/swingedge/MultiTimeframeCard';
 import { useMultiTimeframe } from '@/hooks/use-swingedge-mtf';
