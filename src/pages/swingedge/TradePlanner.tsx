@@ -1229,6 +1229,45 @@ export default function TradePlanner() {
             </div>
           </PlannerStage>
 
+          <PlannerStage
+            n={6}
+            title="How will this reach Thinkorswim?"
+            summary={`${EXECUTION_MODE_LABEL[mode]} · ${PLAN_STATE_LABEL[planState]}`}
+            complete={planSaved}
+            open={openStage === 6}
+            onToggle={() => toggleStage(6)}
+          >
+            <ExecutionPlanPanel
+              mode={mode}
+              onModeChange={setExecutionMode}
+              canExecuteNow={canExecuteNow}
+              executeBlockers={executeBlockers}
+              waitingFor={executeBlockers}
+              planState={planState}
+              conditions={conditions}
+              onConditionsChange={setConditions}
+              conditionMode={conditionMode}
+              onConditionModeChange={setConditionMode}
+              advanced={!!settings.advanced_mode}
+              expiresAt={expiresAt}
+              onExpiresChange={setExpiresAt}
+              cancelCondition={cancelCondition}
+              onCancelChange={setCancelCondition}
+              trade={guideTrade}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={handleSave} disabled={isSaving || !canSave}>
+                <Save className="mr-2 h-4 w-4" />
+                {mode === 'EXECUTE_NOW'
+                  ? 'Save plan and execute now'
+                  : mode === 'ARM_FOR_LATER'
+                    ? 'Save and arm for later'
+                    : 'Save plan and set alert'}
+              </Button>
+            </div>
+          </PlannerStage>
+
+
           <HowToUse
             id="planner-how-to"
             title="How to use this screen"
