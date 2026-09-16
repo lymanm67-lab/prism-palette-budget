@@ -1133,7 +1133,10 @@ export default function TradePlanner() {
                 <Input
                   id="planner-target"
                   value={target}
-                  onChange={(e) => setTarget(e.target.value)}
+                  onChange={(e) => {
+                    setTargetTouched(true);
+                    setTarget(e.target.value);
+                  }}
                   inputMode="decimal"
                 />
               </div>
@@ -1177,6 +1180,7 @@ export default function TradePlanner() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    setTargetTouched(true);
                     setTarget(t.price.toFixed(2));
                     setTargetMethod(t.method);
                   }}
