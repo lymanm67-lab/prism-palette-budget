@@ -34,6 +34,13 @@ export interface ChartLevel {
   label: string;
   value: number | null | undefined;
   color: string; // css color, e.g. 'hsl(var(--prism-teal))'
+  /** Short code shown on the price scale, e.g. ENT / STP / TGT. */
+  short?: string;
+}
+
+export interface ChartTimeframeOption {
+  value: string;
+  label: string;
 }
 
 interface Props {
@@ -48,6 +55,21 @@ interface Props {
   showTrendLines?: boolean;
   /** Draw the 20 EMA and 50 SMA curves over the candles. */
   showMovingAverages?: boolean;
+  // ---- compact toolbar (all optional; omitted parts are simply not shown) ----
+  symbol?: string;
+  assetName?: string;
+  price?: number | null;
+  change?: number | null;
+  changePercent?: number | null;
+  /** Short signal / status text, e.g. "GO" or "WATCH". */
+  status?: string | null;
+  /** Confidence text shown next to the status. */
+  confidence?: string | null;
+  timeframes?: ChartTimeframeOption[];
+  activeTimeframe?: string;
+  onTimeframeChange?: (value: string) => void;
+  /** Compact multi-timeframe strip rendered under the toolbar. */
+  mtfStrip?: ReactNode;
 }
 
 interface MaSeries {
@@ -63,17 +85,37 @@ interface BodyProps {
   levels: ChartLevel[];
   height: number;
   showDirectionStrip: boolean;
+  scaleSide: PriceScaleSide;
 }
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
 const fmtDate = (iso: string) => iso.slice(0, 10);
 
+/** Short code for the price scale, so labels stay narrow and readable. */
+const shortCode = (l: ChartLevel) =>
+  l.short ??
+  l.label
+    .replace(/^est\.?\s*/i, '')
+    .split(/\s+/)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('')
+    .slice(0, 3);
+
 /**
  * The chart itself — candles, volume pane, levels, averages, trend lines.
  * Rendered inline and again inside the enlarge dialog at a bigger size.
  */
-function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDirectionStrip }: BodyProps) {
+function ChartBody({
+  shown,
+  strip,
+  trendLines,
+  maSeries,
+  levels,
+  height,
+  showDirectionStrip,
+  scaleSide,
+}: BodyProps) {
   const [hover, setHover] = useState<number | null>(null);
 
   const W = 800;
@@ -82,9 +124,14 @@ function ChartBody({ shown, strip, trendLines, maSeries, levels, height, showDir
   const stripH = showDirectionStrip ? 14 : 0;
   const priceH = H - volH - stripH - 24; // 24px date strip
   const volTop = priceH + stripH;
-  const padL = 8;
-  const padR = 56; // room for price labels
+  // The price scale sits on one side only; the other side keeps a hair of padding
+  // so candles never touch the frame.
+  const scaleW = 70;
+  const padL = scaleSide === 'LEFT' ? scaleW : 8;
+  const padR = scaleSide === 'RIGHT' ? scaleW : 8;
   const plotW = W - padL - padR;
+  const scaleX = scaleSide === 'RIGHT' ? W - padR + 5 : padL - 5;
+  const scaleAnchor = scaleSide === 'RIGHT' ? 'start' : 'end';
 
   const { lo, hi, maxVol, activeLevels } = useMemo(() => {
     if (!shown.length) return { lo: 0, hi: 0, maxVol: 0, activeLevels: [] as (ChartLevel & { value: number })[] };
