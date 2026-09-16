@@ -670,6 +670,34 @@ export default function TradePlanner() {
                 {L.snapshot.resistance ? money(L.snapshot.resistance) : '—'}
               </p>
             ) : null}
+
+            <SetupAdvisorPanel
+              symbol={symbol}
+              detected={L?.setup ?? null}
+              chosen={setup}
+              onChoose={chooseSetup}
+              price={L?.snapshot?.price ?? null}
+              autoApplied={setupAutoApplied}
+              context={{
+                snapshot: L?.snapshot ?? null,
+                swingLow: L?.swingLow ?? null,
+                pullbackLow: L?.pullbackLow ?? null,
+                breakoutLevel: L?.breakoutLevel ?? null,
+                retestLow: L?.retestLow ?? null,
+                notice: L?.notice ?? null,
+                multiTimeframe: mtf
+                  ? {
+                      state: mtf.state,
+                      rows: mtf.rows.map((r) => ({
+                        timeframe: r.label ?? r.key,
+                        trend: r.metrics?.trend ?? null,
+                        status: r.status ?? null,
+                      })),
+                    }
+                  : null,
+              }}
+            />
+
             <div className="flex justify-end">
               <Button size="sm" variant="outline" onClick={() => setOpenStage(2)}>
                 Next: what proves me wrong
