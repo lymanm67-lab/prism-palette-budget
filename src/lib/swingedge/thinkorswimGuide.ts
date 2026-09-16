@@ -162,6 +162,31 @@ export function orderStructureLines(trade: GuideTrade, kind: GuideKind): OrderLi
   ];
 }
 
+/**
+ * The real Thinkorswim paperMoney web platform, opened at the trade tab for a
+ * symbol. Charles Schwab does not publish a URL scheme that prefills an order
+ * ticket — no outside app may do that — so the link lands the user on the
+ * platform with the symbol ready and the exact order text is copied instead.
+ */
+export function thinkorswimWebUrl(symbol?: string | null): string {
+  const base = 'https://trade.thinkorswim.com/';
+  const sym = (symbol ?? '').trim().toUpperCase();
+  return sym ? `${base}?symbol=${encodeURIComponent(sym)}` : base;
+}
+
+/**
+ * The exact order text for a ticket, one line per order, ready to paste or read
+ * out while typing into paperMoney. Values come from the approved trade — never
+ * invented.
+ */
+export function ticketOrderText(trade: GuideTrade): string {
+  const kind = guideKindFor(trade);
+  return [
+    `SwingEdge execution ticket — ${trade.symbol}`,
+    ...orderStructureLines(trade, kind).map((l) => l.text),
+  ].join('\n');
+}
+
 const COMMON_WRONG = (trade: GuideTrade): OrderLine[] => {
   const qty = shareText(trade.shares);
   return [
