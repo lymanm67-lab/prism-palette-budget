@@ -31,6 +31,23 @@ import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
 import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
+import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
+import {
+  clearSnapshot,
+  plannerPrefill,
+  readSnapshot,
+  snapshotOrigin,
+  type AnalysisSnapshot,
+} from '@/lib/swingedge/analysisSnapshot';
+import {
+  conditionsFromReadiness,
+  executionModeFor,
+  nextPlanState,
+  EXECUTION_MODE_LABEL,
+  type ConditionMode,
+  type EntryCondition,
+  type ExecutionMode,
+} from '@/lib/swingedge/conditionalStaging';
 
 import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import MultiTimeframeCard from '@/components/swingedge/MultiTimeframeCard';
