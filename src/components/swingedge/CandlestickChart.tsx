@@ -221,12 +221,20 @@ function ChartBody({
           y2={priceH}
           stroke="hsl(var(--border))"
         />
-        {[lo, (lo + hi) / 2, hi].map((p) => (
-          <g key={p}>
+        <line
+          x1={padL}
+          x2={W - padR}
+          y1={y((lo + hi) / 2)}
+          y2={y((lo + hi) / 2)}
+          stroke="hsl(var(--border))"
+          strokeDasharray="2 4"
+        />
+        {gridPrices.map((p, i) => (
+          <g key={`grid-${i}`}>
             <line x1={padL} x2={W - padR} y1={y(p)} y2={y(p)} stroke="hsl(var(--border))" strokeDasharray="2 4" />
             <text
               x={scaleX}
-              y={clampY(y(p) + 3)}
+              y={scaleLabelY.get(`__grid${i}`) ?? clampY(y(p) + 3)}
               fontSize={9}
               textAnchor={scaleAnchor}
               className="fill-muted-foreground"
