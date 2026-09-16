@@ -82,11 +82,12 @@ export function useExecutionGuides() {
           trade_plan_id: input.tradePlanId ?? null,
           paper_trade_id: input.paperTradeId ?? null,
           execution_ticket_id: input.executionTicketId ?? null,
-          trade_values: (input.guide.trade ?? {}) as unknown as Record<string, unknown>,
+          trade_values: (input.guide.trade ?? {}) as unknown as Record<string, never>,
           notes: input.notes ?? null,
           printed_at: input.printed ? now : null,
           downloaded_at: input.downloaded ? now : null,
-        })
+        } as never)
+
         .select('id')
         .single();
       if (error) throw error;
