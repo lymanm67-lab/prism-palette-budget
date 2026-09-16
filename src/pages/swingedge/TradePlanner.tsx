@@ -135,10 +135,10 @@ export default function TradePlanner() {
   const [bufferPct, setBufferPct] = useState(0.25);
   const [atrMultiple, setAtrMultiple] = useState(1.5);
   const [pctStop, setPctStop] = useState(3);
-  const [stopInput, setStopInput] = useState('');
+  const [stopInput, setStopInput] = useState(prefill?.stop ?? '');
   const [tightenConfirmed, setTightenConfirmed] = useState(false);
   const [sharesInput, setSharesInput] = useState('');
-  const [target, setTarget] = useState('');
+  const [target, setTarget] = useState(prefill?.target ?? '');
   const [targetMethod, setTargetMethod] = useState<TargetMethod>('REWARD_RISK');
   const [minRR, setMinRR] = useState(2);
   const [entryConfirmed, setEntryConfirmed] = useState(false);
@@ -148,13 +148,29 @@ export default function TradePlanner() {
   const [stopOverride, setStopOverride] = useState(false);
   const [stopJustification, setStopJustification] = useState('');
 
-  // Suggested setup and entry follow the loaded chart until the user types.
+  /* ----------------------------------------------- execution plan (stage 6) */
+
+  const [executionMode, setExecutionMode] = useState<ExecutionMode | null>(null);
+  const [conditionMode, setConditionMode] = useState<ConditionMode>('SIMPLE');
+  const [conditions, setConditions] = useState<EntryCondition[]>([]);
+  const [expiresAt, setExpiresAt] = useState('');
+  const [cancelCondition, setCancelCondition] = useState('');
+  const [planSaved, setPlanSaved] = useState(false);
+
+  // Suggested setup and entry follow the loaded chart until the user types,
+  // unless the Analyzer already handed over its own numbers.
   useEffect(() => {
-    if (!L) return;
+    if (!L || prefill) return;
     if (L.setup !== 'NONE') setSetup(L.setup);
     if (!entry && L.snapshot) setEntry(L.snapshot.price.toFixed(2));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [L?.setup, L?.snapshot?.price]);
+
+  // The handover is consumed once, so a refresh does not silently re-apply it.
+  useEffect(() => {
+    if (prepSnapshot) clearSnapshot(prepKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const entryNum = Number(entry) || 0;
   const atrValue = L?.snapshot?.atr14 ?? null;
