@@ -142,6 +142,8 @@ const SwingEdgeWatchlists = lazy(() => import("./pages/swingedge/Watchlists"));
 const SwingEdgePlanner = lazy(() => import("./pages/swingedge/TradePlanner"));
 const SwingEdgePaperTrading = lazy(() => import("./pages/swingedge/PaperTrading"));
 const SwingEdgePracticeLab = lazy(() => import("./pages/swingedge/PracticeLab"));
+const SwingEdgeExecutionGuides = lazy(() => import("./pages/swingedge/ExecutionGuides"));
+
 const SwingEdgeBacktester = lazy(() => import("./pages/swingedge/Backtester"));
 const SwingEdgeJournal = lazy(() => import("./pages/swingedge/TradeJournal"));
 const SwingEdgePerformance = lazy(() => import("./pages/swingedge/Performance"));
