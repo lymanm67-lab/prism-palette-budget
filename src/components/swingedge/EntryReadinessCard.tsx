@@ -32,6 +32,20 @@ export default function EntryReadinessCard({
   onPrepare: () => void;
 }) {
   const { status } = readiness;
+  // Every section starts closed; the user opens the ones they want to read.
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+
+  const sectionHeader = (key: string, label: string) => (
+    <button
+      type="button"
+      onClick={() => setOpen((o) => ({ ...o, [key]: !o[key] }))}
+      aria-expanded={!!open[key]}
+      className="flex w-full items-center justify-between gap-2 text-left text-sm font-semibold hover:text-foreground/80"
+    >
+      {label}
+      <ChevronDown className={cn('h-4 w-4 shrink-0 transition-transform', open[key] && 'rotate-180')} />
+    </button>
+  );
 
   return (
     <Card className={cn('border-2', TONE[status].split(' ').find((c) => c.startsWith('border-')))}>
@@ -45,6 +59,8 @@ export default function EntryReadinessCard({
         <CardDescription>{readiness.headline}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {sectionHeader('details', 'Readiness details')}
+        {open.details && (
         <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
           {readiness.rows.map((r) => (
             <div key={r.label} className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-1">
