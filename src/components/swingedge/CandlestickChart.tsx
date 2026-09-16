@@ -63,6 +63,8 @@ interface Props {
   changePercent?: number | null;
   /** Short signal / status text, e.g. "GO" or "WATCH". */
   status?: string | null;
+  /** Plain decision verdict shown beside the status: GO = yes, WAIT = hold, STOP = no. */
+  decision?: 'GO' | 'WAIT' | 'STOP' | null;
   /** Confidence text shown next to the status. */
   confidence?: string | null;
   timeframes?: ChartTimeframeOption[];
@@ -458,6 +460,7 @@ export default function CandlestickChart({
   change,
   changePercent,
   status,
+  decision,
   confidence,
   timeframes,
   activeTimeframe,
@@ -556,10 +559,31 @@ export default function CandlestickChart({
                 : ''}
             </span>
           )}
+          {decision && (
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-[10px] font-bold uppercase tracking-wide',
+                decision === 'GO' && 'border-prism-lime/50 bg-prism-lime/10 text-prism-lime',
+                decision === 'WAIT' && 'border-prism-amber/50 bg-prism-amber/10 text-prism-amber',
+                decision === 'STOP' && 'border-destructive/50 bg-destructive/10 text-destructive',
+              )}
+              title={
+                decision === 'GO'
+                  ? 'Yes — the reading passes your rules right now.'
+                  : decision === 'WAIT'
+                    ? 'Hold — nothing is broken yet, but the trade is not ready. Keep waiting.'
+                    : 'No — a rule is broken today. Do not trade this.'
+              }
+            >
+              {decision === 'GO' ? 'Yes · Go' : decision === 'WAIT' ? 'Hold · Wait' : 'No · Stop'}
+              {confidence ? <span className="ml-1 font-medium opacity-70">· {confidence}</span> : null}
+            </Badge>
+          )}
           {status && (
             <Badge variant="outline" className="text-[10px] font-semibold">
               {status}
-              {confidence ? <span className="ml-1 text-muted-foreground">· {confidence}</span> : null}
+              {confidence && !decision ? <span className="ml-1 text-muted-foreground">· {confidence}</span> : null}
             </Badge>
           )}
 
