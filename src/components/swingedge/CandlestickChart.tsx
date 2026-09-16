@@ -123,6 +123,7 @@ function ChartBody({
   height,
   showDirectionStrip,
   scaleSide,
+  actual,
 }: BodyProps) {
   const [hover, setHover] = useState<number | null>(null);
 
