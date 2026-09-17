@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, ClipboardPaste, Save, AlertTriangle } from 'lucide-react';
+import { Trash2, ClipboardPaste, Save, AlertTriangle, PlusCircle, Keyboard } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from '@/hooks/use-toast';
@@ -115,6 +116,40 @@ export default function BrokerOrders() {
   const setStatus = (line: number, status: OrderStatus) =>
     setRows((prev) => prev.map((r) => (r.line === line ? { ...r, status } : r)));
 
+  // Manual single-order entry — added into the same check-and-save flow as pasted rows.
+  const [mSymbol, setMSymbol] = useState('');
+  const [mStatus, setMStatus] = useState<OrderStatus>('WAIT_COND');
+  const [mShares, setMShares] = useState('');
+  const [mEntry, setMEntry] = useState('');
+  const [mStop, setMStop] = useState('');
+  const [mTarget, setMTarget] = useState('');
+
+  const parseNum = (s: string): number | null => {
+    if (!s.trim()) return null;
+    const v = Number(s.replace(/[$,]/g, ''));
+    return Number.isFinite(v) ? v : null;
+  };
+
+  const addManual = () => {
+    const symbol = mSymbol.trim().toUpperCase();
+    if (!symbol) {
+      toast({ title: 'Add a ticker first', description: 'Every order needs its symbol.', variant: 'destructive' });
+      return;
+    }
+    const shares = parseNum(mShares);
+    const entry = parseNum(mEntry);
+    const stop = parseNum(mStop);
+    const target = parseNum(mTarget);
+    const missing: string[] = [];
+    if (shares === null) missing.push('shares');
+    if (entry === null) missing.push('entry');
+    if (stop === null) missing.push('stop');
+    if (target === null) missing.push('target');
+    const line = Math.max(0, ...rows.map((r) => r.line)) + 1;
+    setRows((prev) => [...prev, { line, raw: '(typed in)', symbol, status: mStatus, shares, entry, stop, target, missing }]);
+    setMSymbol(''); setMShares(''); setMEntry(''); setMStop(''); setMTarget('');
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-4 max-w-5xl">
       <div>
@@ -147,6 +182,55 @@ export default function BrokerOrders() {
             <Button onClick={parse} disabled={!text.trim()}>Read these rows</Button>
             <Button variant="ghost" onClick={() => setText(EXAMPLE)}>Use the example</Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="prism-card-shine border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <Keyboard className="h-4 w-4 text-prism-teal" />
+            Or type one order at a time
+          </CardTitle>
+          <CardDescription>Fill in what you know — anything left blank is reported as missing, not guessed.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="space-y-1">
+              <Label htmlFor="m-symbol" className="text-xs">Ticker</Label>
+              <Input id="m-symbol" value={mSymbol} onChange={(e) => setMSymbol(e.target.value)} placeholder="XLE" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-status" className="text-xs">Status</Label>
+              <Select value={mStatus} onValueChange={(v) => setMStatus(v as OrderStatus)}>
+                <SelectTrigger id="m-status" className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>{ORDER_STATUS_LABEL[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-shares" className="text-xs">Shares</Label>
+              <Input id="m-shares" type="number" min="0" value={mShares} onChange={(e) => setMShares(e.target.value)} placeholder="40" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-entry" className="text-xs">Entry</Label>
+              <Input id="m-entry" type="number" step="0.01" value={mEntry} onChange={(e) => setMEntry(e.target.value)} placeholder="88.50" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-stop" className="text-xs">Stop</Label>
+              <Input id="m-stop" type="number" step="0.01" value={mStop} onChange={(e) => setMStop(e.target.value)} placeholder="86.25" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-target" className="text-xs">Target</Label>
+              <Input id="m-target" type="number" step="0.01" value={mTarget} onChange={(e) => setMTarget(e.target.value)} placeholder="93.00" className="h-8 text-sm" />
+            </div>
+          </div>
+          <Button variant="secondary" onClick={addManual} disabled={!mSymbol.trim()}>
+            <PlusCircle className="h-4 w-4 mr-1.5" />
+            Add this order
+          </Button>
         </CardContent>
       </Card>
 
