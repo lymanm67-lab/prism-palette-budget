@@ -48,7 +48,6 @@ function statusForPlan(planState: string | null): OrderStatus {
 export function useRiskSnapshot() {
   const { household } = useHousehold();
   const householdId = household?.id;
-  const { settings } = useTradingSettings();
 
   const openQuery = useQuery({
     queryKey: ['se-risk-open', householdId],
