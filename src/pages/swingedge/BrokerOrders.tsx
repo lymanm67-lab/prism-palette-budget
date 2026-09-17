@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from '@/hooks/use-toast';
 import { parseBrokerOrders, type ParsedOrderRow } from '@/lib/swingedge/brokerOrderPaste';
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { ORDER_STATUS_LABEL, type OrderStatus } from '@/lib/swingedge/portfolioRiskSnapshot';
 
 const STATUSES: OrderStatus[] = ['WAIT_COND', 'WAIT_TRG', 'WORKING', 'FILLED', 'CLOSED'];
@@ -349,6 +350,22 @@ export default function BrokerOrders() {
           )}
         </CardContent>
       </Card>
+
+      <NextStepsCard
+        summary="Your Thinkorswim orders are saved here, so the risk snapshot can count them."
+        steps={[
+          {
+            label: 'See how these orders change your Active, Pending and Max-if-everything-triggers risk.',
+            to: '/swingedge/dashboard',
+            cta: 'Open risk snapshot',
+          },
+          {
+            label: 'Check whether a new symbol adds diversification or piles onto a theme you already hold.',
+            to: '/swingedge/analyzer',
+            cta: 'Analyze a symbol',
+          },
+        ]}
+      />
     </div>
   );
 }
