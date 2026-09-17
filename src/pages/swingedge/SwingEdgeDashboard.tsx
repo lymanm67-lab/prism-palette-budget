@@ -342,6 +342,9 @@ export default function SwingEdgeDashboard() {
             <Link to="/swingedge/planner">Trade Planner</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
+            <Link to="/swingedge/orders">Thinkorswim Orders</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link to="/swingedge/academy">Trading Academy</Link>
           </Button>
         </div>
