@@ -532,6 +532,12 @@ export default function StockAnalyzer() {
             />
           )}
 
+          <PortfolioRiskSnapshotCard
+            snapshot={riskSnapshot}
+            candidateSymbol={analysis.symbol}
+            candidateSector={null}
+            candidateRisk={candidateRisk}
+          />
 
           <Card className="border-border/60 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
