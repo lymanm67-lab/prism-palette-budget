@@ -57,6 +57,7 @@ export default function SwingEdgeDashboard() {
   useTradingTitle('Trading Command Center');
   const { data, isLoading, mode, cacheState } = useSwingEdgeDashboard();
   const { settings, risk, maxRiskPerTrade } = useTradingSettings();
+  const { snapshot: riskSnapshot } = useRiskSnapshot();
 
   return (
     <div className="space-y-4">
