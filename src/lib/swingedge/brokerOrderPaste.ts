@@ -48,7 +48,7 @@ function statusFrom(line: string): OrderStatus | null {
 function symbolFrom(tokens: string[]): string | null {
   for (const t of tokens) {
     const clean = t.replace(/[^A-Za-z.]/g, '').toUpperCase();
-    if (clean.length >= 1 && clean.length <= 6 && /^[A-Z.]+$/.test(clean) && !NOT_A_SYMBOL.has(clean)) {
+    if (clean.length >= 1 && clean.length <= 6 && /^[A-Z.]+$/.test(clean) && /[A-Z]/.test(clean) && !NOT_A_SYMBOL.has(clean)) {
       return clean;
     }
   }
