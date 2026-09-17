@@ -132,14 +132,27 @@ export function useRiskSnapshot() {
         shares: num(p.shares),
         atr: null,
       }));
-    return [...live, ...pending];
-  }, [openQuery.data, pendingQuery.data]);
+    const broker: RiskTradeInput[] = (brokerQuery.data ?? [])
+      .filter((b) => b.status !== 'CLOSED')
+      .map((b) => ({
+        id: b.id,
+        symbol: b.symbol,
+        sector: b.sector,
+        status: (b.status as OrderStatus) ?? 'WAIT_COND',
+        entry: num(b.entry_price),
+        stop: num(b.stop_price),
+        target: num(b.target_price),
+        shares: num(b.shares),
+        atr: null,
+      }));
+    return [...live, ...pending, ...broker];
+  }, [openQuery.data, pendingQuery.data, brokerQuery.data]);
 
   const snapshot = useMemo(() => buildRiskSnapshot(trades, limits), [trades, limits]);
 
   return {
     snapshot,
-    isLoading: openQuery.isLoading || pendingQuery.isLoading,
+    isLoading: openQuery.isLoading || pendingQuery.isLoading || brokerQuery.isLoading,
     hasData: trades.length > 0,
   };
 }
