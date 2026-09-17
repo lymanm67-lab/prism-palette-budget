@@ -19,6 +19,8 @@ import { MTF_MANAGEMENT_WARNING, TIMEFRAME_ROLE, type TimeframeKey } from '@/lib
 import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
 import PortfolioRolesCard from '@/components/swingedge/PortfolioRolesCard';
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
+import PortfolioRiskSnapshotCard from '@/components/swingedge/PortfolioRiskSnapshotCard';
+import { useRiskSnapshot } from '@/hooks/use-swingedge-risk-snapshot';
 import ReadinessPointsCard from '@/components/swingedge/ReadinessPointsCard';
 import DailyChecklistCard from '@/components/swingedge/DailyChecklistCard';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
@@ -55,6 +57,7 @@ export default function SwingEdgeDashboard() {
   useTradingTitle('Trading Command Center');
   const { data, isLoading, mode, cacheState } = useSwingEdgeDashboard();
   const { settings, risk, maxRiskPerTrade } = useTradingSettings();
+  const { snapshot: riskSnapshot } = useRiskSnapshot();
 
   return (
     <div className="space-y-4">
@@ -293,6 +296,8 @@ export default function SwingEdgeDashboard() {
       <PracticeTodayCard />
 
       {/* Risk actually on the table right now */}
+      <PortfolioRiskSnapshotCard snapshot={riskSnapshot} />
+
       <PortfolioHeatCard />
 
 

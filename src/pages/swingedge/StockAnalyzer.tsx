@@ -21,6 +21,8 @@ import type { SwingInterval } from '@/lib/swingedge/types';
 import EntryReadinessCard from '@/components/swingedge/EntryReadinessCard';
 import PortfolioFitCard from '@/components/swingedge/PortfolioFitCard';
 import { usePortfolioHeat } from '@/hooks/use-swingedge-heat';
+import PortfolioRiskSnapshotCard from '@/components/swingedge/PortfolioRiskSnapshotCard';
+import { useRiskSnapshot } from '@/hooks/use-swingedge-risk-snapshot';
 import ArmedTradeStrip from '@/components/swingedge/ArmedTradeStrip';
 import { buildEntryReadiness, armedNeedsReview } from '@/lib/swingedge/conditionalStaging';
 import { buildAnalysisSnapshot, stashSnapshot, type AnalysisSnapshot } from '@/lib/swingedge/analysisSnapshot';
@@ -327,6 +329,7 @@ export default function StockAnalyzer() {
   // Portfolio fit. Risk here is the per-trade allowance, since share count is
   // decided in the Planner. A good trade can still be a bad addition.
   const { checkCorrelated, fitForTrade } = usePortfolioHeat();
+  const { snapshot: riskSnapshot } = useRiskSnapshot();
   const candidateRisk = (settings.trading_capital * settings.risk_per_trade_pct) / 100;
   const portfolioFit = useMemo(() => {
     if (!analysis) return null;
@@ -532,6 +535,12 @@ export default function StockAnalyzer() {
             />
           )}
 
+          <PortfolioRiskSnapshotCard
+            snapshot={riskSnapshot}
+            candidateSymbol={analysis.symbol}
+            candidateSector={null}
+            candidateRisk={candidateRisk}
+          />
 
           <Card className="border-border/60 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
