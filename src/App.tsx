@@ -154,6 +154,7 @@ const SwingEdgeTraining = lazy(() => import("./pages/swingedge/TrainingMode"));
 const SwingEdgeTrainingWeek = lazy(() => import("./pages/swingedge/TrainingWeek"));
 
 const SwingEdgeSettings = lazy(() => import("./pages/swingedge/SwingEdgeSettings"));
+const SwingEdgeBrokerOrders = lazy(() => import("./pages/swingedge/BrokerOrders"));
 
 
 
