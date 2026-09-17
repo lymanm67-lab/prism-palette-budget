@@ -118,7 +118,7 @@ export default function PortfolioRiskSnapshotCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {snapshot.trades.length === 0 && (
+        {snapshot.rows.length === 0 && (
           <div className="rounded-lg border border-border/50 bg-muted/30 p-3 text-sm">
             <p className="text-muted-foreground">
               No orders recorded here yet, so these numbers read zero. Paste your Thinkorswim order rows to fill them in.
