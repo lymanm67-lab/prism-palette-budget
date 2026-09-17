@@ -82,6 +82,22 @@ export function useRiskSnapshot() {
     },
   });
 
+  // Orders pasted in from the Thinkorswim order table. Statuses are stored as
+  // typed in, so a resting conditional order is never counted as a fill.
+  const brokerQuery = useQuery({
+    queryKey: ['se-risk-broker', householdId],
+    enabled: !!householdId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('se_broker_orders')
+        .select('id, symbol, sector, status, shares, entry_price, stop_price, target_price')
+        .eq('household_id', householdId!)
+        .is('deleted_at', null);
+      if (error) throw error;
+      return (data ?? []) as unknown as (OpenRow & { status: string })[];
+    },
+  });
+
   const limits: RiskLimits = useMemo(
     () => ({
       ...DEFAULT_RISK_LIMITS,
@@ -116,14 +132,27 @@ export function useRiskSnapshot() {
         shares: num(p.shares),
         atr: null,
       }));
-    return [...live, ...pending];
-  }, [openQuery.data, pendingQuery.data]);
+    const broker: RiskTradeInput[] = (brokerQuery.data ?? [])
+      .filter((b) => b.status !== 'CLOSED')
+      .map((b) => ({
+        id: b.id,
+        symbol: b.symbol,
+        sector: b.sector,
+        status: (b.status as OrderStatus) ?? 'WAIT_COND',
+        entry: num(b.entry_price),
+        stop: num(b.stop_price),
+        target: num(b.target_price),
+        shares: num(b.shares),
+        atr: null,
+      }));
+    return [...live, ...pending, ...broker];
+  }, [openQuery.data, pendingQuery.data, brokerQuery.data]);
 
   const snapshot = useMemo(() => buildRiskSnapshot(trades, limits), [trades, limits]);
 
   return {
     snapshot,
-    isLoading: openQuery.isLoading || pendingQuery.isLoading,
+    isLoading: openQuery.isLoading || pendingQuery.isLoading || brokerQuery.isLoading,
     hasData: trades.length > 0,
   };
 }

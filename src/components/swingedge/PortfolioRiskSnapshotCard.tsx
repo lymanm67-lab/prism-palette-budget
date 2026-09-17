@@ -118,6 +118,16 @@ export default function PortfolioRiskSnapshotCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {snapshot.rows.length === 0 && (
+          <div className="rounded-lg border border-border/50 bg-muted/30 p-3 text-sm">
+            <p className="text-muted-foreground">
+              No orders recorded here yet, so these numbers read zero. Paste your Thinkorswim order rows to fill them in.
+            </p>
+            <a href="/swingedge/orders" className="text-prism-teal font-semibold text-xs mt-1 inline-block">
+              Enter my Thinkorswim orders →
+            </a>
+          </div>
+        )}
         <div className="grid gap-3 sm:grid-cols-3">
           <BigNumber
             label="Active risk"

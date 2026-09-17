@@ -11384,6 +11384,57 @@ export type Database = {
           },
         ]
       }
+      se_broker_orders: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          entry_price: number | null
+          household_id: string
+          id: string
+          notes: string | null
+          sector: string | null
+          shares: number | null
+          source: string
+          status: string
+          stop_price: number | null
+          symbol: string
+          target_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          entry_price?: number | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          sector?: string | null
+          shares?: number | null
+          source?: string
+          status?: string
+          stop_price?: number | null
+          symbol: string
+          target_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          entry_price?: number | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          sector?: string | null
+          shares?: number | null
+          source?: string
+          status?: string
+          stop_price?: number | null
+          symbol?: string
+          target_price?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       se_circuit_breaker_state: {
         Row: {
           consecutive_losses: number

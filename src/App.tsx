@@ -154,6 +154,7 @@ const SwingEdgeTraining = lazy(() => import("./pages/swingedge/TrainingMode"));
 const SwingEdgeTrainingWeek = lazy(() => import("./pages/swingedge/TrainingWeek"));
 
 const SwingEdgeSettings = lazy(() => import("./pages/swingedge/SwingEdgeSettings"));
+const SwingEdgeBrokerOrders = lazy(() => import("./pages/swingedge/BrokerOrders"));
 
 
 
@@ -362,6 +363,7 @@ const App = () => (
               <Route path="/swingedge/training/week/:week" element={<Suspense fallback={<PageLoader />}><SwingEdgeTrainingWeek /></Suspense>} />
 
               <Route path="/swingedge/settings" element={<Suspense fallback={<PageLoader />}><SwingEdgeSettings /></Suspense>} />
+              <Route path="/swingedge/orders" element={<Suspense fallback={<PageLoader />}><SwingEdgeBrokerOrders /></Suspense>} />
 
             </Route>
             <Route path="*" element={<NotFound />} />
