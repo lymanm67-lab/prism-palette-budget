@@ -8,7 +8,6 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
-import { useTradingSettings } from '@/hooks/use-swingedge';
 import {
   buildRiskSnapshot,
   DEFAULT_RISK_LIMITS,
@@ -27,7 +26,6 @@ interface OpenRow {
   entry_price: number | null;
   stop_price: number | null;
   target_price: number | null;
-  atr_at_entry: number | null;
 }
 
 interface PlanRow {
@@ -58,7 +56,7 @@ export function useRiskSnapshot() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('se_paper_trades')
-        .select('id, symbol, sector, shares, entry_price, stop_price, target_price, atr_at_entry')
+        .select('id, symbol, sector, shares, entry_price, stop_price, target_price')
         .eq('household_id', householdId!)
         .eq('status', 'OPEN');
       if (error) throw error;
@@ -88,9 +86,9 @@ export function useRiskSnapshot() {
   const limits: RiskLimits = useMemo(
     () => ({
       ...DEFAULT_RISK_LIMITS,
-      minRewardRisk: settings.min_reward_risk ?? DEFAULT_RISK_LIMITS.minRewardRisk,
+      minRewardRisk: DEFAULT_RISK_LIMITS.minRewardRisk,
     }),
-    [settings.min_reward_risk],
+    [],
   );
 
   const trades: RiskTradeInput[] = useMemo(() => {
@@ -103,7 +101,8 @@ export function useRiskSnapshot() {
       stop: num(t.stop_price),
       target: num(t.target_price),
       shares: num(t.shares),
-      atr: num(t.atr_at_entry),
+      // ATR is not stored on the position, so stop-distance is reported as not checked.
+      atr: null,
     }));
     const pending: RiskTradeInput[] = (pendingQuery.data ?? [])
       .filter((p) => p.status !== 'EXECUTED' && p.status !== 'CANCELLED')
