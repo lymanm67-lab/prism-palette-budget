@@ -82,6 +82,22 @@ export function useRiskSnapshot() {
     },
   });
 
+  // Orders pasted in from the Thinkorswim order table. Statuses are stored as
+  // typed in, so a resting conditional order is never counted as a fill.
+  const brokerQuery = useQuery({
+    queryKey: ['se-risk-broker', householdId],
+    enabled: !!householdId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('se_broker_orders')
+        .select('id, symbol, sector, status, shares, entry_price, stop_price, target_price')
+        .eq('household_id', householdId!)
+        .is('deleted_at', null);
+      if (error) throw error;
+      return (data ?? []) as unknown as (OpenRow & { status: string })[];
+    },
+  });
+
   const limits: RiskLimits = useMemo(
     () => ({
       ...DEFAULT_RISK_LIMITS,
