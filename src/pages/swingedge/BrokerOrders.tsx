@@ -116,6 +116,40 @@ export default function BrokerOrders() {
   const setStatus = (line: number, status: OrderStatus) =>
     setRows((prev) => prev.map((r) => (r.line === line ? { ...r, status } : r)));
 
+  // Manual single-order entry — added into the same check-and-save flow as pasted rows.
+  const [mSymbol, setMSymbol] = useState('');
+  const [mStatus, setMStatus] = useState<OrderStatus>('WAIT_COND');
+  const [mShares, setMShares] = useState('');
+  const [mEntry, setMEntry] = useState('');
+  const [mStop, setMStop] = useState('');
+  const [mTarget, setMTarget] = useState('');
+
+  const parseNum = (s: string): number | null => {
+    if (!s.trim()) return null;
+    const v = Number(s.replace(/[$,]/g, ''));
+    return Number.isFinite(v) ? v : null;
+  };
+
+  const addManual = () => {
+    const symbol = mSymbol.trim().toUpperCase();
+    if (!symbol) {
+      toast({ title: 'Add a ticker first', description: 'Every order needs its symbol.', variant: 'destructive' });
+      return;
+    }
+    const shares = parseNum(mShares);
+    const entry = parseNum(mEntry);
+    const stop = parseNum(mStop);
+    const target = parseNum(mTarget);
+    const missing: string[] = [];
+    if (shares === null) missing.push('shares');
+    if (entry === null) missing.push('entry');
+    if (stop === null) missing.push('stop');
+    if (target === null) missing.push('target');
+    const line = Math.max(0, ...rows.map((r) => r.line)) + 1;
+    setRows((prev) => [...prev, { line, raw: '(typed in)', symbol, status: mStatus, shares, entry, stop, target, missing }]);
+    setMSymbol(''); setMShares(''); setMEntry(''); setMStop(''); setMTarget('');
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-4 max-w-5xl">
       <div>
