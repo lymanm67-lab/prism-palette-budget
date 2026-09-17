@@ -185,6 +185,55 @@ export default function BrokerOrders() {
         </CardContent>
       </Card>
 
+      <Card className="prism-card-shine border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <Keyboard className="h-4 w-4 text-prism-teal" />
+            Or type one order at a time
+          </CardTitle>
+          <CardDescription>Fill in what you know — anything left blank is reported as missing, not guessed.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="space-y-1">
+              <Label htmlFor="m-symbol" className="text-xs">Ticker</Label>
+              <Input id="m-symbol" value={mSymbol} onChange={(e) => setMSymbol(e.target.value)} placeholder="XLE" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-status" className="text-xs">Status</Label>
+              <Select value={mStatus} onValueChange={(v) => setMStatus(v as OrderStatus)}>
+                <SelectTrigger id="m-status" className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>{ORDER_STATUS_LABEL[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-shares" className="text-xs">Shares</Label>
+              <Input id="m-shares" type="number" min="0" value={mShares} onChange={(e) => setMShares(e.target.value)} placeholder="40" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-entry" className="text-xs">Entry</Label>
+              <Input id="m-entry" type="number" step="0.01" value={mEntry} onChange={(e) => setMEntry(e.target.value)} placeholder="88.50" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-stop" className="text-xs">Stop</Label>
+              <Input id="m-stop" type="number" step="0.01" value={mStop} onChange={(e) => setMStop(e.target.value)} placeholder="86.25" className="h-8 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="m-target" className="text-xs">Target</Label>
+              <Input id="m-target" type="number" step="0.01" value={mTarget} onChange={(e) => setMTarget(e.target.value)} placeholder="93.00" className="h-8 text-sm" />
+            </div>
+          </div>
+          <Button variant="secondary" onClick={addManual} disabled={!mSymbol.trim()}>
+            <PlusCircle className="h-4 w-4 mr-1.5" />
+            Add this order
+          </Button>
+        </CardContent>
+      </Card>
+
       {rows.length > 0 && (
         <Card className="prism-card-shine border-border/50">
           <CardHeader className="pb-3">
