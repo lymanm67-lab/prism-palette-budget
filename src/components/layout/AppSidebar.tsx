@@ -5,7 +5,7 @@ import {
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Heart, HeartPulse, Home, Wallet, RepeatIcon,
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
-  DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
+  DollarSign, Clock, Lock, Scissors, ClipboardCheck, ClipboardList, Gauge, ChevronDown,
   Layers, Search, AlertTriangle, Activity, Banknote, Smartphone, User, Briefcase, Globe, BookOpen, Users,
   ShieldCheck, Plane, GraduationCap, FlaskConical, Monitor,
 
@@ -112,6 +112,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/swingedge/execution-guides', icon: ClipboardCheck, label: 'Execution Guides', color: 'text-prism-teal' },
 
       { to: '/swingedge/paper-trading', icon: Activity, label: 'Paper Trading', color: 'text-prism-violet' },
+      { to: '/swingedge/orders', icon: ClipboardList, label: 'Thinkorswim Orders', color: 'text-prism-orange' },
       { to: '/swingedge/journal', icon: FileText, label: 'Trade Journal', color: 'text-prism-amber' },
       { to: '/swingedge/performance', icon: BarChart3, label: 'Performance Review', color: 'text-prism-teal' },
       { to: '/swingedge/risk-lab', icon: FlaskConical, label: 'Risk Lab', color: 'text-prism-violet' },
