@@ -634,7 +634,7 @@ const Budgets = () => {
 
   // Fixed percentage overrides for items like debt settlement where business portion is known
   const FIXED_BIZ_PCT: Record<string, { pct: number; label: string }> = {
-    'betrlink': { pct: 60, label: 'Debt Settlement (Biz portion)' },
+    'betrlink': { pct: 40, label: 'Debt Settlement (Biz portion)' },
   };
 
   // businessOffsets: keyed by PERSONAL category id => { bizAmount, bizCategory, pct, bizCategoryId }
