@@ -37,6 +37,8 @@ import { SavingsReallocationDialog } from '@/components/subscriptions/SavingsRea
 import { StillChargedAlerts } from '@/components/subscriptions/StillChargedAlerts';
 import { useCheckCanceledCharges } from '@/hooks/use-subscription-alerts';
 import { MonthlyLeftoverTable, type CommitmentItem } from '@/components/subscriptions/MonthlyLeftoverTable';
+import InlineEditCell from '@/components/InlineEditCell';
+import { dueLabel, DUE_TONE_CLASS } from '@/lib/bills/dueDates';
 
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
@@ -727,6 +729,24 @@ const Subscriptions = () => {
                           </div>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <span className="text-[10px] text-muted-foreground">{FREQ_LABELS_FULL[sub.frequency] || sub.frequency}</span>
+                            <span className="flex items-center gap-1 text-[10px]" onClick={(e) => e.stopPropagation()}>
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              {(() => {
+                                const label = dueLabel(sub.next_expected_date);
+                                return (
+                                  <InlineEditCell
+                                    type="date"
+                                    value={sub.next_expected_date ? String(sub.next_expected_date).slice(0, 10) : ''}
+                                    placeholder="Set due date"
+                                    className={cn('text-[10px]', label ? DUE_TONE_CLASS[label.tone] : undefined)}
+                                    formatter={() => (label ? label.text : '')}
+                                    onSave={async (v) => {
+                                      await updateSub.mutateAsync({ id: sub.id, next_expected_date: v || null });
+                                    }}
+                                  />
+                                );
+                              })()}
+                            </span>
                             <UsageStatusBadge status={sub.usage_status || 'active'} />
                             {sub.cancellation_status && sub.cancellation_status !== 'not_started' && (
                               <CancellationStatusBadge status={sub.cancellation_status} />

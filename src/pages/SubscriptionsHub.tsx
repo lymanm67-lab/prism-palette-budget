@@ -1,19 +1,22 @@
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { CreditCard, RepeatIcon, Scissors, PiggyBank, Wallet, TrendingDown, Receipt, Layers } from 'lucide-react';
+import { CreditCard, RepeatIcon, Scissors, PiggyBank, Wallet, TrendingDown, Receipt, Layers, CalendarDays } from 'lucide-react';
 import RelatedToolsBar from '@/components/RelatedToolsBar';
 import Subscriptions from './Subscriptions';
 import Recurring from './Recurring';
+import BillsCalendar from '@/components/subscriptions/BillsCalendar';
 import { cn } from '@/lib/utils';
 
 const SubscriptionsHub = () => {
   const [params, setParams] = useSearchParams();
-  const tab = params.get('tab') === 'recurring' ? 'recurring' : 'subscriptions';
+  const tabParam = params.get('tab');
+  const tab = tabParam === 'recurring' ? 'recurring' : tabParam === 'calendar' ? 'calendar' : 'subscriptions';
 
   const onChange = (v: string) => {
     const next = new URLSearchParams(params);
     if (v === 'recurring') next.set('tab', 'recurring');
+    else if (v === 'calendar') next.set('tab', 'calendar');
     else next.delete('tab');
     setParams(next, { replace: true });
   };
@@ -77,12 +80,18 @@ const SubscriptionsHub = () => {
           <TabsTrigger value="recurring" className="gap-2">
             <RepeatIcon className="h-4 w-4" /> Recurring Bills
           </TabsTrigger>
+          <TabsTrigger value="calendar" className="gap-2">
+            <CalendarDays className="h-4 w-4" /> Due Dates
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="subscriptions" className="mt-0">
           <Subscriptions />
         </TabsContent>
         <TabsContent value="recurring" className="mt-0">
           <Recurring />
+        </TabsContent>
+        <TabsContent value="calendar" className="mt-0">
+          <BillsCalendar />
         </TabsContent>
       </Tabs>
     </div>
