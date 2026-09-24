@@ -4,7 +4,7 @@ import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
 
 export const NET_PAY_STORAGE_KEY = 'prism-net-pay-monthly';
-export const DEFAULT_NET_PAY = '4250.02';
+export const DEFAULT_NET_PAY = '4363.00';
 
 export type Commitment = {
   id: string;

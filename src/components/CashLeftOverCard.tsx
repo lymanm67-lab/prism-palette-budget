@@ -30,7 +30,7 @@ export function CashLeftOverCard() {
   const { data: recurring } = useRecurringTransactions();
   const { data: subscriptions } = useSubscriptions();
   const [netPay, setNetPay] = useState<string>(
-    () => localStorage.getItem('prism-net-pay-monthly') || '4250.02',
+    () => localStorage.getItem('prism-net-pay-monthly') || '4363.00',
   );
 
   const bills = useMemo(

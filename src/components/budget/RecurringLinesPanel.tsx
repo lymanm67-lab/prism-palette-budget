@@ -22,7 +22,7 @@ interface Props {
   takeHome?: number;
 }
 
-export default function RecurringLinesPanel({ takeHome = 4250.02 }: Props) {
+export default function RecurringLinesPanel({ takeHome = 4363.00 }: Props) {
   const { formatCurrency } = useCurrency();
   const { rows, create, update, remove } = useRecurringPurposeLines();
 
