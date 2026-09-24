@@ -27,7 +27,7 @@ export interface WhatIfKnobs {
 
 export const DEFAULT_KNOBS: WhatIfKnobs = {
   months: 12,
-  takeHome: 4250.02,
+  takeHome: 4363.00,
   enjoyPlanned: 0,
   extraDebt: 0,
   extraWealth: 0,
