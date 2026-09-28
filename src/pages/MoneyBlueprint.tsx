@@ -7,6 +7,7 @@ import { MoneyBlueprintPlan } from '@/components/blueprint/MoneyBlueprintPlan';
 import { PageExplainer } from '@/components/PageExplainer';
 import { BlueprintOverview } from '@/components/blueprint/BlueprintOverview';
 import { AssumptionCenter } from '@/components/blueprint/AssumptionCenter';
+import { HouseholdProfileCard } from '@/components/blueprint/HouseholdProfileCard';
 import { DebtFreedomEngine } from '@/components/blueprint/DebtFreedomEngine';
 import {
   SalaryAccelerator, ContributionTimeline, InvestmentWaterfall,
@@ -191,6 +192,7 @@ export default function MoneyBlueprint() {
         </TabsContent>
         <TabsContent value="assumptions" className="mt-4 space-y-4">
           <StepNav tab="assumptions" onGo={setTab} />
+          <HouseholdProfileCard />
           <AssumptionCenter state={state} patch={patch} />
           <DataIntegrityPanel state={state} />
           <ScenarioPanel state={state} patch={patch} />
