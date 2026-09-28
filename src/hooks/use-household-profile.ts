@@ -14,6 +14,10 @@ export interface HouseholdProfile {
   kateri_net_monthly: number | null;
   household_net_monthly: number | null;
   net_pay_effective_from: string | null;
+  investments_total_override: number | null;
+  debt_balance_override: number | null;
+  debt_minimums_override: number | null;
+  budget_expenses_override: number | null;
   updated_at: string;
 }
 

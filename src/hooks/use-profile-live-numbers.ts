@@ -28,16 +28,26 @@ export function useProfileLiveNumbers() {
     const budgetExpenses = (budgets || []).reduce((s: number, b: any) => s + Math.abs(Number(b.amount || 0)), 0);
     const p: any = profile || {};
     const grossMonthly = (Number(p.lyman_gross_monthly) || 0) + (Number(p.kateri_gross_monthly) || 0);
+    const ov = (v: any): number | null => (v === null || v === undefined || v === '' ? null : Number(v));
+    const invOverride = ov(p.investments_total_override);
+    const debtBalOverride = ov(p.debt_balance_override);
+    const debtMinOverride = ov(p.debt_minimums_override);
+    const budgetOverride = ov(p.budget_expenses_override);
     return {
-      hasInvestments: inv.length > 0,
-      investmentsTotal: retirement + selfDirected,
+      hasInvestments: inv.length > 0 || invOverride != null,
+      investmentsTotal: invOverride ?? retirement + selfDirected,
+      investmentsLive: inv.length > 0 ? retirement + selfDirected : null,
+      investmentsOverridden: invOverride != null,
       retirement,
       selfDirected,
-      hasDebts: !!debts,
-      debtBalance,
-      debtMinimums,
-      hasBudget: (budgets || []).length > 0,
-      budgetExpenses,
+      hasDebts: !!debts || debtBalOverride != null,
+      debtBalance: debtBalOverride ?? debtBalance,
+      debtBalanceOverridden: debtBalOverride != null,
+      debtMinimums: debtMinOverride ?? debtMinimums,
+      debtMinimumsOverridden: debtMinOverride != null,
+      hasBudget: (budgets || []).length > 0 || budgetOverride != null,
+      budgetExpenses: budgetOverride ?? budgetExpenses,
+      budgetExpensesOverridden: budgetOverride != null,
       monthKey,
       lymanGross: Number(p.lyman_gross_monthly) || null,
       kateriGross: Number(p.kateri_gross_monthly) || null,
