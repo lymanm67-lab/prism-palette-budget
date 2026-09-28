@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useProfileLiveNumbers } from '@/hooks/use-profile-live-numbers';
 
 export type FinancialProfile = {
   creditScore: string;
@@ -36,7 +37,8 @@ function read(): FinancialProfile {
 const listeners = new Set<() => void>();
 
 export function useFinancialProfile() {
-  const [profile, setProfile] = useState<FinancialProfile>(read);
+  const [local, setProfile] = useState<FinancialProfile>(read);
+  const live = useProfileLiveNumbers();
 
   useEffect(() => {
     const notify = () => setProfile(read());
@@ -48,6 +50,18 @@ export function useFinancialProfile() {
       window.removeEventListener('storage', onStorage);
     };
   }, []);
+
+  // Blank fields fall back to the Household Profile / live numbers; typed values win (what-ifs).
+  const profile = useMemo<FinancialProfile>(() => {
+    const fb = (v: string, n: number | null | undefined) => (v !== '' ? v : n ? n.toFixed(2) : '');
+    return {
+      ...local,
+      primaryIncome: fb(local.primaryIncome, live.lymanGross),
+      partnerIncome: fb(local.partnerIncome, live.kateriGross),
+      monthlyDebts: fb(local.monthlyDebts, live.hasDebts ? live.debtMinimums : null),
+      monthlyExpenses: fb(local.monthlyExpenses, live.hasBudget ? live.budgetExpenses : null),
+    };
+  }, [local, live]);
 
   const update = useCallback((patch: Partial<FinancialProfile>) => {
     const next = { ...read(), ...patch };
