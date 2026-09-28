@@ -170,7 +170,7 @@ export default function MoneyBlueprint() {
           <LegacyWindowPanel state={state} />
         </TabsContent>
         <TabsContent value="protection" className="mt-4">
-          <LtcCenter state={state} patch={patch} />
+          <LtcCenter state={state} patch={patch} onBack={() => setTab('overview')} />
         </TabsContent>
         <TabsContent value="healthcare" className="mt-4">
           <HealthcarePanel state={state} patch={patch} />

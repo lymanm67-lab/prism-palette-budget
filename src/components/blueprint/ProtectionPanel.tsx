@@ -31,8 +31,8 @@ function blankQuote(): LtcQuote {
 }
 
 export function LtcCenter({
-  state, patch,
-}: { state: AssumptionState; patch: (p: Partial<AssumptionState>) => void }) {
+  state, patch, onBack,
+}: { state: AssumptionState; patch: (p: Partial<AssumptionState>) => void; onBack?: () => void }) {
   const [careScenario, setCareScenario] = useState<CareScenarioKey>('home30');
   const quotes = state.ltcQuotes;
   const scores = useMemo(() => scoreLtcQuotes(quotes, state.currentAge), [quotes, state.currentAge]);
@@ -43,9 +43,16 @@ export function LtcCenter({
     <div className="space-y-4">
       <Card className="wos-page">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Shield className="h-4 w-4 text-prism-teal" /> Long-Term Care Insurance Center
-          </CardTitle>
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Shield className="h-4 w-4 text-prism-teal" /> Long-Term Care Insurance Center
+            </CardTitle>
+            {onBack && (
+              <Button size="sm" variant="outline" className="print:hidden shrink-0" onClick={onBack}>
+                ← Back to overview
+              </Button>
+            )}
+          </div>
           <SectionNote>
             Store every quote and scenario. Scoring is relative across eight axes — the cheapest policy is
             never automatically recommended.
