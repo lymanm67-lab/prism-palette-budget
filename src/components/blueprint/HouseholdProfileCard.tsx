@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { UserCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useHouseholdProfile, useSaveHouseholdProfile, ageFromDob } from '@/hooks/use-household-profile';
+import { useProfileLiveNumbers } from '@/hooks/use-profile-live-numbers';
 
 const FIELDS: [string, string, 'date' | 'number'][] = [
   ['lyman_dob', 'Lyman birthday', 'date'],
@@ -18,8 +19,20 @@ const FIELDS: [string, string, 'date' | 'number'][] = [
   ['net_pay_effective_from', 'Net pay starts', 'date'],
 ];
 
+const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+function LiveRow({ label, value, note }: { label: string; value: string | null; note?: string }) {
+  return (
+    <div>
+      <div className="text-muted-foreground">{label}</div>
+      <div className="font-semibold">{value ?? 'Not available yet'}</div>
+      {note && <div className="text-muted-foreground">{note}</div>}
+    </div>
+  );
+}
+
 export function HouseholdProfileCard() {
   const { data } = useHouseholdProfile();
+  const live = useProfileLiveNumbers();
   const save = useSaveHouseholdProfile();
   const [form, setForm] = useState<Record<string, any>>({});
   useEffect(() => { if (data) setForm(data); }, [data]);
@@ -58,6 +71,14 @@ export function HouseholdProfileCard() {
           ))}
         </div>
         <Button onClick={submit} disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save profile'}</Button>
+        <div className="grid gap-2 border-t border-border pt-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
+          <LiveRow label="Investments (from accounts)" value={live.hasInvestments ? money(live.investmentsTotal) : null}
+            note={live.hasInvestments ? `Retirement ${money(live.retirement)} · Self-directed ${money(live.selfDirected)}` : undefined} />
+          <LiveRow label="Debt balance (from debt list)" value={live.hasDebts ? money(live.debtBalance) : null} />
+          <LiveRow label="Debt minimums / mo" value={live.hasDebts ? money(live.debtMinimums) : null} />
+          <LiveRow label={`Budget expenses (${live.monthKey.slice(0, 7)})`} value={live.hasBudget ? money(live.budgetExpenses) : null} />
+        </div>
+
       </CardContent>
     </Card>
   );

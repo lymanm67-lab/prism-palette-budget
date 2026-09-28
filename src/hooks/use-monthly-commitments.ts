@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
+import { useHouseholdProfile } from '@/hooks/use-household-profile';
 
 export const NET_PAY_STORAGE_KEY = 'prism-net-pay-monthly';
 export const DEFAULT_NET_PAY = '4363.00';
@@ -53,13 +54,17 @@ export function useMonthlyCommitments() {
   const { data: subscriptions } = useSubscriptions();
   const { data: recurring } = useRecurringTransactions();
 
-  const [netPayInput, setNetPayInput] = useState<string>(
-    () => localStorage.getItem(NET_PAY_STORAGE_KEY) || DEFAULT_NET_PAY,
+  const { data: hp } = useHouseholdProfile();
+  const [typed, setNetPayInput] = useState<string | null>(
+    () => localStorage.getItem(NET_PAY_STORAGE_KEY),
   );
   const setNetPay = useCallback((value: string) => {
     setNetPayInput(value);
     localStorage.setItem(NET_PAY_STORAGE_KEY, value);
   }, []);
+  // Household Profile net pay is the default; a typed value is a what-if override.
+  const profileNet = hp?.household_net_monthly ? String(hp.household_net_monthly) : null;
+  const netPayInput = typed ?? profileNet ?? DEFAULT_NET_PAY;
   const netPay = Number(netPayInput) || 0;
 
   const commitments = useMemo<Commitment[]>(() => {
