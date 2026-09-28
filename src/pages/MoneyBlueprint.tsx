@@ -59,7 +59,7 @@ export default function MoneyBlueprint() {
 
   const [state, setState] = useState<AssumptionState>(defaultAssumptions());
   const [hydrated, setHydrated] = useState(false);
-  const [tab, setTab] = useState('overview');
+  const [tab, setTab] = useState('assumptions');
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
@@ -160,16 +160,17 @@ export default function MoneyBlueprint() {
           ))}
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          <StepNav tab="overview" onGo={setTab} />
           <BlueprintOverview state={state} netMonthly={netMonthly} onDrill={(k) => setTab(DRILL_MAP[k] ?? k)} />
         </TabsContent>
         <TabsContent value="cashflow" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="cashflow" onGo={setTab} />
           <MoneyBlueprintPlan />
           <DebtFreedomEngine state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="growth" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="growth" onGo={setTab} />
           <SalaryAccelerator state={state} />
           <ContributionTimeline state={state} />
           <InvestmentWaterfall state={state} patch={patch} />
@@ -178,18 +179,18 @@ export default function MoneyBlueprint() {
           <CompoundingFlywheel state={state} />
         </TabsContent>
         <TabsContent value="protection" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="protection" onGo={setTab} />
           <NetWorthPanel state={state} />
           <HealthcarePanel state={state} patch={patch} />
           <LtcCenter state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="retirement" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="retirement" onGo={setTab} />
           <LegacyWindowPanel state={state} />
           <RmdRothPanel state={state} />
         </TabsContent>
         <TabsContent value="assumptions" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="assumptions" onGo={setTab} />
           <AssumptionCenter state={state} patch={patch} />
           <DataIntegrityPanel state={state} />
           <ScenarioPanel state={state} patch={patch} />
