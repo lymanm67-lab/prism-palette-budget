@@ -77,7 +77,7 @@ export function BlueprintOverview({
           <StatCard label="Safe to spend" value={money(sts)} sub="After bills & buffer" />
           <StatCard label="Total debt" value={money(wealth?.totalLiabilities ?? 0)} onClick={() => onDrill('debt')} level="current" />
           <StatCard label="Retirement accounts" value={money(b?.retirement ?? 0)} onClick={() => onDrill('contributions')} level="current" />
-          <StatCard label="HSA" value={money(b?.hsa ?? 0)} onClick={() => onDrill('healthcare')} level="current" />
+          <StatCard label="HSA" value={money(b?.hsa ?? 0)} onClick={() => onDrill('protection')} level="current" />
           <StatCard label="Taxable investments" value={money(b?.brokerage ?? 0)} onClick={() => onDrill('portfolio')} level="current" />
           <StatCard label="Cash & savings" value={money((b?.cash ?? 0) + (b?.emergency ?? 0))} level="current" />
           <StatCard label="Emergency fund" value={money(b?.emergency ?? 0)} level="current" />
