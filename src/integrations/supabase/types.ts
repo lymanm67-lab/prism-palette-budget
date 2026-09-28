@@ -5701,11 +5701,15 @@ export type Database = {
       }
       household_profile: {
         Row: {
+          budget_expenses_override: number | null
           created_at: string
+          debt_balance_override: number | null
+          debt_minimums_override: number | null
           deleted_at: string | null
           household_id: string
           household_net_monthly: number | null
           id: string
+          investments_total_override: number | null
           kateri_dob: string | null
           kateri_gross_monthly: number | null
           kateri_net_monthly: number | null
@@ -5716,11 +5720,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          budget_expenses_override?: number | null
           created_at?: string
+          debt_balance_override?: number | null
+          debt_minimums_override?: number | null
           deleted_at?: string | null
           household_id: string
           household_net_monthly?: number | null
           id?: string
+          investments_total_override?: number | null
           kateri_dob?: string | null
           kateri_gross_monthly?: number | null
           kateri_net_monthly?: number | null
@@ -5731,11 +5739,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          budget_expenses_override?: number | null
           created_at?: string
+          debt_balance_override?: number | null
+          debt_minimums_override?: number | null
           deleted_at?: string | null
           household_id?: string
           household_net_monthly?: number | null
           id?: string
+          investments_total_override?: number | null
           kateri_dob?: string | null
           kateri_gross_monthly?: number | null
           kateri_net_monthly?: number | null
