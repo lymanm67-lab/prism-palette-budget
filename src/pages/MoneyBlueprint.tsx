@@ -23,17 +23,17 @@ import { exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
-  { key: 'plan', label: 'Spending Plan' },
-  { key: 'debt', label: 'Debt Freedom' },
-  { key: 'contributions', label: 'Contributions' },
-  { key: 'portfolio', label: 'Growth' },
-  { key: 'networth', label: 'Net Worth' },
-  { key: 'legacy', label: 'Age 70–85' },
-  { key: 'tax', label: 'RMD & Roth' },
-  { key: 'protection', label: 'Protection' },
-  { key: 'assumptions', label: 'Assumptions' },
-  { key: 'integrity', label: 'Integrity' },
+  { key: 'cashflow', label: 'Cash Flow & Debt' },
+  { key: 'growth', label: 'Growth & Investing' },
+  { key: 'protection', label: 'Net Worth & Protection' },
+  { key: 'retirement', label: 'Retirement & Legacy' },
+  { key: 'assumptions', label: 'Assumptions & Integrity' },
 ];
+
+const DRILL_MAP: Record<string, string> = {
+  plan: 'cashflow', debt: 'cashflow', contributions: 'growth', portfolio: 'growth',
+  networth: 'protection', legacy: 'retirement', tax: 'retirement', integrity: 'assumptions',
+};
 
 function BackToOverview({ onBack }: { onBack: () => void }) {
   return (
@@ -154,51 +154,36 @@ export default function MoneyBlueprint() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
-          <BlueprintOverview state={state} netMonthly={netMonthly} onDrill={setTab} />
+          <BlueprintOverview state={state} netMonthly={netMonthly} onDrill={(k) => setTab(DRILL_MAP[k] ?? k)} />
         </TabsContent>
-        <TabsContent value="plan" className="mt-4 space-y-4">
+        <TabsContent value="cashflow" className="mt-4 space-y-4">
           <BackToOverview onBack={() => setTab('overview')} />
           <MoneyBlueprintPlan />
-        </TabsContent>
-        <TabsContent value="networth" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
-          <NetWorthPanel state={state} />
-        </TabsContent>
-        <TabsContent value="debt" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
           <DebtFreedomEngine state={state} patch={patch} />
         </TabsContent>
-        <TabsContent value="contributions" className="mt-4 space-y-4">
+        <TabsContent value="growth" className="mt-4 space-y-4">
           <BackToOverview onBack={() => setTab('overview')} />
           <SalaryAccelerator state={state} />
           <ContributionTimeline state={state} />
           <InvestmentWaterfall state={state} patch={patch} />
-        </TabsContent>
-        <TabsContent value="portfolio" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
           <PortfolioSimulator state={state} />
           <WealthRoadmap state={state} />
           <CompoundingFlywheel state={state} />
         </TabsContent>
-        <TabsContent value="legacy" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
-          <LegacyWindowPanel state={state} />
-        </TabsContent>
         <TabsContent value="protection" className="mt-4 space-y-4">
           <BackToOverview onBack={() => setTab('overview')} />
+          <NetWorthPanel state={state} />
           <HealthcarePanel state={state} patch={patch} />
           <LtcCenter state={state} patch={patch} />
         </TabsContent>
-        <TabsContent value="tax" className="mt-4 space-y-4">
+        <TabsContent value="retirement" className="mt-4 space-y-4">
           <BackToOverview onBack={() => setTab('overview')} />
+          <LegacyWindowPanel state={state} />
           <RmdRothPanel state={state} />
         </TabsContent>
         <TabsContent value="assumptions" className="mt-4 space-y-4">
           <BackToOverview onBack={() => setTab('overview')} />
           <AssumptionCenter state={state} patch={patch} />
-        </TabsContent>
-        <TabsContent value="integrity" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
           <DataIntegrityPanel state={state} />
           <ScenarioPanel state={state} patch={patch} />
         </TabsContent>
