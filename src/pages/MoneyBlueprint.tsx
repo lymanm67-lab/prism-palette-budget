@@ -30,8 +30,7 @@ const TABS = [
   { key: 'networth', label: 'Net Worth' },
   { key: 'legacy', label: 'Age 70–85' },
   { key: 'tax', label: 'RMD & Roth' },
-  { key: 'healthcare', label: 'Healthcare' },
-  { key: 'protection', label: 'LTC' },
+  { key: 'protection', label: 'Protection' },
   { key: 'assumptions', label: 'Assumptions' },
   { key: 'integrity', label: 'Integrity' },
 ];
@@ -185,12 +184,10 @@ export default function MoneyBlueprint() {
           <BackToOverview onBack={() => setTab('overview')} />
           <LegacyWindowPanel state={state} />
         </TabsContent>
-        <TabsContent value="protection" className="mt-4">
-          <LtcCenter state={state} patch={patch} onBack={() => setTab('overview')} />
-        </TabsContent>
-        <TabsContent value="healthcare" className="mt-4 space-y-4">
+        <TabsContent value="protection" className="mt-4 space-y-4">
           <BackToOverview onBack={() => setTab('overview')} />
           <HealthcarePanel state={state} patch={patch} />
+          <LtcCenter state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="tax" className="mt-4 space-y-4">
           <BackToOverview onBack={() => setTab('overview')} />
