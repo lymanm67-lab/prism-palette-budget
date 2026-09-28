@@ -24,14 +24,14 @@ import { exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'plan', label: 'Spending Plan' },
-  { key: 'networth', label: 'Net Worth' },
   { key: 'debt', label: 'Debt Freedom' },
   { key: 'contributions', label: 'Contributions' },
   { key: 'portfolio', label: 'Growth' },
+  { key: 'networth', label: 'Net Worth' },
   { key: 'legacy', label: 'Age 70–85' },
-  { key: 'protection', label: 'LTC' },
-  { key: 'healthcare', label: 'Healthcare' },
   { key: 'tax', label: 'RMD & Roth' },
+  { key: 'healthcare', label: 'Healthcare' },
+  { key: 'protection', label: 'LTC' },
   { key: 'assumptions', label: 'Assumptions' },
   { key: 'integrity', label: 'Integrity' },
 ];
