@@ -5699,6 +5699,54 @@ export type Database = {
           },
         ]
       }
+      household_profile: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          household_net_monthly: number | null
+          id: string
+          kateri_dob: string | null
+          kateri_gross_monthly: number | null
+          kateri_net_monthly: number | null
+          lyman_dob: string | null
+          lyman_gross_monthly: number | null
+          lyman_net_monthly: number | null
+          net_pay_effective_from: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          household_net_monthly?: number | null
+          id?: string
+          kateri_dob?: string | null
+          kateri_gross_monthly?: number | null
+          kateri_net_monthly?: number | null
+          lyman_dob?: string | null
+          lyman_gross_monthly?: number | null
+          lyman_net_monthly?: number | null
+          net_pay_effective_from?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          household_net_monthly?: number | null
+          id?: string
+          kateri_dob?: string | null
+          kateri_gross_monthly?: number | null
+          kateri_net_monthly?: number | null
+          lyman_dob?: string | null
+          lyman_gross_monthly?: number | null
+          lyman_net_monthly?: number | null
+          net_pay_effective_from?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       households: {
         Row: {
           created_at: string
