@@ -19,16 +19,14 @@ const FIELDS: [string, string, 'date' | 'number'][] = [
   ['net_pay_effective_from', 'Net pay starts', 'date'],
 ];
 
+const OVERRIDE_FIELDS: [string, string][] = [
+  ['investments_total_override', 'Investments total ($)'],
+  ['debt_balance_override', 'Debt balance ($)'],
+  ['debt_minimums_override', 'Debt minimums / mo ($)'],
+  ['budget_expenses_override', 'Budget expenses / mo ($)'],
+];
+
 const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-function LiveRow({ label, value, note }: { label: string; value: string | null; note?: string }) {
-  return (
-    <div>
-      <div className="text-muted-foreground">{label}</div>
-      <div className="font-semibold">{value ?? 'Not available yet'}</div>
-      {note && <div className="text-muted-foreground">{note}</div>}
-    </div>
-  );
-}
 
 export function HouseholdProfileCard() {
   const { data } = useHouseholdProfile();
