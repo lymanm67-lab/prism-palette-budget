@@ -427,13 +427,13 @@ export function MoneyBlueprintPlan() {
       </div>
 
       {/* Editable buckets — worksheet style */}
-      <div className={view === 'combined' ? 'grid gap-4 2xl:grid-cols-3' : 'grid gap-4 lg:grid-cols-3'}>
+      <div className={view === 'combined' ? 'grid gap-4' : 'grid gap-4 xl:grid-cols-3'}>
         {(['foundation', 'wealthEngine', 'futureFund'] as BucketName[]).map((bucket, bIdx) => {
           const meta = BUCKET_META[bucket];
           const res = result.buckets.find((b) => b.key === bucket)!;
           const accent = BUCKET_COLORS[bIdx % BUCKET_COLORS.length];
           const cols = view === 'combined'
-            ? 'grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_52px_2rem] items-center gap-1.5'
+            ? 'grid grid-cols-[minmax(180px,1fr)_repeat(3,minmax(88px,120px))_56px_2rem] items-center gap-2'
             : 'grid grid-cols-[minmax(0,1fr)_minmax(90px,120px)_52px_2rem] items-center gap-1.5';
           const base = view === 'lyman'
             ? lymanNetVal
