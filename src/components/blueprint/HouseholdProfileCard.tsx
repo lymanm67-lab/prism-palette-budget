@@ -19,16 +19,14 @@ const FIELDS: [string, string, 'date' | 'number'][] = [
   ['net_pay_effective_from', 'Net pay starts', 'date'],
 ];
 
+const OVERRIDE_FIELDS: [string, string][] = [
+  ['investments_total_override', 'Investments total ($)'],
+  ['debt_balance_override', 'Debt balance ($)'],
+  ['debt_minimums_override', 'Debt minimums / mo ($)'],
+  ['budget_expenses_override', 'Budget expenses / mo ($)'],
+];
+
 const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-function LiveRow({ label, value, note }: { label: string; value: string | null; note?: string }) {
-  return (
-    <div>
-      <div className="text-muted-foreground">{label}</div>
-      <div className="font-semibold">{value ?? 'Not available yet'}</div>
-      {note && <div className="text-muted-foreground">{note}</div>}
-    </div>
-  );
-}
 
 export function HouseholdProfileCard() {
   const { data } = useHouseholdProfile();
@@ -42,6 +40,10 @@ export function HouseholdProfileCard() {
     for (const [k, , t] of FIELDS) {
       const v = form[k];
       patch[k] = v === '' || v == null ? null : t === 'number' ? Number(v) : v;
+    }
+    for (const [k] of OVERRIDE_FIELDS) {
+      const v = form[k];
+      patch[k] = v === '' || v == null ? null : Number(v);
     }
     try { await save.mutateAsync(patch); toast({ title: 'Household profile saved' }); }
     catch (e: any) { toast({ title: 'Save failed', description: e.message, variant: 'destructive' }); }
@@ -71,12 +73,37 @@ export function HouseholdProfileCard() {
           ))}
         </div>
         <Button onClick={submit} disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save profile'}</Button>
-        <div className="grid gap-2 border-t border-border pt-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
-          <LiveRow label="Investments (from accounts)" value={live.hasInvestments ? money(live.investmentsTotal) : null}
-            note={live.hasInvestments ? `Retirement ${money(live.retirement)} · Self-directed ${money(live.selfDirected)}` : undefined} />
-          <LiveRow label="Debt balance (from debt list)" value={live.hasDebts ? money(live.debtBalance) : null} />
-          <LiveRow label="Debt minimums / mo" value={live.hasDebts ? money(live.debtMinimums) : null} />
-          <LiveRow label={`Budget expenses (${live.monthKey.slice(0, 7)})`} value={live.hasBudget ? money(live.budgetExpenses) : null} />
+        <div className="border-t border-border pt-3">
+          <p className="mb-2 text-xs text-muted-foreground">
+            Live numbers — leave a box blank to use the app's own figure, or type a number to override it everywhere.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {OVERRIDE_FIELDS.map(([k, label]) => {
+              const liveVal =
+                k === 'investments_total_override' ? (live.investmentsLive != null ? live.investmentsLive : null)
+                : k === 'debt_balance_override' ? (live.hasDebts ? live.debtBalance : null)
+                : k === 'debt_minimums_override' ? (live.hasDebts ? live.debtMinimums : null)
+                : (live.hasBudget ? live.budgetExpenses : null);
+              const overridden = form[k] !== '' && form[k] != null;
+              return (
+                <div key={k} className="space-y-1">
+                  <Label className="text-xs">{label}</Label>
+                  <Input type="number" value={form[k] ?? ''}
+                    placeholder={liveVal != null ? `Live: ${money(liveVal)}` : 'Not available yet'}
+                    onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))} />
+                  <div className="text-xs text-muted-foreground">
+                    {overridden
+                      ? `Using your number: ${money(Number(form[k]))}`
+                      : liveVal != null
+                        ? `Using live: ${money(liveVal)}`
+                        : 'Not available yet'}
+                    {k === 'investments_total_override' && live.hasInvestments && !overridden &&
+                      ` · Retirement ${money(live.retirement)} · Self-directed ${money(live.selfDirected)}`}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
       </CardContent>
