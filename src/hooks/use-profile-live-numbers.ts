@@ -15,7 +15,9 @@ export function useProfileLiveNumbers() {
   const { data: profile } = useHouseholdProfile();
 
   return useMemo(() => {
-    const inv = (accounts || []).filter((a: any) => a.type === 'investment' && !a.deleted_at);
+    const inv = (accounts || []).filter((a: any) =>
+      !a.deleted_at && (a.type === 'investment' || /\bhsa\b/i.test(`${(a as any).name} ${(a as any).institution}`)),
+    );
     let retirement = 0, selfDirected = 0;
     for (const a of inv) {
       const bal = Number((a as any).balance || 0);
