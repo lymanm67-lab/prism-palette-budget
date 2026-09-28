@@ -16,7 +16,7 @@ export function useProfileLiveNumbers() {
 
   return useMemo(() => {
     const inv = (accounts || []).filter((a: any) =>
-      !a.deleted_at && (a.type === 'investment' || /\bhsa\b/i.test(`${(a as any).name} ${(a as any).institution}`)),
+      !a.deleted_at && ((a as any).account_type === 'investment' || /\bhsa\b/i.test(`${(a as any).name} ${(a as any).institution}`)),
     );
     let retirement = 0, selfDirected = 0;
     for (const a of inv) {
