@@ -157,41 +157,51 @@ export default function MoneyBlueprint() {
         <TabsContent value="overview" className="mt-4">
           <BlueprintOverview state={state} netMonthly={netMonthly} onDrill={setTab} />
         </TabsContent>
-        <TabsContent value="plan" className="mt-4">
+        <TabsContent value="plan" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <MoneyBlueprintPlan />
         </TabsContent>
-        <TabsContent value="networth" className="mt-4">
+        <TabsContent value="networth" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <NetWorthPanel state={state} />
         </TabsContent>
-        <TabsContent value="debt" className="mt-4">
+        <TabsContent value="debt" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <DebtFreedomEngine state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="contributions" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <SalaryAccelerator state={state} />
           <ContributionTimeline state={state} />
           <InvestmentWaterfall state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="portfolio" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <PortfolioSimulator state={state} />
           <WealthRoadmap state={state} />
           <CompoundingFlywheel state={state} />
         </TabsContent>
-        <TabsContent value="legacy" className="mt-4">
+        <TabsContent value="legacy" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <LegacyWindowPanel state={state} />
         </TabsContent>
         <TabsContent value="protection" className="mt-4">
           <LtcCenter state={state} patch={patch} onBack={() => setTab('overview')} />
         </TabsContent>
-        <TabsContent value="healthcare" className="mt-4">
+        <TabsContent value="healthcare" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <HealthcarePanel state={state} patch={patch} />
         </TabsContent>
-        <TabsContent value="tax" className="mt-4">
+        <TabsContent value="tax" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <RmdRothPanel state={state} />
         </TabsContent>
-        <TabsContent value="assumptions" className="mt-4">
+        <TabsContent value="assumptions" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <AssumptionCenter state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="integrity" className="mt-4 space-y-4">
+          <BackToOverview onBack={() => setTab('overview')} />
           <DataIntegrityPanel state={state} />
           <ScenarioPanel state={state} patch={patch} />
         </TabsContent>
