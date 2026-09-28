@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Printer, Save, FileText } from 'lucide-react';
+import { Printer, Save, FileText, ArrowLeft } from 'lucide-react';
 import { MoneyBlueprintPlan } from '@/components/blueprint/MoneyBlueprintPlan';
 import { PageExplainer } from '@/components/PageExplainer';
 import { BlueprintOverview } from '@/components/blueprint/BlueprintOverview';
@@ -35,6 +35,16 @@ const TABS = [
   { key: 'assumptions', label: 'Assumptions' },
   { key: 'integrity', label: 'Integrity' },
 ];
+
+function BackToOverview({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="flex justify-end print:hidden">
+      <Button size="sm" variant="ghost" onClick={onBack} className="text-xs">
+        <ArrowLeft className="h-3.5 w-3.5 mr-1" /> Back to overview
+      </Button>
+    </div>
+  );
+}
 
 export default function MoneyBlueprint() {
   const { data: record } = useBlueprintAssumptions();
