@@ -102,6 +102,7 @@ export function AssumptionCenter({
                     </div>
                     <NumField
                       value={Number(state[f.key] as number) || 0}
+                      currency={f.suffix === '$'}
                       onChange={(n) => patch({ [f.key]: n } as Partial<AssumptionState>)}
                     />
                   </div>

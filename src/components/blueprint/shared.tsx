@@ -10,19 +10,27 @@ export const money2 = (n: number) =>
 export const pct = (n: number) => `${(Number(n) || 0).toFixed(1)}%`;
 
 export function NumField({
-  value, onChange, className, step,
-}: { value: number; onChange: (n: number) => void; className?: string; step?: string }) {
-  const [raw, setRaw] = useState(String(value ?? 0));
+  value, onChange, className, step, currency = false,
+}: { value: number; onChange: (n: number) => void; className?: string; step?: string; currency?: boolean }) {
+  const display = (n: number) => currency
+    ? (Number(n) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })
+    : String(n ?? 0);
+  const [raw, setRaw] = useState(display(value));
   const [focused, setFocused] = useState(false);
-  useEffect(() => { if (!focused) setRaw(String(value ?? 0)); }, [value, focused]);
+  useEffect(() => { if (!focused) setRaw(display(value)); }, [value, focused, currency]);
   return (
     <Input
       className={className}
       inputMode="decimal"
       step={step}
       value={raw}
-      onFocus={() => setFocused(true)}
-      onBlur={() => { setFocused(false); onChange(Number(String(raw).replace(/[^0-9.-]/g, '')) || 0); }}
+      onFocus={() => { setFocused(true); setRaw(String(value ?? 0)); }}
+      onBlur={() => {
+        const next = Number(String(raw).replace(/[^0-9.-]/g, '')) || 0;
+        setFocused(false);
+        setRaw(display(next));
+        onChange(next);
+      }}
       onChange={(e) => setRaw(e.target.value)}
     />
   );
