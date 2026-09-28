@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2, GitCompare, Plus, Trash2 } from 'lucide-react';
 import { money, SectionNote } from './shared';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
+import { useProfileLiveNumbers } from '@/hooks/use-profile-live-numbers';
 import {
   validateBlueprint, applyScenario, projectPortfolio, milestoneHits,
   type AssumptionState, type SavedScenario,
@@ -14,14 +15,16 @@ import {
 
 export function DataIntegrityPanel({ state }: { state: AssumptionState }) {
   const { data: wealth } = useWealthOSData();
+  const profile = useProfileLiveNumbers();
   const issues = useMemo(
     () => validateBlueprint(state, {
       netWorth: wealth?.netWorth,
       liabilities: wealth?.liabilities,
-      portfolio: wealth ? wealth.buckets.retirement + wealth.buckets.brokerage + wealth.buckets.hsa : undefined,
+      portfolio: profile.investmentsTotal,
+      householdPortfolio: profile.investmentsLive ?? undefined,
       assets: wealth?.assets?.map((a) => ({ name: a.name, balance: a.balance })),
     }),
-    [state, wealth],
+    [state, wealth, profile.investmentsTotal, profile.investmentsLive],
   );
 
   const errors = issues.filter((i) => i.severity === 'error');

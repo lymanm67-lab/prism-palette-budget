@@ -800,6 +800,7 @@ export function validateBlueprint(
     netWorth?: number;
     liabilities?: { name: string; balance: number }[];
     portfolio?: number;
+    householdPortfolio?: number;
     assets?: { name: string; balance: number }[];
   },
 ): IntegrityIssue[] {
@@ -836,7 +837,9 @@ export function validateBlueprint(
   });
 
   if (live?.portfolio && Math.abs(live.portfolio - s.portfolioBalance) > 1) {
-    issues.push({ id: 'portfolio-conflict', severity: 'error', title: 'DATA REVIEW REQUIRED — portfolio balance conflict', detail: `Assumption Center says $${s.portfolioBalance.toLocaleString()}, live account data says $${Math.round(live.portfolio).toLocaleString()}. Confirm which is correct.` });
+    issues.push({ id: 'portfolio-conflict', severity: 'error', title: 'DATA REVIEW REQUIRED — Lyman portfolio balance conflict', detail: `Assumption Center says $${s.portfolioBalance.toLocaleString()}, while Lyman's master-profile portfolio says $${live.portfolio.toLocaleString()}. Confirm which is correct.` });
+  } else if (live?.householdPortfolio && live.householdPortfolio > 0) {
+    issues.push({ id: 'portfolio-scope', severity: 'info', title: 'Portfolio scope confirmed', detail: `The Blueprint uses Lyman's $${s.portfolioBalance.toLocaleString()} portfolio. The combined household portfolio is $${live.householdPortfolio.toLocaleString()} and is tracked separately.` });
   }
 
   if (live?.liabilities?.length) {

@@ -21,7 +21,7 @@ const FIELDS: [string, string, 'date' | 'number'][] = [
 ];
 
 const OVERRIDE_FIELDS: [string, string][] = [
-  ['investments_total_override', 'Investments total ($)'],
+  ['investments_total_override', 'Lyman portfolio ($)'],
   ['debt_balance_override', 'Debt balance ($)'],
   ['debt_minimums_override', 'Debt minimums / mo ($)'],
   ['budget_expenses_override', 'Budget expenses / mo ($)'],
@@ -164,6 +164,8 @@ export function HouseholdProfileCard() {
                         : 'Not available yet'}
                     {k === 'investments_total_override' && live.hasInvestments && !overridden &&
                       ` · Retirement ${money(live.retirement)} · Self-directed ${money(live.selfDirected)}`}
+                    {k === 'investments_total_override' && live.investmentsLive != null &&
+                      ` · Combined household ${money(live.investmentsLive)}`}
                   </div>
                 </div>
               );
