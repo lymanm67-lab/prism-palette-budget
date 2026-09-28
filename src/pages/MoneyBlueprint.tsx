@@ -22,12 +22,12 @@ import { defaultAssumptions, type AssumptionState } from '@/lib/blueprint/model'
 import { exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 
 const TABS = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'cashflow', label: 'Cash Flow & Debt' },
-  { key: 'growth', label: 'Growth & Investing' },
-  { key: 'protection', label: 'Net Worth & Protection' },
-  { key: 'retirement', label: 'Retirement & Legacy' },
-  { key: 'assumptions', label: 'Assumptions & Integrity' },
+  { key: 'assumptions', label: 'Step 1 · Assumptions & Integrity', blurb: 'Lock your baseline rules, return rates, and audit data' },
+  { key: 'overview', label: 'Step 2 · Overview', blurb: 'High-level executive pulse check based on calibrated inputs' },
+  { key: 'cashflow', label: 'Step 3 · Cash Flow & Debt', blurb: 'Today: monthly spending buckets, freed cash, and debt elimination' },
+  { key: 'growth', label: 'Step 4 · Growth & Investing', blurb: 'Tomorrow: accumulation, employer match, and compounding engine' },
+  { key: 'protection', label: 'Step 5 · Net Worth & Protection', blurb: 'Defense: balance sheet, emergency cushion, healthcare & LTC' },
+  { key: 'retirement', label: 'Step 6 · Retirement & Legacy', blurb: 'The finish line: Age 70–85 drawdown, RMDs, Roth, and legacy' },
 ];
 
 const DRILL_MAP: Record<string, string> = {
@@ -35,12 +35,19 @@ const DRILL_MAP: Record<string, string> = {
   networth: 'protection', legacy: 'retirement', tax: 'retirement', integrity: 'assumptions',
 };
 
-function BackToOverview({ onBack }: { onBack: () => void }) {
+function StepNav({ tab, onGo }: { tab: string; onGo: (key: string) => void }) {
+  const idx = TABS.findIndex((t) => t.key === tab);
+  const next = TABS[idx + 1];
   return (
-    <div className="flex justify-end print:hidden">
-      <Button size="sm" variant="ghost" onClick={onBack} className="text-xs">
+    <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
+      <Button size="sm" variant="ghost" onClick={() => onGo('overview')} className="text-xs">
         <ArrowLeft className="h-3.5 w-3.5 mr-1" /> Back to overview
       </Button>
+      {next && (
+        <Button size="sm" variant="outline" onClick={() => onGo(next.key)} className="text-xs">
+          Continue to {next.label} →
+        </Button>
+      )}
     </div>
   );
 }
@@ -52,7 +59,7 @@ export default function MoneyBlueprint() {
 
   const [state, setState] = useState<AssumptionState>(defaultAssumptions());
   const [hydrated, setHydrated] = useState(false);
-  const [tab, setTab] = useState('overview');
+  const [tab, setTab] = useState('assumptions');
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
@@ -153,16 +160,17 @@ export default function MoneyBlueprint() {
           ))}
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          <StepNav tab="overview" onGo={setTab} />
           <BlueprintOverview state={state} netMonthly={netMonthly} onDrill={(k) => setTab(DRILL_MAP[k] ?? k)} />
         </TabsContent>
         <TabsContent value="cashflow" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="cashflow" onGo={setTab} />
           <MoneyBlueprintPlan />
           <DebtFreedomEngine state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="growth" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="growth" onGo={setTab} />
           <SalaryAccelerator state={state} />
           <ContributionTimeline state={state} />
           <InvestmentWaterfall state={state} patch={patch} />
@@ -171,18 +179,18 @@ export default function MoneyBlueprint() {
           <CompoundingFlywheel state={state} />
         </TabsContent>
         <TabsContent value="protection" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="protection" onGo={setTab} />
           <NetWorthPanel state={state} />
           <HealthcarePanel state={state} patch={patch} />
           <LtcCenter state={state} patch={patch} />
         </TabsContent>
         <TabsContent value="retirement" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="retirement" onGo={setTab} />
           <LegacyWindowPanel state={state} />
           <RmdRothPanel state={state} />
         </TabsContent>
         <TabsContent value="assumptions" className="mt-4 space-y-4">
-          <BackToOverview onBack={() => setTab('overview')} />
+          <StepNav tab="assumptions" onGo={setTab} />
           <AssumptionCenter state={state} patch={patch} />
           <DataIntegrityPanel state={state} />
           <ScenarioPanel state={state} patch={patch} />
