@@ -41,6 +41,10 @@ export function HouseholdProfileCard() {
       const v = form[k];
       patch[k] = v === '' || v == null ? null : t === 'number' ? Number(v) : v;
     }
+    for (const [k] of OVERRIDE_FIELDS) {
+      const v = form[k];
+      patch[k] = v === '' || v == null ? null : Number(v);
+    }
     try { await save.mutateAsync(patch); toast({ title: 'Household profile saved' }); }
     catch (e: any) { toast({ title: 'Save failed', description: e.message, variant: 'destructive' }); }
   };
