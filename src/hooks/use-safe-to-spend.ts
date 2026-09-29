@@ -211,6 +211,6 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       mode,
       isLoading: !accounts,
     };
-  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, deploymentRules, scope]);
+  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, deploymentRules, scope, profile]);
 
 }

@@ -12,6 +12,7 @@ import { ArrowLeft, Sparkles, Loader2, Wallet, Receipt, Flame, PiggyBank, Trendi
 import PageOverview from '@/components/PageOverview';
 import PaycheckScheduleCard from '@/components/coach/PaycheckScheduleCard';
 import { usePaycheckSchedules, toDeployFrequency } from '@/hooks/use-paycheck-schedule';
+import { useHouseholdProfile } from '@/hooks/use-household-profile';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -30,6 +31,7 @@ export default function PaycheckDeployment() {
   const build = useBuildPaycheckDeployment();
   const update = useUpdatePaycheckDeployment();
   const { primary } = usePaycheckSchedules();
+  const { data: profile } = useHouseholdProfile();
   const [freq, setFreq] = useState('biweekly');
   const [net, setNet] = useState<string>('');
   const [payDate, setPayDate] = useState<string>('');
@@ -86,6 +88,31 @@ export default function PaycheckDeployment() {
       />
 
       <PaycheckScheduleCard onUse={loadFromSchedule} />
+
+      {profile && (Number(profile.lyman_net_monthly) > 0 || Number(profile.kateri_net_monthly) > 0) && (
+        <Card className="bg-card/60 backdrop-blur-sm border-border/60">
+          <CardContent className="pt-4 space-y-2">
+            <p className="text-xs text-muted-foreground">
+              From your Household Profile — combined take-home{' '}
+              <span className="font-mono text-foreground">
+                ${(Number(profile.lyman_net_monthly || 0) + Number(profile.kateri_net_monthly || 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>/mo
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {Number(profile.lyman_net_monthly) > 0 && (
+                <Button size="sm" variant="outline" onClick={() => { setNet(String(profile.lyman_net_monthly)); setFreq('monthly'); setOverridden(true); }}>
+                  Lyman · monthly ${Number(profile.lyman_net_monthly).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </Button>
+              )}
+              {Number(profile.kateri_net_monthly) > 0 && (
+                <Button size="sm" variant="outline" onClick={() => { setNet(String(Math.round(Number(profile.kateri_net_monthly) * 50) / 100)); setFreq('semi_monthly'); setOverridden(true); }}>
+                  Kateri · twice a month ${(Number(profile.kateri_net_monthly) / 2).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="bg-card/60 backdrop-blur-sm border-border/60">
         <CardHeader>
