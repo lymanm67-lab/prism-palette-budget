@@ -59,16 +59,14 @@ export default function MoneyBlueprint() {
   const saveAssumptions = useSaveBlueprintAssumptions();
 
   const [state, setState] = useState<AssumptionState>(defaultAssumptions());
-  const [hydrated, setHydrated] = useState(false);
   const [tab, setTab] = useState('assumptions');
   const [exporting, setExporting] = useState(false);
 
+  // Sync whenever the saved record changes — including refetches triggered by
+  // Household profile saves (ages/salary flow in via useBlueprintAssumptions).
   useEffect(() => {
-    if (record && !hydrated) {
-      setState(record.state);
-      setHydrated(true);
-    }
-  }, [record, hydrated]);
+    if (record) setState(record.state);
+  }, [record]);
 
   const patch = (p: Partial<AssumptionState>) =>
     setState((s) => ({ ...s, ...p, asOf: new Date().toISOString().slice(0, 10) }));
