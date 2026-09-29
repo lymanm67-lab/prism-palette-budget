@@ -95,17 +95,51 @@ export default function MoneyBlueprint() {
   const netMonthly = plan?.state.income.netMonthly ?? 0;
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <div className="blueprint-print container mx-auto p-4 md:p-6 space-y-6">
       <style>{`
         @media print {
-          @page { size: letter portrait; margin: 0.5in; }
-          body { background: #fff !important; }
-          .print\\:hidden { display: none !important; }
-          * { color: #111 !important; box-shadow: none !important; }
-          [class*="bg-gradient"], [class*="bg-card"], [class*="backdrop"] { background: #fff !important; }
-          .wos-page { break-inside: avoid; page-break-inside: avoid; border: 1px solid #111 !important; }
+          @page { size: letter portrait; margin: 0.45in; }
+          html, body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .blueprint-print, .blueprint-print * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .blueprint-print .print\\:hidden { display: none !important; }
+          .blueprint-print .bp-print-cover { display: block !important; }
+          .blueprint-print .bp-print-cover, .blueprint-print .bp-print-cover * { color: #fff !important; }
+          .blueprint-print .rounded-lg, .blueprint-print .rounded-xl, .blueprint-print [class*="bg-card"] {
+            background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 10px !important;
+            break-inside: avoid; page-break-inside: avoid;
+          }
+          .blueprint-print h2, .blueprint-print h3, .blueprint-print [class*="CardTitle"], .blueprint-print .font-semibold {
+            color: #0f2a44 !important;
+          }
+          .blueprint-print h2, .blueprint-print h3 { border-left: 4px solid #0d9488; padding-left: 8px; }
+          .blueprint-print .text-muted-foreground { color: #475569 !important; }
+          .blueprint-print [class*="text-emerald"], .blueprint-print [class*="text-green"], .blueprint-print [class*="text-teal"] { color: #047857 !important; }
+          .blueprint-print [class*="text-rose"], .blueprint-print [class*="text-red"], .blueprint-print [class*="text-destructive"] { color: #b91c1c !important; }
+          .blueprint-print [class*="text-amber"], .blueprint-print [class*="text-orange"], .blueprint-print [class*="text-prism"] { color: #c2410c !important; }
+          .blueprint-print [class*="text-primary"], .blueprint-print [class*="text-blue"] { color: #0f766e !important; }
+          .blueprint-print [class*="bg-emerald"], .blueprint-print [class*="bg-green"] { background: #d1fae5 !important; }
+          .blueprint-print [class*="bg-rose"], .blueprint-print [class*="bg-red"] { background: #fee2e2 !important; }
+          .blueprint-print [class*="bg-amber"], .blueprint-print [class*="bg-orange"] { background: #ffedd5 !important; }
+          .blueprint-print [class*="bg-primary"] { background: #0d9488 !important; }
+          .blueprint-print table { width: 100%; border-collapse: collapse; }
+          .blueprint-print thead tr { background: #0f2a44 !important; }
+          .blueprint-print thead th, .blueprint-print thead th * { color: #fff !important; }
+          .blueprint-print tbody tr:nth-child(even) { background: #e6f4f1 !important; }
+          .blueprint-print td, .blueprint-print th { border-bottom: 1px solid #cbd5e1 !important; padding: 4px 6px !important; }
+          .blueprint-print .recharts-wrapper, .blueprint-print .recharts-surface { overflow: visible !important; max-width: 100% !important; }
+          .blueprint-print .recharts-text, .blueprint-print .recharts-cartesian-axis-tick-value { fill: #334155 !important; }
+          .blueprint-print .recharts-cartesian-grid line { stroke: #e2e8f0 !important; }
+          .blueprint-print [role="tabpanel"] { display: block !important; }
+          .blueprint-print [role="tabpanel"][hidden] { display: none !important; }
+          .blueprint-print .wos-page { break-inside: avoid; page-break-inside: avoid; }
         }
       `}</style>
+
+      <div className="bp-print-cover hidden" style={{ background: 'linear-gradient(135deg,#0f2a44,#0d9488)', padding: '18px 22px', borderRadius: 12, borderBottom: '5px solid #f97316' }}>
+        <div style={{ fontSize: 22, fontWeight: 700 }}>The Montgomery Money Blueprint™</div>
+        <div style={{ fontSize: 11, opacity: 0.9 }}>Wealth Binder · As of {state.asOf}</div>
+      </div>
+
 
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
