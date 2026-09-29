@@ -113,7 +113,7 @@ export default function PaycheckDeployment() {
                 </Button>
               )}
               {Number(profile.kateri_net_monthly) > 0 && (
-                <Button size="sm" variant="outline" onClick={() => { setNet(String(Math.round(Number(profile.kateri_net_monthly) * 50) / 100)); setFreq('semi_monthly'); setOverridden(true); }}>
+                <Button size="sm" variant="outline" onClick={() => { setNet(String(Math.round(Number(profile.kateri_net_monthly) * 50) / 100)); setFreq('semi_monthly'); setPayDate(nextSemiMonthlyPayDate()); setOverridden(true); }}>
                   Kateri · twice a month ${(Number(profile.kateri_net_monthly) / 2).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </Button>
               )}
