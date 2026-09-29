@@ -89,6 +89,46 @@ function Bars({ items }: { items: { label: string; value: number; color: string 
   );
 }
 
+function PieChart({ items, title }: { items: { label: string; value: number; color: string }[]; title: string }) {
+  const positive = items.filter((item) => item.value > 0);
+  const total = positive.reduce((sum, item) => sum + item.value, 0);
+  if (!total) return null;
+  let offset = 0;
+  const slices = positive.map((item) => {
+    const start = offset;
+    offset += item.value / total;
+    return { ...item, start, end: offset };
+  });
+  const point = (fraction: number) => {
+    const angle = fraction * Math.PI * 2 - Math.PI / 2;
+    return { x: 82 + 68 * Math.cos(angle), y: 82 + 68 * Math.sin(angle) };
+  };
+  const pathFor = (start: number, end: number) => {
+    const a = point(start), b = point(end);
+    return `M 82 82 L ${a.x} ${a.y} A 68 68 0 ${end - start > 0.5 ? 1 : 0} 1 ${b.x} ${b.y} Z`;
+  };
+  return (
+    <div className="bp-pie-card">
+      <svg viewBox="0 0 164 164" className="bp-pie" aria-label={title}>
+        {slices.length === 1 ? <circle cx="82" cy="82" r="68" fill={slices[0].color} /> :
+          slices.map((slice) => <path key={slice.label} d={pathFor(slice.start, slice.end)} fill={slice.color} stroke="#fff" strokeWidth="2" />)}
+        <circle cx="82" cy="82" r="33" fill="#fff" />
+        <text x="82" y="78" textAnchor="middle" fontSize="10" fontWeight="700" fill={NAVY}>{title}</text>
+        <text x="82" y="94" textAnchor="middle" fontSize="10" fill="#475569">{$(total)}</text>
+      </svg>
+      <div className="bp-pie-legend">
+        {positive.map((item) => (
+          <div key={item.label}><span style={{ background: item.color }} /><b>{item.label}</b><small>{((item.value / total) * 100).toFixed(1)}% · {$(item.value)}</small></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Meaning({ children }: { children: ReactNode }) {
+  return <div className="bp-meaning"><b>What this means</b><p>{children}</p></div>;
+}
+
 export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; plan?: BlueprintState }) {
   const bp = plan ? computeBlueprint(plan) : null;
   const net = plan?.income.netMonthly ?? 0;
@@ -116,7 +156,7 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
           .blueprint-print > *:not(.bp-report) { display: none !important; }
           .bp-report { display: block !important; font-family: Georgia, 'Times New Roman', serif; width: 100% !important; }
           .bp-report * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .bp-page { page-break-after: always; break-after: page; padding: 0; min-height: 9.6in; display: flex; flex-direction: column; }
+          .bp-page { page-break-after: always; break-after: page; padding: 0; height: 9.88in; overflow:hidden; display: flex; flex-direction: column; }
           .bp-page > .bp-foot { margin-top: auto; }
           .bp-page:last-child { page-break-after: auto; }
           .bp-band { display:flex; justify-content:space-between; align-items:flex-end; background:${NAVY} !important; padding:12px 16px; border-bottom:4px solid ${ORANGE}; border-radius:8px; }
@@ -124,19 +164,19 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
           .bp-kicker { font: 600 9px/1 system-ui, sans-serif; letter-spacing:.14em; text-transform:uppercase; opacity:.85; }
           .bp-title { font-size:20px; font-weight:700; margin-top:4px; }
           .bp-brand { font: 500 9px system-ui, sans-serif; opacity:.8; }
-          .bp-story { font-size:11.5px; line-height:1.5; color:#1e293b !important; margin:10px 2px 10px; border-left:3px solid ${TEAL}; padding-left:10px; }
-          .bp-h { font: 700 11px system-ui, sans-serif; color:${TEAL} !important; text-transform:uppercase; letter-spacing:.08em; margin:12px 0 5px; }
+          .bp-story { font-size:12.5px; line-height:1.55; color:#1e293b !important; margin:12px 2px; border-left:4px solid ${TEAL}; padding:6px 0 6px 12px; }
+          .bp-h { font: 700 11.5px system-ui, sans-serif; color:${TEAL} !important; text-transform:uppercase; letter-spacing:.08em; margin:14px 0 7px; }
           .bp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
           .bp-grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-          .bp-kpi { background:#f1f5f9 !important; border-top:3px solid; border-radius:6px; padding:7px 9px; }
+          .bp-kpi { background:#f1f5f9 !important; border-top:3px solid; border-radius:6px; padding:10px 11px; min-height:58px; }
           .bp-kpi-l { font: 600 8.5px system-ui, sans-serif; text-transform:uppercase; color:#475569 !important; letter-spacing:.06em; }
-          .bp-kpi-v { font: 700 16px system-ui, sans-serif; margin-top:2px; }
+          .bp-kpi-v { font: 700 17px system-ui, sans-serif; margin-top:3px; }
           .bp-kpi-s { font: 400 8.5px system-ui, sans-serif; color:#64748b !important; }
-          .bp-box { background:#f8fafc !important; border:1px solid #cbd5e1; border-radius:6px; padding:8px 10px; }
-          .bp-report table { width:100%; border-collapse:collapse; font: 10px system-ui, sans-serif; }
+          .bp-box { background:#f8fafc !important; border:1px solid #cbd5e1; border-radius:6px; padding:10px 12px; }
+          .bp-report table { width:100%; border-collapse:collapse; font: 10.5px system-ui, sans-serif; }
           .bp-report thead tr { background:${TEAL} !important; }
-          .bp-report th { color:#fff !important; text-align:left; padding:4px 6px; font-weight:600; }
-          .bp-report td { padding:3.5px 6px; border-bottom:1px solid #e2e8f0; color:#0f172a !important; }
+          .bp-report th { color:#fff !important; text-align:left; padding:6px 7px; font-weight:600; }
+          .bp-report td { padding:5px 7px; border-bottom:1px solid #e2e8f0; color:#0f172a !important; }
           .bp-report tbody tr:nth-child(even) { background:#ecfdf5 !important; }
           .bp-report .r { text-align:right; font-variant-numeric: tabular-nums; }
           .bp-stack { display:flex; height:22px; border-radius:5px; overflow:hidden; }
@@ -146,6 +186,16 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
           .bp-bar-t { background:#e2e8f0 !important; height:10px; border-radius:5px; overflow:hidden; }
           .bp-bar-t div { height:100%; }
           .bp-bar-v { text-align:right; font-weight:600; }
+          .bp-two { display:grid; grid-template-columns:1fr 1.2fr; gap:14px; align-items:center; }
+          .bp-pie-card { display:grid; grid-template-columns:175px 1fr; gap:14px; align-items:center; background:#f8fafc !important; border:1px solid #cbd5e1; border-radius:7px; padding:10px; }
+          .bp-pie { width:175px; height:175px; display:block; }
+          .bp-pie-legend { display:flex; flex-direction:column; gap:8px; font:10.5px system-ui,sans-serif; }
+          .bp-pie-legend div { display:grid; grid-template-columns:10px 1fr; column-gap:7px; align-items:center; }
+          .bp-pie-legend span { width:10px; height:10px; border-radius:2px; grid-row:1 / span 2; }
+          .bp-pie-legend small { color:#64748b !important; grid-column:2; margin-top:1px; }
+          .bp-meaning { margin-top:14px; padding:11px 13px; background:#ecfdf5 !important; border:1px solid #99d8ce; border-left:5px solid ${TEAL}; border-radius:6px; font:11.5px/1.45 system-ui,sans-serif; color:#1e293b !important; }
+          .bp-meaning b { color:${NAVY} !important; text-transform:uppercase; letter-spacing:.06em; font-size:9px; }
+          .bp-meaning p { margin:4px 0 0; }
           .bp-foot { margin-top:12px; padding-top:5px; border-top:1px solid #cbd5e1; font: 8.5px system-ui, sans-serif; color:#64748b !important; }
           .bp-cover { background: linear-gradient(135deg, ${NAVY}, ${TEAL}) !important; border-radius:10px; padding:40px 30px; border-bottom:6px solid ${ORANGE}; margin-bottom:14px; }
           .bp-cover * { color:#fff !important; }
@@ -186,6 +236,7 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
             <tr><td>5 · Retirement &amp; legacy</td><td>What does income look like from 70 to 85?</td></tr>
           </tbody>
         </table>
+        <Meaning>The chapters turn one set of saved facts into a sequence: establish today's position, direct cash intentionally, eliminate debt, compound the released money, protect the household, and coordinate retirement income.</Meaning>
         <div className="bp-foot">Page 1 · Prepared from saved Blueprint assumptions</div>
       </section>
 
@@ -193,10 +244,17 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
         story={`Each month ${$(net)} comes in. The Blueprint gives every dollar a job in four groups: Foundation Costs cover the basics, Wealth Engine invests, Future Fund saves for goals, and Freedom Spending is guilt-free money.`}>
         {bp && (
           <>
-            <div className="bp-stack">
-              {bp.buckets.map((b, i) => (
-                <div key={b.key} style={{ width: `${Math.max(b.pct, 4)}%`, background: BUCKET_COLORS[i] }}>{Math.round(b.pct)}%</div>
-              ))}
+            <div className="bp-two">
+              <PieChart title="Monthly plan" items={bp.buckets.map((b, i) => ({ label: b.label, value: Math.max(0, b.total), color: BUCKET_COLORS[i] }))} />
+              <div>
+                <div className="bp-h">How to read this page</div>
+                <p className="bp-story">The circle shows each purpose's share of take-home. The table compares those shares with the Blueprint ranges; the bars show which essential costs consume the most cash.</p>
+                <div className="bp-stack">
+                  {bp.buckets.map((b, i) => (
+                    <div key={b.key} style={{ width: `${Math.max(b.pct, 4)}%`, background: BUCKET_COLORS[i] }}>{Math.round(b.pct)}%</div>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="bp-h">The four groups vs. their targets</div>
             <table>
@@ -214,7 +272,7 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
             <div className="bp-h">Largest Foundation costs</div>
             <Bars items={[...(plan?.buckets.foundation ?? [])].sort((a, b) => b.amount - a.amount).slice(0, 8)
               .map((r, i) => ({ label: r.label.split('(')[0].trim(), value: r.amount, color: i % 2 ? TEAL : NAVY }))} />
-            <p className="bp-story" style={{ marginTop: 10 }}>Savings rate: <b>{bp.savingsRatePct.toFixed(1)}%</b> of take-home goes to the Wealth Engine and Future Fund.</p>
+            <Meaning>Savings rate is <b>{bp.savingsRatePct.toFixed(1)}%</b>: that is the share of take-home flowing to the Wealth Engine and Future Fund before Freedom Spending.</Meaning>
           </>
         )}
       </Page>
@@ -241,12 +299,13 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
         </table>
         <div className="bp-h">Balances by debt</div>
         <Bars items={debts.filter((d) => d.balance > 0).map((d, i) => ({ label: d.label, value: d.balance, color: i % 2 ? ORANGE : '#b91c1c' }))} />
+        <Meaning>The payoff dates are more than finish lines. Each released payment becomes investable monthly cash, so debt elimination directly strengthens the growth chapter that follows.</Meaning>
       </Page>
 
       <Page n={3} kicker="Tomorrow" title="Growth & investing"
         story={`Starting from ${$(state.portfolioBalance)}, contributions of about ${$(firstYear?.totalMonthly ?? 0)} a month plus compounding grow the portfolio. The chart compares the ${state.primaryReturnPct}% plan with a ${state.stretchReturnPct}% stretch case.`}>
         <div className="bp-box">
-          <LineChart series={[
+          <LineChart height={235} series={[
             { label: `Plan ${state.primaryReturnPct}%`, color: TEAL, points: primary.map((p) => ({ x: p.age, y: p.balance })) },
             { label: `Stretch ${state.stretchReturnPct}%`, color: ORANGE, points: stretch.map((p) => ({ x: p.age, y: p.balance })) },
             { label: 'Money put in', color: NAVY, points: primary.map((p) => ({ x: p.age, y: p.contributions })) },
@@ -274,6 +333,7 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
             ]} />
           </>
         )}
+        <Meaning>The gap between “Money put in” and the two portfolio lines is compounding. Staying consistent with contributions and redirecting freed debt payments matters more than relying on the stretch return.</Meaning>
       </Page>
 
       <Page n={4} kicker="Defense" title="Net worth & protection"
@@ -285,12 +345,19 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
           <Kpi label="Debt" value={$(bs?.debt ?? 0)} tone="#b91c1c" />
         </div>
         <div className="bp-h">Balance sheet</div>
-        <Bars items={[
-          { label: 'Assets', value: bs?.assets ?? 0, color: NAVY },
-          { label: 'Investments', value: bs?.investments ?? 0, color: TEAL },
-          { label: 'Savings', value: bs?.savings ?? 0, color: '#f59e0b' },
-          { label: 'Debt', value: bs?.debt ?? 0, color: '#b91c1c' },
-        ]} />
+        <div className="bp-two">
+          <PieChart title="What you own" items={[
+            { label: 'Other assets', value: bs?.assets ?? 0, color: NAVY },
+            { label: 'Investments', value: bs?.investments ?? 0, color: TEAL },
+            { label: 'Cash savings', value: bs?.savings ?? 0, color: '#f59e0b' },
+          ]} />
+          <Bars items={[
+            { label: 'Assets', value: bs?.assets ?? 0, color: NAVY },
+            { label: 'Investments', value: bs?.investments ?? 0, color: TEAL },
+            { label: 'Savings', value: bs?.savings ?? 0, color: '#f59e0b' },
+            { label: 'Debt', value: bs?.debt ?? 0, color: '#b91c1c' },
+          ]} />
+        </div>
         <div className="bp-h">Emergency fund progress</div>
         <div className="bp-bar-t" style={{ height: 14 }}>
           <div style={{ width: `${Math.min(100, ((bs?.savings ?? 0) / 7000) * 100)}%`, background: TEAL }} />
@@ -305,6 +372,7 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
             )) : <tr><td colSpan={4}>No quotes saved yet</td></tr>}
           </tbody>
         </table>
+        <Meaning>Protection keeps an unexpected bill or care need from forcing a sale of long-term investments. The emergency reserve handles near-term shocks; healthcare and LTC planning address larger risks.</Meaning>
       </Page>
 
       <Page n={5} kicker="The finish line" title="Retirement & legacy"
@@ -331,6 +399,7 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
           Today's {$(net)} monthly plan, the {$(freed)}/mo freed from debt, and steady contributions carry the portfolio from{' '}
           {$(state.portfolioBalance)} to about {$k(at(70))} by age 70, with guaranteed income layered on top for the legacy years.
         </p>
+        <Meaning>This is an income coordination view, not a guarantee. Portfolio withdrawals, Social Security, pension income, RMD timing and Roth conversions should be reviewed together each year.</Meaning>
       </Page>
     </div>
   );
