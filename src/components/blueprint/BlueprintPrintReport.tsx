@@ -109,10 +109,15 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
       <style>{`
         .bp-report { display: none; }
         @media print {
+          @page { size: letter; margin: 0.55in 0.6in; }
+          html, body { width: auto !important; margin: 0 !important; padding: 0 !important; }
+          .blueprint-print, .blueprint-print * { max-width: none !important; }
+          .blueprint-print { padding: 0 !important; margin: 0 !important; width: 100% !important; }
           .blueprint-print > *:not(.bp-report) { display: none !important; }
-          .bp-report { display: block !important; font-family: Georgia, 'Times New Roman', serif; }
+          .bp-report { display: block !important; font-family: Georgia, 'Times New Roman', serif; width: 100% !important; }
           .bp-report * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .bp-page { page-break-after: always; break-after: page; padding: 0; }
+          .bp-page { page-break-after: always; break-after: page; padding: 0; min-height: 9.6in; display: flex; flex-direction: column; }
+          .bp-page > .bp-foot { margin-top: auto; }
           .bp-page:last-child { page-break-after: auto; }
           .bp-band { display:flex; justify-content:space-between; align-items:flex-end; background:${NAVY} !important; padding:12px 16px; border-bottom:4px solid ${ORANGE}; border-radius:8px; }
           .bp-band * { color:#fff !important; }
