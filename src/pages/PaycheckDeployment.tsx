@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, lastDayOfMonth } from 'date-fns';
+
+/** Next semi-monthly payday (15th or month-end) on or after today. */
+function nextSemiMonthlyPayDate(from = new Date()): string {
+  const d15 = new Date(from.getFullYear(), from.getMonth(), 15);
+  const eom = lastDayOfMonth(from);
+  if (from <= d15) return format(d15, 'yyyy-MM-dd');
+  return format(eom, 'yyyy-MM-dd');
+}
 import { usePaycheckDeployments, useBuildPaycheckDeployment, useUpdatePaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
