@@ -156,7 +156,7 @@ export function BlueprintPrintReport({ state, plan }: { state: AssumptionState; 
           .blueprint-print > *:not(.bp-report) { display: none !important; }
           .bp-report { display: block !important; font-family: Georgia, 'Times New Roman', serif; width: 100% !important; }
           .bp-report * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .bp-page { page-break-after: always; break-after: page; padding: 0; height: 9.88in; overflow:hidden; display: flex; flex-direction: column; }
+          .bp-page { page-break-after: always; break-after: page; box-sizing:border-box; padding: 0; height: 9.55in; overflow:hidden; display: flex; flex-direction: column; }
           .bp-page > .bp-foot { margin-top: auto; }
           .bp-page:last-child { page-break-after: auto; }
           .bp-band { display:flex; justify-content:space-between; align-items:flex-end; background:${NAVY} !important; padding:12px 16px; border-bottom:4px solid ${ORANGE}; border-radius:8px; }
