@@ -7,6 +7,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth } from 'date-fns';
+import { useHouseholdProfile } from '@/hooks/use-household-profile';
 
 const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
 
@@ -45,6 +46,7 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
   const { data: subscriptions } = useSubscriptions();
   const { data: modeSettings } = useModeSettings();
   const { household } = useHousehold();
+  const { data: profile } = useHouseholdProfile();
 
   // Fetch budgets with category group info to identify income vs expense
   const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
@@ -118,8 +120,13 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     const monthTxns = (transactions || []).filter(t => t.date.startsWith(monthPrefix));
     const monthlyIncome = monthTxns.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
 
-    // Use higher of budget income vs actual transaction income
-    const effectiveIncome = Math.max(monthlyIncome, budgetIncome);
+    // Master Household Profile: both spouses' net pay (Lyman + Kateri)
+    const profileNet = scope === 'business' ? 0
+      : Number(profile?.household_net_monthly || 0) ||
+        (Number(profile?.lyman_net_monthly || 0) + Number(profile?.kateri_net_monthly || 0));
+
+    // Use highest of budget income, actual transaction income, or profile household net
+    const effectiveIncome = Math.max(monthlyIncome, budgetIncome, profileNet);
 
     // Monthly obligations from recurring transactions (bills) 
     const monthlyObligations = (recurring || [])
