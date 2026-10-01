@@ -271,7 +271,8 @@ export default function PaycheckDeployment() {
               )}
             </CardContent>
           </Card>
-        ))}
+          ));
+        })()}
       </div>
     </div>
   );
