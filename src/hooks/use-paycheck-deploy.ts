@@ -31,13 +31,11 @@ export function usePaycheckDeployments(limit = 6) {
     queryKey: ['paycheck_deployments', household?.id, limit],
     enabled: !!household,
     queryFn: async () => {
-      const today = new Date().toISOString().slice(0, 10);
       const { data, error } = await supabase
         .from('paycheck_deployments')
         .select('*')
         .eq('household_id', household!.id)
-        .gte('pay_date', today)
-        .order('pay_date', { ascending: true })
+        .order('pay_date', { ascending: false })
         .limit(limit);
       if (error) throw error;
       return (data || []) as unknown as PaycheckDeployment[];
