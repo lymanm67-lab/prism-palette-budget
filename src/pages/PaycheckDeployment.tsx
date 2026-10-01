@@ -182,12 +182,15 @@ export default function PaycheckDeployment() {
       {/* Timeline */}
       <div className="space-y-3">
         <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Upcoming deployments</h2>
-        {(!deployments || deployments.length === 0) && (
-          <Card className="p-6 text-center text-sm text-muted-foreground border-dashed">
-            No deployments yet. Build your first plan above.
-          </Card>
-        )}
-        {(deployments || []).map(d => (
+        {(() => {
+          const today = new Date().toISOString().slice(0, 10);
+          const upcoming = (deployments || []).filter(d => d.pay_date >= today);
+          if (upcoming.length === 0) return (
+            <Card className="p-6 text-center text-sm text-muted-foreground border-dashed">
+              No upcoming deployments. Build your first plan above.
+            </Card>
+          );
+          return upcoming.map(d => (
           <Card key={d.id} className="bg-card/60 backdrop-blur-sm border-border/60 overflow-hidden">
             <div className="border-b border-border/40 bg-gradient-to-r from-prism-navy/40 to-transparent p-3 sm:p-4 flex flex-wrap items-center gap-3">
               <div>
@@ -268,7 +271,8 @@ export default function PaycheckDeployment() {
               )}
             </CardContent>
           </Card>
-        ))}
+          ));
+        })()}
       </div>
     </div>
   );

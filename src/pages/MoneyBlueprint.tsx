@@ -62,19 +62,23 @@ export default function MoneyBlueprint() {
   const [state, setState] = useState<AssumptionState>(defaultAssumptions());
   const [tab, setTab] = useState('assumptions');
   const [exporting, setExporting] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
-  // Sync whenever the saved record changes — including refetches triggered by
-  // Household profile saves (ages/salary flow in via useBlueprintAssumptions).
+  // Sync from the saved record — including refetches triggered by Household
+  // profile saves — but never overwrite unsaved local edits.
   useEffect(() => {
-    if (record) setState(record.state);
-  }, [record]);
+    if (record && !dirty) setState(record.state);
+  }, [record, dirty]);
 
-  const patch = (p: Partial<AssumptionState>) =>
+  const patch = (p: Partial<AssumptionState>) => {
+    setDirty(true);
     setState((s) => ({ ...s, ...p, asOf: new Date().toISOString().slice(0, 10) }));
+  };
 
   const onSave = async () => {
     try {
       await saveAssumptions.mutateAsync({ id: record?.id ?? null, state });
+      setDirty(false);
       toast.success('Blueprint assumptions saved — all projections updated');
     } catch (e: any) {
       toast.error(e.message || 'Could not save assumptions');
