@@ -94,7 +94,6 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
                 dataKey="short"
                 width={120}
                 tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
-                tickFormatter={(v: string) => v}
                 tickLine={false}
                 axisLine={false}
                 interval={0}
