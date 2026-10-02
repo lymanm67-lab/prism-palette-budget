@@ -154,7 +154,7 @@ function usePersonalShares(payDate: string) {
 }
 
 /** Merchants of bills you've turned off (cancelled / paid off). */
-function useInactiveBills() {
+export function useInactiveBills() {
   const { household } = useHousehold();
   return useQuery({
     queryKey: ['inactive_bills_tree', household?.id],
