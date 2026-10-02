@@ -67,16 +67,16 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
             {top && <> — <span className="font-semibold">{top.label}</span> is the biggest at {fmt$(top.value)} ({pctOf(top.value, net)}%)</>}
             {billItems.length > barData.length && <>, with {billItems.length - barData.length} more bills covered below the top 8</>}.
           </p>
-          <ResponsiveContainer width="100%" height={210}>
-            <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 88, top: 4, bottom: 4 }}>
+          <ResponsiveContainer width="100%" height={230}>
+            <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 96, top: 4, bottom: 4 }}>
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="label" width={90} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+              <YAxis type="category" dataKey="label" width={104} tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }} tickLine={false} axisLine={false} />
               <Tooltip
                 formatter={(v: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of net pay`, 'Amount']}
                 contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
               />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={16}>
-                {barData.map((b, i) => <Cell key={i} fill="hsl(var(--prism-sky))" opacity={1 - i * 0.09} />)}
+              <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={22}>
+                {barData.map((b, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />)}
                 <LabelList
                   dataKey="value"
                   content={(props: any) => (
@@ -85,9 +85,10 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
                       y={(props.y ?? 0) + (props.height ?? 0) / 2}
                       dominantBaseline="middle"
                       textAnchor="start"
-                      fontSize={9}
-                      fill="hsl(var(--muted-foreground))"
-                    >
+                      fontSize={12}
+                      fontWeight={600}
+                      fill={BAR_COLORS[(props.index ?? 0) % BAR_COLORS.length]}
+                      >
                       {`${fmt$(Number(props.value))} · ${pctOf(Number(props.value), net)}%`}
                     </text>
                   )}
