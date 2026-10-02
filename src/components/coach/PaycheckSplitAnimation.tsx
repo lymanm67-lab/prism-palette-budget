@@ -44,9 +44,10 @@ function useDebtMinimums(payDate: string) {
       const [{ data: items, error: e1 }, { data: lines, error: e2 }] = await Promise.all([
         supabase
           .from('debt_items')
-          .select('name, minimum_payment, debt_plans!inner(household_id)')
+          .select('name, minimum_payment, balance, deferred_until, debt_plans!inner(household_id)')
           .eq('debt_plans.household_id', household!.id)
-          .gt('minimum_payment', 0),
+          .gt('minimum_payment', 0)
+          .gt('balance', 0),
         supabase
           .from('budgets')
           .select('planned_amount, categories!inner(name)')
@@ -63,19 +64,20 @@ function useDebtMinimums(payDate: string) {
       }
       const seen = new Set<string>();
       return (items || [])
+        .filter((d: any) => !d.deferred_until || d.deferred_until <= payDate) // not started yet (e.g. student loan)
         .map((d: any) => {
           const key = String(d.name).toLowerCase().replace(/[^a-z0-9]/g, '');
-          // A budget line whose name contains the debt's first token overrides the minimum
-          // (e.g. BetrLink's reduced $375/mo payment lives in the budget, not the debt row).
           const token = key.replace(/(settlement|loan|studentloan|premiumbalanceowed)$/i, '').slice(0, 8);
           let value = Number(d.minimum_payment);
           for (const [bk, bv] of budgetByKey) {
             if (token.length >= 6 && bk.includes(token)) { value = bv; break; }
           }
-          return { label: d.name as string, value, key };
+          // Dedupe key: loan number if present, else the normalized name.
+          const acct = String(d.name).match(/\d{4}/)?.[0];
+          return { label: d.name as string, value, key: acct ? `acct${acct}` : key };
         })
         .filter(d => {
-          if (seen.has(d.key)) return false; // dedupe duplicate accounts (e.g. two "Vacation Loan 3004" rows)
+          if (seen.has(d.key)) return false;
           seen.add(d.key);
           return true;
         })

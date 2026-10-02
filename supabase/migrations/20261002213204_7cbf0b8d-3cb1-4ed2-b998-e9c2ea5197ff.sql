@@ -1,0 +1,2 @@
+UPDATE public.debt_items SET balance = 0, minimum_payment = 0 WHERE id IN ('737b6093-8fa1-42bb-b598-82c835a1bf24','bfac5b61-0f78-491f-9a04-f2b0b6aae086','43dbdcea-9f7f-4e19-a5d6-0d6926c3bdde');
+UPDATE public.recurring_transactions SET is_active = false WHERE id IN ('9d6416d7-3f14-4893-bf20-77fda245566a','eec54b0a-87dd-4876-b3fe-b86cb4522b0d');
