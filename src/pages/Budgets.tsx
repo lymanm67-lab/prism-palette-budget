@@ -2093,7 +2093,7 @@ const Budgets = () => {
               <TooltipContent><p>AI-powered budget suggestions based on spending</p></TooltipContent>
             </Tooltip>
 
-            {/* Upload Paystub */}
+            {/* Budget vs Actual */}
             <Button variant="outline" size="sm" className="gap-1.5 h-8" asChild>
               <Link to="/budgets/actual"><BarChart3 className="h-4 w-4" /><span className="hidden sm:inline">Budget vs Actual</span></Link>
             </Button>
