@@ -147,7 +147,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   const reduce = useReducedMotion();
   const net = Number(deployment.net_amount) || 0;
   const { data: payrollWealth } = usePayrollWealth(deployment.pay_date);
-  const { data: debts } = useDebtMinimums();
+  const { data: debts } = useDebtMinimums(deployment.pay_date);
   if (net <= 0) return null;
 
   const pillars = PILLARS.map(p => {
