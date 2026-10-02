@@ -72,6 +72,8 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
               <Tooltip
                 formatter={(v: any, name: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of net pay`, name]}
                 contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                itemStyle={{ color: 'hsl(var(--foreground))' }}
               />
               <Legend iconSize={8} wrapperStyle={{ fontSize: 10 }} />
             </PieChart>
@@ -101,6 +103,8 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
               <Tooltip
                 formatter={(v: any, _n: any, item: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of net pay`, item?.payload?.label ?? '']}
                 contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                itemStyle={{ color: 'hsl(var(--foreground))' }}
               />
               <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={22}>
                 {barData.map((b, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />)}
