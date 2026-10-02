@@ -315,7 +315,6 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
       <div className="flex items-center justify-between mb-1">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
           Paycheck money tree
-          <span className="ml-2 normal-case tracking-normal text-foreground">Total expenses (bills + debt + business): <span className="font-mono">{fmt(expTotal)}</span></span>
         </span>
         <div className="flex items-center gap-1">
           {!compact && (
