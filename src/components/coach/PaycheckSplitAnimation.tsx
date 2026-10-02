@@ -8,23 +8,24 @@ import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
+// The five Cash Flow Pillars.
 const BUCKETS = [
-  { label: 'Bills', keys: ['bills_amount'], color: 'var(--prism-sky)' },
-  { label: 'Debt', keys: ['min_debt_amount', 'extra_debt_amount'], color: 'var(--prism-rose)' },
-  { label: 'Save', keys: ['savings_amount'], color: 'var(--prism-teal)' },
-  { label: 'Invest', keys: ['investment_amount'], color: 'var(--prism-lime)' },
-  { label: 'Buffer', keys: ['buffer_amount'], color: 'var(--prism-indigo)' },
-  { label: 'Spend', keys: ['safe_to_spend_amount'], color: 'var(--prism-amber)' },
+  { label: 'Bills & Essentials', keys: ['bills_amount'], color: 'var(--prism-sky)' },
+  { label: 'Debt Freedom', keys: ['min_debt_amount', 'extra_debt_amount'], color: 'var(--prism-rose)' },
+  { label: 'Savings & Buffer', keys: ['savings_amount', 'buffer_amount'], color: 'var(--prism-teal)' },
+  { label: 'Wealth & Investing', keys: ['investment_amount'], color: 'var(--prism-lime)' },
+  { label: 'Guilt-Free Spend', keys: ['safe_to_spend_amount'], color: 'var(--prism-amber)' },
 ] as const;
 
 export default function PaycheckSplitAnimation({ deployment, compact = false }: { deployment: PaycheckDeployment; compact?: boolean }) {
   const [run, setRun] = useState(0);
   const reduce = useReducedMotion();
   const net = Number(deployment.net_amount) || 0;
+  // Always show all five pillars, even when a pillar is $0 this paycheck.
   const buckets = BUCKETS.map(b => ({
     ...b,
     value: b.keys.reduce((s, k) => s + Number((deployment as any)[k] || 0), 0),
-  })).filter(b => b.value > 0);
+  }));
   const n = buckets.length;
   if (!n || net <= 0) return null;
 
