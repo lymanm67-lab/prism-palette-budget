@@ -282,6 +282,26 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
     }
     return { ...p, leaves, value: value + extra, takeHome: value };
   });
+  // Guilt-free spending gets a fixed share of take-home first; it comes out of Savings & Buffer (buffer first).
+  const GUILT_FREE_PCT = 0.10;
+  {
+    const gf = pillars.find(p => p.label === 'Guilt-Free Spend');
+    const sv = pillars.find(p => p.label === 'Savings & Buffer');
+    if (gf && sv) {
+      const target = Math.round(net * GUILT_FREE_PCT * 100) / 100;
+      let need = Math.max(0, target - gf.value);
+      const buf = sv.leaves.find(l => l.label === 'Smart Buffer');
+      const sav = sv.leaves.find(l => l.label === 'Savings goals');
+      for (const l of [buf, sav]) { if (!l || need <= 0) continue; const take = Math.min(l.value, need); l.value -= take; need -= take; }
+      const moved = Math.max(0, target - gf.value) - need;
+      if (moved > 0) {
+        sv.value -= moved; sv.takeHome -= moved;
+        gf.value += moved; gf.takeHome += moved;
+        const perWeek = deployment.frequency === 'monthly' ? gf.value / 4.33 : deployment.frequency === 'semi_monthly' ? gf.value / 2.17 : deployment.frequency === 'weekly' ? gf.value : gf.value / 2;
+        gf.leaves = [{ label: `Safe to spend (${Math.round(GUILT_FREE_PCT * 100)}% of pay)`, value: gf.value }, { label: 'About per week', value: perWeek }];
+      }
+    }
+  }
   const n = pillars.length;
   const expTotal = pillars.filter(p => /Bills|Debt|Business/.test(p.label)).reduce((s, p) => s + p.value, 0);
   const W = 1000, H = compact ? 110 : 150, topY = 6, botY = H - 4;
