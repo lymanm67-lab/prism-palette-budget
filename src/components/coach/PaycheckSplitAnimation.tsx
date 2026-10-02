@@ -93,14 +93,16 @@ const num = (d: PaycheckDeployment, k: string) => Number((d as any)[k] || 0);
 
 /** Bills branch: biggest bills by name, the rest grouped as "Other bills". */
 function billLeaves(d: PaycheckDeployment, ctx?: { all?: boolean }): Leaf[] {
-  const items = [...(Array.isArray(d.bills_breakdown) ? d.bills_breakdown : [])]
-    .map(b => ({ label: b.merchant, value: Number(b.amount || 0) }))
-    .sort((a, b) => b.value - a.value);
+  const DEBT_BILL_RE = /betr\s*link|settlement|loan|nelnet|sba\b/i;
+  const all = [...(Array.isArray(d.bills_breakdown) ? d.bills_breakdown : [])]
+    .map(b => ({ label: b.merchant, value: Number(b.amount || 0) }));
+  const debtInBills = all.filter(b => DEBT_BILL_RE.test(b.label || '')).reduce((s, b) => s + b.value, 0);
+  const items = all.filter(b => !DEBT_BILL_RE.test(b.label || '')).sort((a, b) => b.value - a.value);
   const k = ctx?.all ? items.length : 3;
   const top = items.slice(0, k);
   const rest = items.slice(k).reduce((s, b) => s + b.value, 0);
   const listed = top.reduce((s, b) => s + b.value, 0);
-  const unlisted = Math.max(0, num(d, 'bills_amount') - listed - rest);
+  const unlisted = Math.max(0, num(d, 'bills_amount') - debtInBills - listed - rest);
   const out = [...top];
   if (rest + unlisted > 0.5) out.push({ label: items.length > k ? `${items.length - k} other bills` : 'Other bills', value: rest + unlisted });
   return out;
