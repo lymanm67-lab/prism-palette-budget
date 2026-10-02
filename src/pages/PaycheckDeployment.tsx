@@ -258,6 +258,9 @@ export default function PaycheckDeployment() {
                       </div>
                       <div className="font-mono text-sm font-bold">{fmt(val)}</div>
                       <div className="text-[10px] text-muted-foreground">{pct}%</div>
+                      {'explanation' in b && b.explanation && (
+                        <div className="mt-1 text-[10px] leading-snug text-muted-foreground/80">{b.explanation}</div>
+                      )}
                     </div>
                   );
                 })}
