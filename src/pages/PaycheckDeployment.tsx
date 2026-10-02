@@ -242,7 +242,7 @@ export default function PaycheckDeployment() {
 
             <CardContent className="p-3 sm:p-4 space-y-3">
               <PaycheckSplitAnimation deployment={d} />
-              <PaycheckCharts deployment={d} inactiveBills={inactiveBills} />
+              <PaycheckCharts deployment={d} />
               {/* Allocation grid */}
               <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
                 {BUCKET_META.map(b => {
