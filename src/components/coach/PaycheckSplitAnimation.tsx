@@ -32,6 +32,58 @@ function usePayrollWealth(payDate: string) {
   });
 }
 
+/** Real debts with their minimum payments, biggest first. Budget lines for the
+ *  paycheck's month win when they name the same debt (e.g. a reduced payment). */
+function useDebtMinimums(payDate: string) {
+  const { household } = useHousehold();
+  const month = `${payDate.slice(0, 7)}-01`;
+  return useQuery({
+    queryKey: ['debt_minimums_tree', household?.id, month],
+    enabled: !!household,
+    queryFn: async () => {
+      const [{ data: items, error: e1 }, { data: lines, error: e2 }] = await Promise.all([
+        supabase
+          .from('debt_items')
+          .select('name, minimum_payment, debt_plans!inner(household_id)')
+          .eq('debt_plans.household_id', household!.id)
+          .gt('minimum_payment', 0),
+        supabase
+          .from('budgets')
+          .select('planned_amount, categories!inner(name)')
+          .eq('household_id', household!.id)
+          .eq('month', month)
+          .gt('planned_amount', 0),
+      ]);
+      if (e1) throw e1;
+      if (e2) throw e2;
+      const budgetByKey = new Map<string, number>();
+      for (const b of lines || []) {
+        const key = String((b as any).categories?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (key) budgetByKey.set(key, (budgetByKey.get(key) || 0) + Number((b as any).planned_amount));
+      }
+      const seen = new Set<string>();
+      return (items || [])
+        .map((d: any) => {
+          const key = String(d.name).toLowerCase().replace(/[^a-z0-9]/g, '');
+          // A budget line whose name contains the debt's first token overrides the minimum
+          // (e.g. BetrLink's reduced $375/mo payment lives in the budget, not the debt row).
+          const token = key.replace(/(settlement|loan|studentloan|premiumbalanceowed)$/i, '').slice(0, 8);
+          let value = Number(d.minimum_payment);
+          for (const [bk, bv] of budgetByKey) {
+            if (token.length >= 6 && bk.includes(token)) { value = bv; break; }
+          }
+          return { label: d.name as string, value, key };
+        })
+        .filter(d => {
+          if (seen.has(d.key)) return false; // dedupe duplicate accounts (e.g. two "Vacation Loan 3004" rows)
+          seen.add(d.key);
+          return true;
+        })
+        .sort((a, b) => b.value - a.value);
+    },
+  });
+}
+
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -54,11 +106,23 @@ function billLeaves(d: PaycheckDeployment): Leaf[] {
 }
 
 // The five Cash Flow Pillars, each with its own side branches.
-const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment) => Leaf[] }[] = [
+const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, ctx?: { debts: Leaf[] }) => Leaf[] }[] = [
   { label: 'Bills & Essentials', color: 'var(--prism-sky)', leaves: billLeaves },
   {
     label: 'Debt Freedom', color: 'var(--prism-rose)',
-    leaves: d => [{ label: 'Minimum payments', value: num(d, 'min_debt_amount') }, { label: 'Extra payoff', value: num(d, 'extra_debt_amount') }],
+    leaves: (d, ctx) => {
+      const debts = ctx?.debts || [];
+      const top = debts.slice(0, 3);
+      const rest = debts.slice(3).reduce((s, x) => s + x.value, 0);
+      const listed = top.reduce((s, x) => s + x.value, 0);
+      const unlisted = Math.max(0, num(d, 'min_debt_amount') - listed - rest);
+      const out = [...top];
+      if (rest + unlisted > 0.5) out.push({ label: debts.length > 3 ? `${debts.length - 3} other debts` : 'Other minimums', value: rest + unlisted });
+      if (out.length === 0) out.push({ label: 'Minimum payments', value: num(d, 'min_debt_amount') });
+      const extra = num(d, 'extra_debt_amount');
+      if (extra > 0) out.push({ label: 'Extra payoff', value: extra });
+      return out;
+    },
   },
   {
     label: 'Savings & Buffer', color: 'var(--prism-teal)',
@@ -83,10 +147,11 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   const reduce = useReducedMotion();
   const net = Number(deployment.net_amount) || 0;
   const { data: payrollWealth } = usePayrollWealth(deployment.pay_date);
+  const { data: debts } = useDebtMinimums(deployment.pay_date);
   if (net <= 0) return null;
 
   const pillars = PILLARS.map(p => {
-    let leaves = p.leaves(deployment);
+    let leaves = p.leaves(deployment, { debts: debts || [] });
     let value = p.label === 'Guilt-Free Spend' ? leaves[0].value : leaves.reduce((s, l) => s + l.value, 0);
     let extra = 0;
     if (p.label === 'Wealth & Investing' && payrollWealth?.length) {
