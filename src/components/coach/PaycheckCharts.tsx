@@ -68,7 +68,7 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
             {billItems.length > barData.length && <>, with {billItems.length - barData.length} more bills covered below the top 8</>}.
           </p>
           <ResponsiveContainer width="100%" height={210}>
-            <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 68, top: 4, bottom: 4 }}>
+            <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 88, top: 4, bottom: 4 }}>
               <XAxis type="number" hide />
               <YAxis type="category" dataKey="label" width={90} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
               <Tooltip
@@ -81,7 +81,7 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
                   dataKey="value"
                   position="right"
                   formatter={(v: any) => `${fmt$(Number(v))} · ${pctOf(Number(v), net)}%`}
-                  style={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+                  style={{ fontSize: 8, fill: 'hsl(var(--muted-foreground))' }}
                 />
               </Bar>
             </BarChart>
