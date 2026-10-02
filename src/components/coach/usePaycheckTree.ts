@@ -167,7 +167,13 @@ export function useInactiveBills() {
 
 type Leaf = { label: string; value: number };
 export type PaycheckPillar = { label: string; color: string; value: number; takeHome: number; leaves: Leaf[] };
-export type PaycheckBillItem = { label: string; value: number };
+export type PaycheckBillItem = {
+  id: string;
+  label: string;
+  value: number;
+  businessValue: number;
+  dueDate: string;
+};
 
 const num = (d: PaycheckDeployment, k: string) => Number((d as any)[k] || 0);
 
@@ -182,7 +188,14 @@ function billBranch(d: PaycheckDeployment, ctx: { all?: boolean; inactive?: Set<
     .map(b => {
       const full = Number(b.amount || 0);
       const sh = ctx.shares?.find(x => x.re.test(b.merchant || ''))?.share ?? 1;
-      return { label: sh < 1 ? `${b.merchant} (personal ${Math.round(sh * 100)}%)` : b.merchant, name: String(b.merchant || 'Bill'), value: full * sh, bizPart: full * (1 - sh) };
+      return {
+        id: String(b.id || `${b.merchant}-${b.due_date}`),
+        label: sh < 1 ? `${b.merchant} (personal ${Math.round(sh * 100)}%)` : b.merchant,
+        name: String(b.merchant || 'Bill'),
+        value: full * sh,
+        bizPart: full * (1 - sh),
+        dueDate: String(b.due_date || ''),
+      };
     });
   const bizParts = all.reduce((s, b) => s + b.bizPart, 0);
   const debtInBills = all.filter(b => DEBT_BILL_RE.test(b.label || '')).reduce((s, b) => s + b.value, 0);
@@ -196,7 +209,13 @@ function billBranch(d: PaycheckDeployment, ctx: { all?: boolean; inactive?: Set<
   const unlisted = Math.max(0, num(d, 'bills_amount') - removed - bizParts - debtInBills - listed - rest);
   const out: Leaf[] = top.map(({ label, value }) => ({ label, value }));
   if (rest + unlisted > 0.5) out.push({ label: items.length > k ? `${items.length - k} other bills` : 'Other bills', value: rest + unlisted });
-  const billItems: PaycheckBillItem[] = items.map(({ name, value }) => ({ label: name, value }));
+  const billItems: PaycheckBillItem[] = items.map(({ id, name, value, bizPart, dueDate }) => ({
+    id,
+    label: name,
+    value,
+    businessValue: bizPart,
+    dueDate,
+  }));
   return { leaves: out, total: out.reduce((s, l) => s + l.value, 0), billItems };
 }
 
