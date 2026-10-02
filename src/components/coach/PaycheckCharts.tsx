@@ -89,9 +89,18 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
           <ResponsiveContainer width="100%" height={230}>
             <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 96, top: 4, bottom: 4 }}>
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="label" width={104} tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }} tickLine={false} axisLine={false} />
+              <YAxis
+                type="category"
+                dataKey="short"
+                width={120}
+                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                tickFormatter={(v: string) => v}
+                tickLine={false}
+                axisLine={false}
+                interval={0}
+              />
               <Tooltip
-                formatter={(v: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of net pay`, 'Amount']}
+                formatter={(v: any, _n: any, item: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of net pay`, item?.payload?.label ?? '']}
                 contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
               />
               <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={22}>
