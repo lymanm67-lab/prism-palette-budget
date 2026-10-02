@@ -200,7 +200,7 @@ function billLeaves(d: PaycheckDeployment, ctx?: { all?: boolean; inactive?: Set
   const removed = (Array.isArray(d.bills_breakdown) ? d.bills_breakdown : [])
     .filter(b => ctx?.inactive?.has(norm(b.merchant))).reduce((s, b) => s + Number(b.amount || 0), 0);
   const unlisted = Math.max(0, num(d, 'bills_amount') - removed - bizParts - debtInBills - listed - rest);
-  const out = [...top];
+  const out: Leaf[] = top.map(({ label, value }) => ({ label, value }));
   if (rest + unlisted > 0.5) out.push({ label: items.length > k ? `${items.length - k} other bills` : 'Other bills', value: rest + unlisted });
   return out;
 }
