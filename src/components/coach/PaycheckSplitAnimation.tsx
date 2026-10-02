@@ -92,32 +92,34 @@ type Leaf = { label: string; value: number };
 const num = (d: PaycheckDeployment, k: string) => Number((d as any)[k] || 0);
 
 /** Bills branch: biggest bills by name, the rest grouped as "Other bills". */
-function billLeaves(d: PaycheckDeployment): Leaf[] {
+function billLeaves(d: PaycheckDeployment, ctx?: { all?: boolean }): Leaf[] {
   const items = [...(Array.isArray(d.bills_breakdown) ? d.bills_breakdown : [])]
     .map(b => ({ label: b.merchant, value: Number(b.amount || 0) }))
     .sort((a, b) => b.value - a.value);
-  const top = items.slice(0, 3);
-  const rest = items.slice(3).reduce((s, b) => s + b.value, 0);
+  const k = ctx?.all ? items.length : 3;
+  const top = items.slice(0, k);
+  const rest = items.slice(k).reduce((s, b) => s + b.value, 0);
   const listed = top.reduce((s, b) => s + b.value, 0);
   const unlisted = Math.max(0, num(d, 'bills_amount') - listed - rest);
   const out = [...top];
-  if (rest + unlisted > 0.5) out.push({ label: items.length > 3 ? `${items.length - 3} other bills` : 'Other bills', value: rest + unlisted });
+  if (rest + unlisted > 0.5) out.push({ label: items.length > k ? `${items.length - k} other bills` : 'Other bills', value: rest + unlisted });
   return out;
 }
 
 // The five Cash Flow Pillars, each with its own side branches.
-const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, ctx?: { debts: Leaf[] }) => Leaf[] }[] = [
+const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, ctx?: { debts: Leaf[]; all?: boolean }) => Leaf[] }[] = [
   { label: 'Bills & Essentials', color: 'var(--prism-sky)', leaves: billLeaves },
   {
     label: 'Debt Freedom', color: 'var(--prism-rose)',
     leaves: (d, ctx) => {
       const debts = ctx?.debts || [];
-      const top = debts.slice(0, 3);
-      const rest = debts.slice(3).reduce((s, x) => s + x.value, 0);
+      const k = ctx?.all ? debts.length : 3;
+      const top = debts.slice(0, k);
+      const rest = debts.slice(k).reduce((s, x) => s + x.value, 0);
       const listed = top.reduce((s, x) => s + x.value, 0);
       const unlisted = Math.max(0, num(d, 'min_debt_amount') - listed - rest);
       const out = [...top];
-      if (rest + unlisted > 0.5) out.push({ label: debts.length > 3 ? `${debts.length - 3} other debts` : 'Other minimums', value: rest + unlisted });
+      if (rest + unlisted > 0.5) out.push({ label: debts.length > k ? `${debts.length - k} other debts` : 'Other minimums', value: rest + unlisted });
       if (out.length === 0) out.push({ label: 'Minimum payments', value: num(d, 'min_debt_amount') });
       const extra = num(d, 'extra_debt_amount');
       if (extra > 0) out.push({ label: 'Extra payoff', value: extra });
@@ -144,6 +146,7 @@ const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, c
 
 export default function PaycheckSplitAnimation({ deployment, compact = false }: { deployment: PaycheckDeployment; compact?: boolean }) {
   const [run, setRun] = useState(0);
+  const [showAll, setShowAll] = useState(false);
   const reduce = useReducedMotion();
   const net = Number(deployment.net_amount) || 0;
   const { data: payrollWealth } = usePayrollWealth(deployment.pay_date);
@@ -151,7 +154,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   if (net <= 0) return null;
 
   const pillars = PILLARS.map(p => {
-    let leaves = p.leaves(deployment, { debts: debts || [] });
+    let leaves = p.leaves(deployment, { debts: debts || [], all: showAll });
     let value = p.label === 'Guilt-Free Spend' ? leaves[0].value : leaves.reduce((s, l) => s + l.value, 0);
     let extra = 0;
     if (p.label === 'Wealth & Investing' && payrollWealth?.length) {
@@ -178,9 +181,16 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
     <div className="relative rounded-lg border border-border/40 bg-background/40 p-3 overflow-hidden" key={run}>
       <div className="flex items-center justify-between mb-1">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Paycheck money tree</span>
-        <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" onClick={() => setRun(r => r + 1)}>
-          <span className="flex items-center gap-1"><RotateCcw className="h-3 w-3" /> Replay</span>
-        </Button>
+        <div className="flex items-center gap-1">
+          {!compact && (
+            <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" onClick={() => setShowAll(s => !s)}>
+              <span>{showAll ? 'Show fewer' : 'Show all bills & debts'}</span>
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" onClick={() => setRun(r => r + 1)}>
+            <span className="flex items-center gap-1"><RotateCcw className="h-3 w-3" /> Replay</span>
+          </Button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
