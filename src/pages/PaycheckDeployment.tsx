@@ -28,12 +28,12 @@ import { useHouseholdProfile } from '@/hooks/use-household-profile';
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
 const BUCKET_META = [
-  { key: 'bills_amount', label: 'Bills reserved', icon: Receipt, color: 'text-prism-sky' },
+  { key: 'bills_amount', label: 'Bills reserved', icon: Receipt, color: 'text-prism-sky', explanation: 'Money set aside to cover the bills due before your next paycheck — the same bill list and personal/business split your budget uses.' },
   { key: 'min_debt_amount', label: 'Debt minimums', icon: Flame, color: 'text-prism-rose' },
   { key: 'extra_debt_amount', label: 'Debt attack', icon: Flame, color: 'text-prism-orange' },
-  { key: 'savings_amount', label: 'Savings goals', icon: PiggyBank, color: 'text-prism-teal' },
+  { key: 'savings_amount', label: 'Savings goals', icon: PiggyBank, color: 'text-prism-teal', explanation: 'Money routed to your active savings goals on schedule — like your $7,000 emergency fund and any other goals you set.' },
   { key: 'investment_amount', label: 'Investing', icon: TrendingUp, color: 'text-prism-lime' },
-  { key: 'buffer_amount', label: 'Smart Buffer', icon: Shield, color: 'text-prism-sky' },
+  { key: 'buffer_amount', label: 'Smart Buffer', icon: Shield, color: 'text-prism-sky', explanation: 'A cash cushion that absorbs surprise costs and timing gaps, so a rough week never dips into savings or adds new debt.' },
   { key: 'safe_to_spend_amount', label: 'Safe-to-Spend', icon: Wallet, color: 'text-prism-amber' },
 ] as const;
 
