@@ -283,6 +283,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
     return { ...p, leaves, value: value + extra, takeHome: value };
   });
   const n = pillars.length;
+  const expTotal = pillars.filter(p => /Bills|Debt|Business/.test(p.label)).reduce((s, p) => s + p.value, 0);
   const W = 1000, H = compact ? 110 : 150, topY = 6, botY = H - 4;
   const xs = pillars.map((_, i) => ((i + 0.5) / n) * W);
   const maxV = Math.max(1, ...pillars.map(p => p.value));
@@ -292,7 +293,10 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   return (
     <div className="relative rounded-lg border border-border/40 bg-background/40 p-3 overflow-hidden" key={run}>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Paycheck money tree</span>
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+          Paycheck money tree
+          <span className="ml-2 normal-case tracking-normal text-foreground">Total expenses (bills + debt + business): <span className="font-mono">{fmt(expTotal)}</span></span>
+        </span>
         <div className="flex items-center gap-1">
           {!compact && (
             <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" onClick={() => setShowAll(s => !s)}>
