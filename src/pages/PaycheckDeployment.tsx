@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Sparkles, Loader2, Wallet, Receipt, Flame, PiggyBank, TrendingUp, Shield, CheckCircle2, Info, CalendarClock, RotateCcw } from 'lucide-react';
-import PaycheckSplitAnimation from '@/components/coach/PaycheckSplitAnimation';
+import PaycheckSplitAnimation, { useInactiveBills } from '@/components/coach/PaycheckSplitAnimation';
 import PageOverview from '@/components/PageOverview';
 import PaycheckScheduleCard from '@/components/coach/PaycheckScheduleCard';
 import { usePaycheckSchedules, toDeployFrequency } from '@/hooks/use-paycheck-schedule';
@@ -41,6 +41,8 @@ export default function PaycheckDeployment() {
   const update = useUpdatePaycheckDeployment();
   const { primary } = usePaycheckSchedules();
   const { data: profile } = useHouseholdProfile();
+  const { data: inactiveBills } = useInactiveBills();
+  const activeBills = (list: any) => (Array.isArray(list) ? list : []).filter((b: any) => !inactiveBills?.has(String(b.merchant || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
   const [freq, setFreq] = useState('biweekly');
   const [net, setNet] = useState<string>('');
   const [payDate, setPayDate] = useState<string>('');
@@ -259,13 +261,13 @@ export default function PaycheckDeployment() {
               </div>
 
               {/* Bills breakdown */}
-              {Array.isArray(d.bills_breakdown) && d.bills_breakdown.length > 0 && (
+              {activeBills(d.bills_breakdown).length > 0 && (
                 <div className="rounded-md border border-border/40 bg-background/40 p-2.5">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">
-                    Bills covered ({d.bills_breakdown.length})
+                    Bills covered ({activeBills(d.bills_breakdown).length})
                   </div>
                   <ul className="space-y-1">
-                    {d.bills_breakdown.map((b: any) => (
+                    {activeBills(d.bills_breakdown).map((b: any) => (
                       <li key={b.id} className="flex items-center justify-between text-[11px]">
                         <span className="truncate">
                           <span className="text-muted-foreground mr-1.5">{format(parseISO(b.due_date), 'MMM d')}</span>
