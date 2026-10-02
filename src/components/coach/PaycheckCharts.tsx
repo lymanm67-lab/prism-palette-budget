@@ -15,7 +15,7 @@ const BAR_COLORS = [
   'hsl(var(--prism-orange))',
   'hsl(var(--prism-rose))',
   'hsl(var(--prism-violet))',
-  'hsl(var(--prism-blue))',
+  'hsl(var(--prism-orange-light))',
 ];
 
 /** Pie of where the paycheck goes + bar chart of the biggest bills covered,
