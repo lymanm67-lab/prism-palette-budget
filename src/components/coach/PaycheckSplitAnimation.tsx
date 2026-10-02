@@ -78,7 +78,19 @@ const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment) =
   { label: 'Bills & Essentials', color: 'var(--prism-sky)', leaves: billLeaves },
   {
     label: 'Debt Freedom', color: 'var(--prism-rose)',
-    leaves: d => [{ label: 'Minimum payments', value: num(d, 'min_debt_amount') }, { label: 'Extra payoff', value: num(d, 'extra_debt_amount') }],
+    leaves: (d, ctx) => {
+      const debts = ctx?.debts || [];
+      const top = debts.slice(0, 3);
+      const rest = debts.slice(3).reduce((s, x) => s + x.value, 0);
+      const listed = top.reduce((s, x) => s + x.value, 0);
+      const unlisted = Math.max(0, num(d, 'min_debt_amount') - listed - rest);
+      const out = [...top];
+      if (rest + unlisted > 0.5) out.push({ label: debts.length > 3 ? `${debts.length - 3} other debts` : 'Other minimums', value: rest + unlisted });
+      if (out.length === 0) out.push({ label: 'Minimum payments', value: num(d, 'min_debt_amount') });
+      const extra = num(d, 'extra_debt_amount');
+      if (extra > 0) out.push({ label: 'Extra payoff', value: extra });
+      return out;
+    },
   },
   {
     label: 'Savings & Buffer', color: 'var(--prism-teal)',
