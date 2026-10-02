@@ -68,12 +68,17 @@ function useDebtMinimums(payDate: string) {
         .map((d: any) => {
           const key = String(d.name).toLowerCase().replace(/[^a-z0-9]/g, '');
           const token = key.replace(/(settlement|loan|studentloan|premiumbalanceowed)$/i, '').slice(0, 8);
+          const acct = String(d.name).match(/\d{4}/)?.[0];
           let value = Number(d.minimum_payment);
-          for (const [bk, bv] of budgetByKey) {
-            if (token.length >= 6 && bk.includes(token)) { value = bv; break; }
+          // Only use a budget override for distinctive names (e.g. BetrLink), never for
+          // numbered/generic loans like "Vacation Loan 3006" — those keep their own minimum.
+          const GENERIC = /^(vacation|personal|student|auto|car|business)/;
+          if (!acct && token.length >= 6 && !GENERIC.test(token)) {
+            let sum = 0;
+            for (const [bk, bv] of budgetByKey) if (bk.includes(token)) sum += bv; // e.g. BetrLink personal + business
+            if (sum > 0) value = sum;
           }
           // Dedupe key: loan number if present, else the normalized name.
-          const acct = String(d.name).match(/\d{4}/)?.[0];
           return { label: d.name as string, value, key: acct ? `acct${acct}` : key };
         })
         .filter(d => {
