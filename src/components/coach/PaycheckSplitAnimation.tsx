@@ -328,6 +328,11 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
         </div>
       </div>
 
+      <div className="mb-2 flex items-center justify-between rounded-md border border-prism-amber/40 bg-prism-amber/10 px-3 py-1.5">
+        <span className="text-xs font-semibold text-foreground">Total expenses (bills + debt + business)</span>
+        <span className="font-mono text-sm font-bold text-prism-amber">{fmt(expTotal)}</span>
+      </div>
+
       <div className="overflow-x-auto">
         <div className={compact ? '' : 'min-w-[640px]'}>
           {/* Root: the paycheck */}
