@@ -25,7 +25,7 @@ import { usePaycheckSchedules, toDeployFrequency } from '@/hooks/use-paycheck-sc
 import { useHouseholdProfile } from '@/hooks/use-household-profile';
 
 export default function PaycheckDeployment() {
-  const { data: deployments } = usePaycheckDeployments(6);
+  const { data: deployments } = usePaycheckDeployments(24);
   const build = useBuildPaycheckDeployment();
   const update = useUpdatePaycheckDeployment();
   const { primary } = usePaycheckSchedules();
