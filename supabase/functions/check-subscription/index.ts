@@ -40,6 +40,15 @@ serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    const authStatus = (userError as any)?.status;
+    if (userError && (!authStatus || authStatus >= 500)) {
+      // Transient auth backend failure — don't downgrade the user.
+      logStep("Auth lookup unavailable", { error: userError.message });
+      return new Response(JSON.stringify({ error: "auth_unavailable" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 503,
+      });
+    }
     if (userError || !userData.user) {
       logStep("Auth failed, returning unsubscribed", { error: userError?.message });
       return new Response(JSON.stringify({ subscribed: false }), {

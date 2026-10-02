@@ -888,9 +888,9 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
 }
 
 function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
-  const { data: deployments } = usePaycheckDeployments(3);
+  const { data: deployments } = usePaycheckDeployments(12);
   const build = useBuildPaycheckDeployment();
-  const next = (deployments || []).find(d => d.status !== 'applied' && d.status !== 'skipped') || deployments?.[0];
+  const next = pickNextDeployment(deployments);
 
   return (
     <CoachCard
