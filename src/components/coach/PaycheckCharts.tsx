@@ -79,9 +79,18 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
                 {barData.map((b, i) => <Cell key={i} fill="hsl(var(--prism-sky))" opacity={1 - i * 0.09} />)}
                 <LabelList
                   dataKey="value"
-                  position="right"
-                  formatter={(v: any) => `${fmt$(Number(v))} · ${pctOf(Number(v), net)}%`}
-                  style={{ fontSize: 8, fill: 'hsl(var(--muted-foreground))' }}
+                  content={(props: any) => (
+                    <text
+                      x={(props.x ?? 0) + (props.width ?? 0) + 8}
+                      y={(props.y ?? 0) + (props.height ?? 0) / 2}
+                      dominantBaseline="middle"
+                      textAnchor="start"
+                      fontSize={9}
+                      fill="hsl(var(--muted-foreground))"
+                    >
+                      {`${fmt$(Number(props.value))} · ${pctOf(Number(props.value), net)}%`}
+                    </text>
+                  )}
                 />
               </Bar>
             </BarChart>
