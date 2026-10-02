@@ -8,27 +8,28 @@ import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
+// The five Cash Flow Pillars.
 const BUCKETS = [
-  { label: 'Bills', keys: ['bills_amount'], color: 'var(--prism-sky)' },
-  { label: 'Debt', keys: ['min_debt_amount', 'extra_debt_amount'], color: 'var(--prism-rose)' },
-  { label: 'Save', keys: ['savings_amount'], color: 'var(--prism-teal)' },
-  { label: 'Invest', keys: ['investment_amount'], color: 'var(--prism-lime)' },
-  { label: 'Buffer', keys: ['buffer_amount'], color: 'var(--prism-indigo)' },
-  { label: 'Spend', keys: ['safe_to_spend_amount'], color: 'var(--prism-amber)' },
+  { label: 'Bills & Essentials', keys: ['bills_amount'], color: 'var(--prism-sky)' },
+  { label: 'Debt Freedom', keys: ['min_debt_amount', 'extra_debt_amount'], color: 'var(--prism-rose)' },
+  { label: 'Savings & Buffer', keys: ['savings_amount', 'buffer_amount'], color: 'var(--prism-teal)' },
+  { label: 'Wealth & Investing', keys: ['investment_amount'], color: 'var(--prism-lime)' },
+  { label: 'Guilt-Free Spend', keys: ['safe_to_spend_amount'], color: 'var(--prism-amber)' },
 ] as const;
 
 export default function PaycheckSplitAnimation({ deployment, compact = false }: { deployment: PaycheckDeployment; compact?: boolean }) {
   const [run, setRun] = useState(0);
   const reduce = useReducedMotion();
   const net = Number(deployment.net_amount) || 0;
+  // Always show all five pillars, even when a pillar is $0 this paycheck.
   const buckets = BUCKETS.map(b => ({
     ...b,
     value: b.keys.reduce((s, k) => s + Number((deployment as any)[k] || 0), 0),
-  })).filter(b => b.value > 0);
+  }));
   const n = buckets.length;
   if (!n || net <= 0) return null;
 
-  const W = 600, H = compact ? 150 : 200, topY = 34, botY = H - 8;
+  const W = 600, H = compact ? 150 : 240, topY = 34, botY = H - 8;
   const xs = buckets.map((_, i) => ((i + 0.5) / n) * W);
   const maxV = Math.max(...buckets.map(b => b.value));
   const d = (s: number) => (reduce ? 0 : s);
@@ -51,7 +52,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
         <AnimatedNumber from={0} duration={reduce ? 0 : 900} value={net} formatFn={fmt} className="font-mono text-base font-bold text-prism-teal" />
       </motion.div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full -mt-2 !bg-transparent" preserveAspectRatio="none" style={{ height: compact ? 90 : 130 }}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full -mt-2 !bg-transparent" preserveAspectRatio="none" style={{ height: compact ? 90 : 160 }}>
         {buckets.map((b, i) => {
           const path = `M ${W / 2} ${topY} C ${W / 2} ${(topY + botY) / 2}, ${xs[i]} ${(topY + botY) / 2}, ${xs[i]} ${botY}`;
           const w = 2 + (b.value / maxV) * (compact ? 8 : 12);
@@ -90,8 +91,8 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
               className="rounded-md border bg-card/60 px-1 py-1.5 text-center"
               style={{ borderColor: `hsl(${b.color} / 0.4)` }}
             >
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold truncate">{b.label}</div>
-              <div className="font-mono text-[11px] font-bold" style={{ color: `hsl(${b.color})` }}>
+              <div className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground font-bold leading-tight">{b.label}</div>
+              <div className="font-mono text-xs sm:text-sm font-bold" style={{ color: `hsl(${b.color})` }}>
                 <AnimatedNumber from={0} value={b.value} duration={reduce ? 0 : 900} formatFn={fmt} />
               </div>
               {!compact && <div className="text-[9px] text-muted-foreground">{pct}%</div>}

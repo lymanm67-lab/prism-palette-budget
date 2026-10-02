@@ -186,11 +186,24 @@ export default function PaycheckDeployment() {
         {(() => {
           const today = new Date().toISOString().slice(0, 10);
           const upcoming = (deployments || []).filter(d => d.pay_date >= today);
-          if (upcoming.length === 0) return (
-            <Card className="p-6 text-center text-sm text-muted-foreground border-dashed">
-              No upcoming deployments. Build your first plan above.
-            </Card>
-          );
+          if (upcoming.length === 0) {
+            const last = (deployments || [])[0];
+            return (
+              <Card className="p-4 space-y-3 border-dashed">
+                <p className="text-center text-sm text-muted-foreground">
+                  No upcoming deployments. Tap "Deploy paycheck" above to plan the next one.
+                </p>
+                {last && (
+                  <>
+                    <p className="text-[11px] text-muted-foreground text-center">
+                      Showing your most recent plan ({format(parseISO(last.pay_date), 'MMM d, yyyy')}) as a preview.
+                    </p>
+                    <PaycheckSplitAnimation deployment={last} />
+                  </>
+                )}
+              </Card>
+            );
+          }
           return upcoming.map(d => (
           <Card key={d.id} className="bg-card/60 backdrop-blur-sm border-border/60 overflow-hidden">
             <div className="border-b border-border/40 bg-gradient-to-r from-prism-navy/40 to-transparent p-3 sm:p-4 flex flex-wrap items-center gap-3">
