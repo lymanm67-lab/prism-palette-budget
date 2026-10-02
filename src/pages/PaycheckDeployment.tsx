@@ -16,35 +16,20 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Sparkles, Loader2, Wallet, Receipt, Flame, PiggyBank, TrendingUp, Shield, CheckCircle2, Info, CalendarClock, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, CalendarClock, RotateCcw } from 'lucide-react';
 import PaycheckSplitAnimation from '@/components/coach/PaycheckSplitAnimation';
-import { useInactiveBills } from '@/components/coach/usePaycheckTree';
-import PaycheckCharts from '@/components/coach/PaycheckCharts';
+import PaycheckDeploymentCard, { PastDeploymentList } from '@/components/coach/PaycheckDeploymentCard';
 import PageOverview from '@/components/PageOverview';
 import PaycheckScheduleCard from '@/components/coach/PaycheckScheduleCard';
 import { usePaycheckSchedules, toDeployFrequency } from '@/hooks/use-paycheck-schedule';
 import { useHouseholdProfile } from '@/hooks/use-household-profile';
 
-const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
-
-const BUCKET_META = [
-  { key: 'bills_amount', label: 'Bills reserved', icon: Receipt, color: 'text-prism-sky', explanation: 'Money set aside to cover the bills due before your next paycheck — the same bill list and personal/business split your budget uses.' },
-  { key: 'min_debt_amount', label: 'Debt minimums', icon: Flame, color: 'text-prism-rose' },
-  { key: 'extra_debt_amount', label: 'Debt attack', icon: Flame, color: 'text-prism-orange' },
-  { key: 'savings_amount', label: 'Savings goals', icon: PiggyBank, color: 'text-prism-teal', explanation: 'Money routed to your active savings goals on schedule — like your $7,000 emergency fund and any other goals you set.' },
-  { key: 'investment_amount', label: 'Investing', icon: TrendingUp, color: 'text-prism-lime' },
-  { key: 'buffer_amount', label: 'Smart Buffer', icon: Shield, color: 'text-prism-sky', explanation: 'A cash cushion that absorbs surprise costs and timing gaps, so a rough week never dips into savings or adds new debt.' },
-  { key: 'safe_to_spend_amount', label: 'Safe-to-Spend', icon: Wallet, color: 'text-prism-amber' },
-] as const;
-
 export default function PaycheckDeployment() {
-  const { data: deployments } = usePaycheckDeployments(6);
+  const { data: deployments } = usePaycheckDeployments(24);
   const build = useBuildPaycheckDeployment();
   const update = useUpdatePaycheckDeployment();
   const { primary } = usePaycheckSchedules();
   const { data: profile } = useHouseholdProfile();
-  const { data: inactiveBills } = useInactiveBills();
-  const activeBills = (list: any) => (Array.isArray(list) ? list : []).filter((b: any) => !inactiveBills?.has(String(b.merchant || '').toLowerCase().replace(/[^a-z0-9]/g, '')));
   const [freq, setFreq] = useState('biweekly');
   const [net, setNet] = useState<string>('');
   const [payDate, setPayDate] = useState<string>('');
@@ -208,95 +193,20 @@ export default function PaycheckDeployment() {
               </Card>
             );
           }
-          return upcoming.map(d => (
-          <Card key={d.id} className="bg-card/60 backdrop-blur-sm border-border/60 overflow-hidden">
-            <div className="border-b border-border/40 bg-gradient-to-r from-prism-navy/40 to-transparent p-3 sm:p-4 flex flex-wrap items-center gap-3">
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Pay date</div>
-                <div className="font-display text-lg font-bold">{format(parseISO(d.pay_date), 'EEE, MMM d')}</div>
-              </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Net amount</div>
-                <div className="font-mono text-lg font-bold text-prism-teal">{fmt(Number(d.net_amount))}</div>
-              </div>
-              <Badge variant="outline" className="ml-auto text-[10px]">
-                {d.confidence} confidence
-              </Badge>
-              {d.status === 'applied' ? (
-                <Badge variant="outline" className="text-[10px] bg-prism-teal/10 border-prism-teal/30 text-prism-teal">
-                  <CheckCircle2 className="h-3 w-3 mr-1" /> Applied
-                </Badge>
-              ) : d.id && (
-                <div className="flex gap-1.5">
-                  <Button size="sm" className="h-7 text-[11px]"
-                    onClick={() => update.mutate({ id: d.id!, status: 'applied' })}>
-                    Mark applied
-                  </Button>
-                  <Button size="sm" variant="ghost" className="h-7 text-[11px]"
-                    onClick={() => update.mutate({ id: d.id!, status: 'skipped' })}>
-                    Skip
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <CardContent className="p-3 sm:p-4 space-y-3">
-              <PaycheckSplitAnimation deployment={d} />
-              <PaycheckCharts deployment={d} />
-              {/* Allocation grid */}
-              <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                {BUCKET_META.map(b => {
-                  const val = Number((d as any)[b.key] || 0);
-                  if (val <= 0) return null;
-                  const pct = Number(d.net_amount) > 0 ? Math.round((val / Number(d.net_amount)) * 100) : 0;
-                  const Icon = b.icon;
-                  return (
-                    <div key={b.key} className="rounded-md border border-border/40 bg-background/40 p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Icon className={`h-3 w-3 ${b.color}`} />
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{b.label}</span>
-                      </div>
-                      <div className="font-mono text-sm font-bold">{fmt(val)}</div>
-                      <div className="text-[10px] text-muted-foreground">{pct}%</div>
-                      {'explanation' in b && b.explanation && (
-                        <div className="mt-1 text-[10px] leading-snug text-muted-foreground/80">{b.explanation}</div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Bills breakdown */}
-              {activeBills(d.bills_breakdown).length > 0 && (
-                <div className="rounded-md border border-border/40 bg-background/40 p-2.5">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">
-                    Bills covered ({activeBills(d.bills_breakdown).length})
-                  </div>
-                  <ul className="space-y-1">
-                    {activeBills(d.bills_breakdown).map((b: any) => (
-                      <li key={b.id} className="flex items-center justify-between text-[11px]">
-                        <span className="truncate">
-                          <span className="text-muted-foreground mr-1.5">{format(parseISO(b.due_date), 'MMM d')}</span>
-                          {b.merchant}
-                        </span>
-                        <span className="font-mono font-semibold">{fmt(Number(b.amount))}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {d.rationale && (
-                <p className="text-[11px] text-muted-foreground italic flex gap-1.5">
-                  <Info className="h-3 w-3 shrink-0 mt-0.5" />
-                  <span>{d.rationale}</span>
-                </p>
-              )}
-            </CardContent>
-          </Card>
-          ));
+           return upcoming.map(d => (
+             <PaycheckDeploymentCard
+               key={d.id || d.pay_date}
+               deployment={d}
+               onUpdate={(id, status) => update.mutate({ id, status })}
+             />
+           ));
         })()}
       </div>
+
+      <PastDeploymentList
+        deployments={(deployments || []).filter(d => d.pay_date < new Date().toISOString().slice(0, 10))}
+        onUpdate={(id, status) => update.mutate({ id, status })}
+      />
     </div>
   );
 }

@@ -57,15 +57,30 @@ export function useBuildPaycheckDeployment() {
   return useMutation({
     mutationFn: async (opts: { pay_date?: string; net_amount?: number; frequency?: string; persist?: boolean }) => {
       if (!household) throw new Error('No household');
+      if (opts.pay_date) {
+        const { data: existing, error: lookupError } = await supabase
+          .from('paycheck_deployments')
+          .select('*')
+          .eq('household_id', household.id)
+          .eq('pay_date', opts.pay_date)
+          .neq('status', 'skipped')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        if (existing) return { ...(existing as unknown as PaycheckDeployment), alreadyExists: true };
+      }
       const { data, error } = await supabase.functions.invoke('paycheck-deploy', {
         body: { household_id: household.id, ...opts },
       });
       if (error) throw error;
       return data?.deployment as PaycheckDeployment;
     },
-    onSuccess: () => {
+    onSuccess: (deployment: PaycheckDeployment & { alreadyExists?: boolean }) => {
       qc.invalidateQueries({ queryKey: ['paycheck_deployments'] });
-      toast({ title: 'Paycheck plan ready', description: 'Coach has deployed your next paycheck.' });
+      toast(deployment?.alreadyExists
+        ? { title: 'Plan already exists', description: 'The existing plan for this payday is shown below.' }
+        : { title: 'Paycheck plan ready', description: 'Coach has deployed your next paycheck.' });
     },
     onError: (e: any) => toast({ title: 'Plan failed', description: e?.message || 'Try again', variant: 'destructive' }),
   });
