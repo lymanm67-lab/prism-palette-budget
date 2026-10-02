@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PaystubUploader } from '@/components/PaystubUploader';
@@ -2092,6 +2092,11 @@ const Budgets = () => {
               </TooltipTrigger>
               <TooltipContent><p>AI-powered budget suggestions based on spending</p></TooltipContent>
             </Tooltip>
+
+            {/* Upload Paystub */}
+            <Button variant="outline" size="sm" className="gap-1.5 h-8" asChild>
+              <Link to="/budgets/actual"><BarChart3 className="h-4 w-4" /><span className="hidden sm:inline">Budget vs Actual</span></Link>
+            </Button>
 
             {/* Upload Paystub */}
             <Tooltip>

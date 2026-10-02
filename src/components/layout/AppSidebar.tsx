@@ -56,6 +56,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Plan & Budget',
     items: [
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber', essential: true },
+      { to: '/budgets/actual', icon: BarChart3, label: 'Budget vs Actual', color: 'text-prism-sky', essential: true },
       { to: '/planning/budget', icon: Wallet, label: 'Budget Planner', color: 'text-prism-teal' },
       { to: '/money-blueprint', icon: PiggyBank, label: 'Money Blueprint', color: 'text-prism-lime' },
 
