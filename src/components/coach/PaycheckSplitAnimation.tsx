@@ -74,7 +74,7 @@ function billLeaves(d: PaycheckDeployment): Leaf[] {
 }
 
 // The five Cash Flow Pillars, each with its own side branches.
-const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment) => Leaf[] }[] = [
+const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, ctx?: { debts: Leaf[] }) => Leaf[] }[] = [
   { label: 'Bills & Essentials', color: 'var(--prism-sky)', leaves: billLeaves },
   {
     label: 'Debt Freedom', color: 'var(--prism-rose)',
@@ -115,10 +115,11 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   const reduce = useReducedMotion();
   const net = Number(deployment.net_amount) || 0;
   const { data: payrollWealth } = usePayrollWealth(deployment.pay_date);
+  const { data: debts } = useDebtMinimums();
   if (net <= 0) return null;
 
   const pillars = PILLARS.map(p => {
-    let leaves = p.leaves(deployment);
+    let leaves = p.leaves(deployment, { debts: debts || [] });
     let value = p.label === 'Guilt-Free Spend' ? leaves[0].value : leaves.reduce((s, l) => s + l.value, 0);
     let extra = 0;
     if (p.label === 'Wealth & Investing' && payrollWealth?.length) {
