@@ -48,7 +48,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
         transition={{ type: 'spring', stiffness: 220, damping: 16, duration: d(0.5) }}
         className="mx-auto w-fit rounded-full border border-prism-teal/40 bg-prism-teal/10 px-4 py-1 shadow-[0_0_24px_hsl(var(--prism-teal)/0.35)]"
       >
-        <AnimatedNumber value={net} formatFn={fmt} className="font-mono text-base font-bold text-prism-teal" />
+        <AnimatedNumber from={0} duration={reduce ? 0 : 900} value={net} formatFn={fmt} className="font-mono text-base font-bold text-prism-teal" />
       </motion.div>
 
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full -mt-2 !bg-transparent" preserveAspectRatio="none" style={{ height: compact ? 90 : 130 }}>
@@ -92,7 +92,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
             >
               <div className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold truncate">{b.label}</div>
               <div className="font-mono text-[11px] font-bold" style={{ color: `hsl(${b.color})` }}>
-                <AnimatedNumber value={b.value} duration={reduce ? 0 : 900} formatFn={fmt} />
+                <AnimatedNumber from={0} value={b.value} duration={reduce ? 0 : 900} formatFn={fmt} />
               </div>
               {!compact && <div className="text-[9px] text-muted-foreground">{pct}%</div>}
             </motion.div>

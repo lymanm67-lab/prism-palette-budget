@@ -5,11 +5,13 @@ interface AnimatedNumberProps {
   duration?: number;
   formatFn?: (n: number) => string;
   className?: string;
+  /** Optional starting value (e.g. 0 to count up on mount). */
+  from?: number;
 }
 
-export default function AnimatedNumber({ value, duration = 600, formatFn, className }: AnimatedNumberProps) {
-  const [display, setDisplay] = useState(value);
-  const prevRef = useRef(value);
+export default function AnimatedNumber({ value, duration = 600, formatFn, className, from }: AnimatedNumberProps) {
+  const [display, setDisplay] = useState(from ?? value);
+  const prevRef = useRef(from ?? value);
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
