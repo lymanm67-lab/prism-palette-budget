@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PaystubUploader } from '@/components/PaystubUploader';
@@ -25,7 +25,7 @@ import CategoryCombobox from '@/components/CategoryCombobox';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Wallet, LayoutGrid, ListChecks, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft } from 'lucide-react';
+import { Loader2, Wallet, LayoutGrid, ListChecks, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft, BarChart3 } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -2092,6 +2092,11 @@ const Budgets = () => {
               </TooltipTrigger>
               <TooltipContent><p>AI-powered budget suggestions based on spending</p></TooltipContent>
             </Tooltip>
+
+            {/* Budget vs Actual */}
+            <Button variant="outline" size="sm" className="gap-1.5 h-8" asChild>
+              <Link to="/budgets/actual"><BarChart3 className="h-4 w-4" /><span className="hidden sm:inline">Budget vs Actual</span></Link>
+            </Button>
 
             {/* Upload Paystub */}
             <Tooltip>
