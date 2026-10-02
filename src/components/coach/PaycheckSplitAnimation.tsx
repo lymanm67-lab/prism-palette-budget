@@ -315,7 +315,6 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
       <div className="flex items-center justify-between mb-1">
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
           Paycheck money tree
-          <span className="ml-2 normal-case tracking-normal text-foreground">Total expenses (bills + debt + business): <span className="font-mono">{fmt(expTotal)}</span></span>
         </span>
         <div className="flex items-center gap-1">
           {!compact && (
@@ -327,6 +326,11 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
             <span className="flex items-center gap-1"><RotateCcw className="h-3 w-3" /> Replay</span>
           </Button>
         </div>
+      </div>
+
+      <div className="mb-2 flex items-center justify-between rounded-md border border-prism-amber/40 bg-prism-amber/10 px-3 py-1.5">
+        <span className="text-xs font-semibold text-foreground">Total expenses (bills + debt + business)</span>
+        <span className="font-mono text-sm font-bold text-prism-amber">{fmt(expTotal)}</span>
       </div>
 
       <div className="overflow-x-auto">
