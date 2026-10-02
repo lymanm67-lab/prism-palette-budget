@@ -4,6 +4,33 @@ import { RotateCcw } from 'lucide-react';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import { Button } from '@/components/ui/button';
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
+
+const WEALTH_RE = /roth|457|tda|403|401|hsa|health savings|retire|employer match|brokerage|ira/i;
+
+/** Wealth-building payroll lines from the budget for the paycheck's month. */
+function usePayrollWealth(payDate: string) {
+  const { household } = useHousehold();
+  const month = `${payDate.slice(0, 7)}-01`;
+  return useQuery({
+    queryKey: ['payroll_wealth_lines', household?.id, month],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('budgets')
+        .select('planned_amount, categories!inner(name, category_groups!inner(expense_type))')
+        .eq('household_id', household!.id)
+        .eq('month', month)
+        .gt('planned_amount', 0);
+      if (error) throw error;
+      return (data || [])
+        .filter((b: any) => b.categories?.category_groups?.expense_type === 'payroll_deduction' && WEALTH_RE.test(b.categories?.name || ''))
+        .map((b: any) => ({ label: b.categories.name as string, value: Number(b.planned_amount), employer: /employer/i.test(b.categories.name) }));
+    },
+  });
+}
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -55,12 +82,25 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   const [run, setRun] = useState(0);
   const reduce = useReducedMotion();
   const net = Number(deployment.net_amount) || 0;
+  const { data: payrollWealth } = usePayrollWealth(deployment.pay_date);
   if (net <= 0) return null;
 
   const pillars = PILLARS.map(p => {
-    const leaves = p.leaves(deployment);
-    const value = p.label === 'Guilt-Free Spend' ? leaves[0].value : leaves.reduce((s, l) => s + l.value, 0);
-    return { ...p, leaves, value };
+    let leaves = p.leaves(deployment);
+    let value = p.label === 'Guilt-Free Spend' ? leaves[0].value : leaves.reduce((s, l) => s + l.value, 0);
+    let extra = 0;
+    if (p.label === 'Wealth & Investing' && payrollWealth?.length) {
+      // Payroll lines come out before take-home; employer money is shown but never counted as yours.
+      const own = payrollWealth.filter(l => !l.employer);
+      const emp = payrollWealth.filter(l => l.employer);
+      leaves = [
+        ...(leaves[0].value > 0 ? [{ label: 'From take-home', value: leaves[0].value }] : []),
+        ...own.map(l => ({ label: `${l.label} (payroll)`, value: l.value })),
+        ...emp.map(l => ({ label: `${l.label} (employer, extra)`, value: l.value })),
+      ];
+      extra = own.reduce((s, l) => s + l.value, 0);
+    }
+    return { ...p, leaves, value: value + extra, takeHome: value };
   });
   const n = pillars.length;
   const W = 1000, H = compact ? 110 : 150, topY = 6, botY = H - 4;
@@ -130,7 +170,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
           {/* Pillars with side branches */}
           <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
             {pillars.map((p, i) => {
-              const pct = Math.round((p.value / net) * 100);
+              const pct = Math.round((p.takeHome / net) * 100);
               const base = 1.2 + i * 0.1;
               return (
                 <div key={p.label} className="flex flex-col items-stretch">
@@ -145,7 +185,7 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
                     <div className="font-mono text-xs sm:text-sm font-bold" style={{ color: `hsl(${p.color})` }}>
                       <AnimatedNumber from={0} value={p.value} duration={reduce ? 0 : 900} formatFn={fmt} />
                     </div>
-                    {!compact && <div className="text-[9px] text-muted-foreground">{pct}% of pay</div>}
+                    {!compact && <div className="text-[9px] text-muted-foreground">{pct}% of take-home{p.value > p.takeHome ? ' + payroll' : ''}</div>}
                   </motion.div>
 
                   {!compact && p.leaves.length > 0 && (
