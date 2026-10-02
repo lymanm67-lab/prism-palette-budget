@@ -14,7 +14,7 @@ import { usePurchaseGuardChecks, useOverridePattern } from '@/hooks/use-purchase
 import { useMoneyLeaks, useScanMoneyLeaks, useUpdateMoneyLeak, type MoneyLeak } from '@/hooks/use-money-leaks';
 import { useAdaptiveBuffer, useApplyAdaptiveBuffer } from '@/hooks/use-adaptive-buffer';
 import { useModeSettings } from '@/hooks/use-financial-mode';
-import { usePaycheckDeployments, useBuildPaycheckDeployment } from '@/hooks/use-paycheck-deploy';
+import { usePaycheckDeployments, useBuildPaycheckDeployment, pickNextDeployment } from '@/hooks/use-paycheck-deploy';
 import { PurchaseGuardDialog } from '@/components/coach/PurchaseGuardDialog';
 import { PurchaseGuardReviewPrompts } from '@/components/coach/PurchaseGuardReviewPrompts';
 import { BillTimingOptimizer } from '@/components/coach/BillTimingOptimizer';
@@ -888,9 +888,9 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
 }
 
 function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
-  const { data: deployments } = usePaycheckDeployments(3);
+  const { data: deployments } = usePaycheckDeployments(12);
   const build = useBuildPaycheckDeployment();
-  const next = (deployments || []).find(d => d.status !== 'applied' && d.status !== 'skipped') || deployments?.[0];
+  const next = pickNextDeployment(deployments);
 
   return (
     <CoachCard

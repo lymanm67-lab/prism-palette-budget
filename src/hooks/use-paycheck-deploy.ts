@@ -25,6 +25,14 @@ export interface PaycheckDeployment {
   created_at?: string;
 }
 
+/** Nearest upcoming (pay_date >= today) deployment not yet applied/skipped. */
+export function pickNextDeployment(list?: PaycheckDeployment[] | null): PaycheckDeployment | undefined {
+  const today = new Date().toISOString().slice(0, 10);
+  return (list || [])
+    .filter(d => d.pay_date >= today && d.status !== 'applied' && d.status !== 'skipped')
+    .sort((a, b) => a.pay_date.localeCompare(b.pay_date))[0];
+}
+
 export function usePaycheckDeployments(limit = 6) {
   const { household } = useHousehold();
   return useQuery({

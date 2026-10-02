@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useMoneyLeaks } from '@/hooks/use-money-leaks';
-import { usePaycheckDeployments } from '@/hooks/use-paycheck-deploy';
+import { usePaycheckDeployments, pickNextDeployment } from '@/hooks/use-paycheck-deploy';
 import { usePurchaseGuardChecks } from '@/hooks/use-purchase-guard';
 import { useTransactions } from '@/hooks/use-finance-data';
 import { format, startOfMonth, differenceInDays, parseISO } from 'date-fns';
@@ -100,7 +100,7 @@ export function CoachNudges() {
     }
 
     // 3. Next paycheck within 7 days, not applied
-    const nextPay = (deployments || []).find(d => d.status !== 'applied' && d.status !== 'skipped');
+    const nextPay = pickNextDeployment(deployments);
     if (nextPay) {
       const days = differenceInDays(parseISO(nextPay.pay_date), new Date());
       if (days >= 0 && days <= 7) {
