@@ -290,8 +290,11 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
                                 initial={{ opacity: 0, x: -6, scale: 0.9 }}
                                 animate={{ opacity: 1, x: 0, scale: 1 }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 20, delay: d(Number(delay) + 0.15) }}
-                                className="min-w-0 flex-1 rounded border bg-background/60 px-1.5 py-1"
+                                className={`min-w-0 flex-1 rounded border bg-background/60 px-1.5 py-1 ${/other (bills|debts)/i.test(l.label) ? 'cursor-pointer hover:bg-muted/40 underline decoration-dotted' : ''}`}
                                 style={{ borderColor: `hsl(${p.color} / 0.3)` }}
+                                onClick={/other (bills|debts)/i.test(l.label) ? () => setShowAll(true) : undefined}
+                                role={/other (bills|debts)/i.test(l.label) ? 'button' : undefined}
+                                title={/other (bills|debts)/i.test(l.label) ? 'Tap to show each one' : undefined}
                               >
                                 <div className="truncate text-[9px] sm:text-[10px] text-muted-foreground leading-tight" title={l.label}>{l.label}</div>
                                 <div className="font-mono text-[10px] sm:text-[11px] font-semibold" style={{ color: `hsl(${p.color})` }}>
