@@ -32,6 +32,26 @@ function usePayrollWealth(payDate: string) {
   });
 }
 
+/** Real debts with their minimum payments, biggest first. */
+function useDebtMinimums() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['debt_minimums_tree', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('debts')
+        .select('name, minimum_payment')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .gt('minimum_payment', 0)
+        .order('minimum_payment', { ascending: false });
+      if (error) throw error;
+      return (data || []).map((d: any) => ({ label: d.name as string, value: Number(d.minimum_payment) }));
+    },
+  });
+}
+
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
