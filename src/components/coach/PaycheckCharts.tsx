@@ -30,7 +30,14 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
     [pillars],
   );
 
-  const barData = useMemo(() => billItems.slice(0, 8), [billItems]);
+  const barData = useMemo(
+    () => billItems.slice(0, 8).map(b => ({
+      ...b,
+      // One-line, non-wrapping label for the chart axis; the tooltip shows the full name.
+      short: b.label.length > 16 ? `${b.label.slice(0, 15).trimEnd()}…` : b.label,
+    })),
+    [billItems],
+  );
 
   if (pieData.length === 0 && barData.length === 0) return null;
 
