@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { AlertTriangle, ArrowLeft, ArrowRight, ChevronDown, ChevronRight, CircleDollarSign, Loader2, ReceiptText, Scale, Wallet } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ArrowRight, ChevronDown, ChevronRight, CircleDollarSign, Loader2, ReceiptText, Scale, Wallet, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +48,13 @@ export default function BudgetVsActual() {
   const selectedIsCurrent = now.getFullYear() === date.getFullYear() && now.getMonth() === date.getMonth();
   const calendarPct = selectedIsCurrent ? now.getDate() / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() * 100 : date < now ? 100 : 0;
   const treeTotal = tree.pillars.reduce((sum, p) => sum + p.takeHome, 0);
+  const summaryCards: Array<{ label: string; value: number; icon: LucideIcon; color: string; percent?: boolean }> = [
+    { label: 'Budgeted', value: totals.budgeted, icon: Wallet, color: 'text-prism-sky' },
+    { label: 'Actual spent', value: totals.actual, icon: ReceiptText, color: 'text-prism-orange' },
+    { label: totals.variance >= 0 ? 'Remaining' : 'Over budget', value: Math.abs(totals.variance), icon: Scale, color: totals.variance >= 0 ? 'text-prism-teal' : 'text-prism-rose' },
+    { label: 'Income received', value: data?.incomeReceived || 0, icon: CircleDollarSign, color: 'text-prism-lime' },
+    { label: 'Budget used', value: totals.used, icon: ReceiptText, color: totals.used > 100 ? 'text-prism-rose' : 'text-prism-amber', percent: true },
+  ];
   const tooltipStyle = { background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6, color: 'hsl(var(--popover-foreground))' };
   const moveMonth = (delta: number) => setDate(current => new Date(current.getFullYear(), current.getMonth() + delta, 1));
 
@@ -72,11 +79,7 @@ export default function BudgetVsActual() {
 
       {isLoading ? <div className="flex min-h-96 items-center justify-center text-muted-foreground"><Loader2 className="mr-2 animate-spin" /> Loading month…</div> : error ? <Card><CardContent className="py-10 text-center text-prism-rose">This month could not be loaded.</CardContent></Card> : data && <>
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {[
-            ['Budgeted', totals.budgeted, Wallet, 'text-prism-sky'], ['Actual spent', totals.actual, ReceiptText, 'text-prism-orange'],
-            [totals.variance >= 0 ? 'Remaining' : 'Over budget', Math.abs(totals.variance), Scale, totals.variance >= 0 ? 'text-prism-teal' : 'text-prism-rose'],
-            ['Income received', data.incomeReceived, CircleDollarSign, 'text-prism-lime'], ['Budget used', totals.used, ReceiptText, totals.used > 100 ? 'text-prism-rose' : 'text-prism-amber'],
-          ].map(([label, value, Icon, color]) => <Card key={String(label)}><CardContent className="p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground"><Icon className={cn('h-4 w-4', color)} />{label}</div><div className={cn('mt-2 text-xl font-extrabold tabular-nums', color)}>{label === 'Budget used' ? `${Number(value).toFixed(1)}%` : formatCurrency(Number(value))}</div></CardContent></Card>)}
+          {summaryCards.map(({ label, value, icon: Icon, color, percent }) => <Card key={label}><CardContent className="p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground"><Icon className={cn('h-4 w-4', color)} />{label}</div><div className={cn('mt-2 text-xl font-extrabold tabular-nums', color)}>{percent ? `${value.toFixed(1)}%` : formatCurrency(value)}</div></CardContent></Card>)}
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
