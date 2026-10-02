@@ -1,65 +1,37 @@
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList } from 'recharts';
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
-
-const C = {
-  bills: 'hsl(var(--prism-sky))',
-  minDebt: 'hsl(var(--prism-rose))',
-  extraDebt: 'hsl(var(--prism-orange))',
-  savings: 'hsl(var(--prism-teal))',
-  invest: 'hsl(var(--prism-lime))',
-  buffer: 'hsl(var(--prism-navy-light))',
-  spend: 'hsl(var(--prism-amber))',
-};
-
-const BAR_COLORS = [C.bills, C.minDebt, C.extraDebt, C.savings, C.invest, C.buffer, C.spend, C.bills, C.minDebt, C.extraDebt];
+import { usePaycheckTree } from '@/components/coach/usePaycheckTree';
 
 const fmt$ = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 const pctOf = (n: number, net: number) => (net > 0 ? Math.round((n / net) * 100) : 0);
 
-/** Pie of where the paycheck goes + bar chart of the biggest bills covered, with plain-English story text. */
-export default function PaycheckCharts({ deployment, inactiveBills }: { deployment: PaycheckDeployment; inactiveBills?: Set<string> }) {
-  const net = Number(deployment.net_amount) || 0;
+/** Pie of where the paycheck goes + bar chart of the biggest bills covered,
+ *  built from the same live numbers the money tree shows. */
+export default function PaycheckCharts({ deployment }: { deployment: PaycheckDeployment }) {
+  const { net, pillars, billItems } = usePaycheckTree(deployment);
 
-  const pieData = useMemo(() => {
-    const rows = [
-      { name: 'Bills', value: Number(deployment.bills_amount || 0), color: C.bills },
-      { name: 'Debt minimums', value: Number(deployment.min_debt_amount || 0), color: C.minDebt },
-      { name: 'Debt attack', value: Number(deployment.extra_debt_amount || 0), color: C.extraDebt },
-      { name: 'Savings', value: Number(deployment.savings_amount || 0), color: C.savings },
-      { name: 'Investing', value: Number(deployment.investment_amount || 0), color: C.invest },
-      { name: 'Smart Buffer', value: Number(deployment.buffer_amount || 0), color: C.buffer },
-      { name: 'Safe-to-Spend', value: Number(deployment.safe_to_spend_amount || 0), color: C.spend },
-    ].filter(r => r.value > 0);
-    return rows;
-  }, [deployment]);
-
-  const barData = useMemo(() => {
-    const bills = (Array.isArray(deployment.bills_breakdown) ? deployment.bills_breakdown : [])
-      .filter((b: any) => !inactiveBills?.has(String(b.merchant || '').toLowerCase().replace(/[^a-z0-9]/g, '')))
-      .map((b: any) => ({
-        name: String(b.merchant || 'Bill').slice(0, 14),
-        amount: Number(b.amount) || 0,
-        pct: pctOf(Number(b.amount) || 0, net),
-        color: '',
-      }))
-      .sort((a: any, b: any) => b.amount - a.amount)
-      .slice(0, 8);
-    bills.forEach((b: any, i: number) => { b.color = BAR_COLORS[i % BAR_COLORS.length]; });
-    return bills;
-  }, [deployment, inactiveBills, net]);
-
-  const barTotal = barData.reduce((s: number, b: any) => s + b.amount, 0);
-  const top = barData[0];
-  const futureShare = pctOf(
-    (Number(deployment.savings_amount || 0)) + (Number(deployment.investment_amount || 0)) + (Number(deployment.buffer_amount || 0)),
-    net,
+  const pieData = useMemo(
+    () => pillars
+      .filter(p => p.takeHome > 0.5)
+      .map(p => ({ name: p.label, value: Math.round(p.takeHome * 100) / 100, color: `hsl(${p.color})` })),
+    [pillars],
   );
-  const spendShare = pctOf(Number(deployment.safe_to_spend_amount || 0), net);
-  const debtShare = pctOf((Number(deployment.min_debt_amount || 0)) + (Number(deployment.extra_debt_amount || 0)), net);
-  const billsShare = pctOf(Number(deployment.bills_amount || 0), net);
+
+  const barData = useMemo(() => billItems.slice(0, 8), [billItems]);
 
   if (pieData.length === 0 && barData.length === 0) return null;
+
+  const total = pieData.reduce((s, d) => s + d.value, 0);
+  const barTotal = barData.reduce((s, b) => s + b.value, 0);
+  const top = barData[0];
+  const byName = (label: string) => pieData.find(d => d.name === label)?.value || 0;
+  const billsShare = pctOf(byName('Bills & Essentials'), net);
+  const debtShare = pctOf(byName('Debt Freedom'), net);
+  const futureShare = pctOf(byName('Savings & Buffer') + byName('Wealth & Investing'), net);
+  const spend = byName('Guilt-Free Spend');
+  const spendShare = pctOf(spend, net);
+  const bizShare = pctOf(byName('Business Expenses'), net);
 
   return (
     <div className="grid gap-3 md:grid-cols-2">
@@ -67,10 +39,11 @@ export default function PaycheckCharts({ deployment, inactiveBills }: { deployme
         <div className="rounded-md border border-border/40 bg-background/40 p-2.5">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Where this paycheck goes</div>
           <p className="text-[11px] leading-snug text-muted-foreground mb-2">
-            Of your {fmt$(net)} take-home, <span style={{ color: C.bills }} className="font-semibold">{billsShare}%</span> covers your bills and{' '}
-            <span style={{ color: C.extraDebt }} className="font-semibold">{debtShare}%</span> attacks debt, while{' '}
-            <span style={{ color: C.savings }} className="font-semibold">{futureShare}%</span> builds your future — leaving{' '}
-            <span style={{ color: C.spend }} className="font-semibold">{fmt$(Number(deployment.safe_to_spend_amount || 0))} ({spendShare}%)</span> to spend guilt-free.
+            Of your {fmt$(net)} take-home, <span style={{ color: 'hsl(var(--prism-sky))' }} className="font-semibold">{billsShare}%</span> covers your bills
+            {debtShare > 0 && <> and <span style={{ color: 'hsl(var(--prism-rose))' }} className="font-semibold">{debtShare}%</span> attacks debt</>}
+            , <span style={{ color: 'hsl(var(--prism-lime))' }} className="font-semibold">{futureShare}%</span> builds your future
+            {bizShare > 0 && <> ({bizShare}% runs the business)</>}
+            , leaving <span style={{ color: 'hsl(var(--prism-amber))' }} className="font-semibold">{fmt$(spend)} ({spendShare}%)</span> to spend guilt-free.
           </p>
           <ResponsiveContainer width="100%" height={210}>
             <PieChart>
@@ -78,7 +51,7 @@ export default function PaycheckCharts({ deployment, inactiveBills }: { deployme
                 {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Pie>
               <Tooltip
-                formatter={(v: any, name: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of pay`, name]}
+                formatter={(v: any, name: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of net pay`, name]}
                 contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
               />
               <Legend iconSize={8} wrapperStyle={{ fontSize: 10 }} />
@@ -90,22 +63,22 @@ export default function PaycheckCharts({ deployment, inactiveBills }: { deployme
         <div className="rounded-md border border-border/40 bg-background/40 p-2.5">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Biggest bills covered</div>
           <p className="text-[11px] leading-snug text-muted-foreground mb-2">
-            These bills take <span style={{ color: C.bills }} className="font-semibold">{pctOf(barTotal, net)}% of your pay</span>
-            {top && <> — <span className="font-semibold" style={{ color: top.color }}>{top.name}</span> is the biggest at {fmt$(top.amount)} ({top.pct}%)</>}
-            {barTotal < Number(deployment.bills_amount || 0) && <>, with {fmt$(Number(deployment.bills_amount || 0) - barTotal)} more spread across the rest</>}.
+            These bills take <span style={{ color: 'hsl(var(--prism-sky))' }} className="font-semibold">{pctOf(barTotal, net)}% of your pay</span>
+            {top && <> — <span className="font-semibold">{top.label}</span> is the biggest at {fmt$(top.value)} ({pctOf(top.value, net)}%)</>}
+            {billItems.length > barData.length && <>, with {billItems.length - barData.length} more bills covered below the top 8</>}.
           </p>
           <ResponsiveContainer width="100%" height={210}>
             <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 68, top: 4, bottom: 4 }}>
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
+              <YAxis type="category" dataKey="label" width={90} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
               <Tooltip
                 formatter={(v: any) => [`${fmt$(Number(v))} · ${pctOf(Number(v), net)}% of net pay`, 'Amount']}
                 contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
               />
-              <Bar dataKey="amount" radius={[0, 4, 4, 0]} maxBarSize={16}>
-                {barData.map((d: any, i: number) => <Cell key={i} fill={d.color} />)}
+              <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={16}>
+                {barData.map((b, i) => <Cell key={i} fill="hsl(var(--prism-sky))" opacity={1 - i * 0.09} />)}
                 <LabelList
-                  dataKey="amount"
+                  dataKey="value"
                   position="right"
                   formatter={(v: any) => `${fmt$(Number(v))} · ${pctOf(Number(v), net)}%`}
                   style={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
@@ -114,6 +87,11 @@ export default function PaycheckCharts({ deployment, inactiveBills }: { deployme
             </BarChart>
           </ResponsiveContainer>
         </div>
+      )}
+      {total > 0 && net > 0 && Math.abs(total - net) > net * 0.02 && (
+        <p className="md:col-span-2 text-[10px] text-muted-foreground italic">
+          Chart areas come from your live budget and debt lists, so they may differ slightly from the totals saved with this plan ({fmt$(net)} take-home; charts cover {fmt$(total)}).
+        </p>
       )}
     </div>
   );
