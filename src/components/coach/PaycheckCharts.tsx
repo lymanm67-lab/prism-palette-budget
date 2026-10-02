@@ -6,6 +6,18 @@ import { usePaycheckTree } from '@/components/coach/usePaycheckTree';
 const fmt$ = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 const pctOf = (n: number, net: number) => (net > 0 ? Math.round((n / net) * 100) : 0);
 
+/** Distinct bar colors matching the app's prism palette, darkest/strongest first. */
+const BAR_COLORS = [
+  'hsl(var(--prism-sky))',
+  'hsl(var(--prism-teal))',
+  'hsl(var(--prism-lime))',
+  'hsl(var(--prism-amber))',
+  'hsl(var(--prism-orange))',
+  'hsl(var(--prism-rose))',
+  'hsl(var(--prism-violet))',
+  'hsl(var(--prism-blue))',
+];
+
 /** Pie of where the paycheck goes + bar chart of the biggest bills covered,
  *  built from the same live numbers the money tree shows. */
 export default function PaycheckCharts({ deployment }: { deployment: PaycheckDeployment }) {
