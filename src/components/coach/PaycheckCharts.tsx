@@ -61,8 +61,8 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
       )}
       {barData.length > 0 && (
         <div className="rounded-md border border-border/40 bg-background/40 p-2.5">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Biggest bills covered</div>
-          <p className="text-[11px] leading-snug text-muted-foreground mb-2">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Biggest bills covered</div>
+          <p className="text-sm leading-snug text-foreground/80 mb-2">
             These bills take <span style={{ color: 'hsl(var(--prism-sky))' }} className="font-semibold">{pctOf(barTotal, net)}% of your pay</span>
             {top && <> — <span className="font-semibold">{top.label}</span> is the biggest at {fmt$(top.value)} ({pctOf(top.value, net)}%)</>}
             {billItems.length > barData.length && <>, with {billItems.length - barData.length} more bills covered below the top 8</>}.
