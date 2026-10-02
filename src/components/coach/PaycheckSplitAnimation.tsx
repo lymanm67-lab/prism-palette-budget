@@ -32,22 +32,54 @@ function usePayrollWealth(payDate: string) {
   });
 }
 
-/** Real debts with their minimum payments, biggest first. */
-function useDebtMinimums() {
+/** Real debts with their minimum payments, biggest first. Budget lines for the
+ *  paycheck's month win when they name the same debt (e.g. a reduced payment). */
+function useDebtMinimums(payDate: string) {
   const { household } = useHousehold();
+  const month = `${payDate.slice(0, 7)}-01`;
   return useQuery({
-    queryKey: ['debt_minimums_tree', household?.id],
+    queryKey: ['debt_minimums_tree', household?.id, month],
     enabled: !!household,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('debts')
-        .select('name, minimum_payment')
-        .eq('household_id', household!.id)
-        .is('deleted_at', null)
-        .gt('minimum_payment', 0)
-        .order('minimum_payment', { ascending: false });
-      if (error) throw error;
-      return (data || []).map((d: any) => ({ label: d.name as string, value: Number(d.minimum_payment) }));
+      const [{ data: items, error: e1 }, { data: lines, error: e2 }] = await Promise.all([
+        supabase
+          .from('debt_items')
+          .select('name, minimum_payment, debt_plans!inner(household_id)')
+          .eq('debt_plans.household_id', household!.id)
+          .gt('minimum_payment', 0),
+        supabase
+          .from('budgets')
+          .select('planned_amount, categories!inner(name)')
+          .eq('household_id', household!.id)
+          .eq('month', month)
+          .gt('planned_amount', 0),
+      ]);
+      if (e1) throw e1;
+      if (e2) throw e2;
+      const budgetByKey = new Map<string, number>();
+      for (const b of lines || []) {
+        const key = String((b as any).categories?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (key) budgetByKey.set(key, (budgetByKey.get(key) || 0) + Number((b as any).planned_amount));
+      }
+      const seen = new Set<string>();
+      return (items || [])
+        .map((d: any) => {
+          const key = String(d.name).toLowerCase().replace(/[^a-z0-9]/g, '');
+          // A budget line whose name contains the debt's first token overrides the minimum
+          // (e.g. BetrLink's reduced $375/mo payment lives in the budget, not the debt row).
+          const token = key.replace(/(settlement|loan|studentloan|premiumbalanceowed)$/i, '').slice(0, 8);
+          let value = Number(d.minimum_payment);
+          for (const [bk, bv] of budgetByKey) {
+            if (token.length >= 6 && bk.includes(token)) { value = bv; break; }
+          }
+          return { label: d.name as string, value, key };
+        })
+        .filter(d => {
+          if (seen.has(d.key)) return false; // dedupe duplicate accounts (e.g. two "Vacation Loan 3004" rows)
+          seen.add(d.key);
+          return true;
+        })
+        .sort((a, b) => b.value - a.value);
     },
   });
 }
