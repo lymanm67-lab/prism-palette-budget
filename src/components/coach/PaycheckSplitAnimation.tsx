@@ -192,6 +192,7 @@ const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, c
     label: 'Wealth & Investing', color: 'var(--prism-lime)',
     leaves: d => [{ label: 'Investing goals', value: num(d, 'investment_amount') }],
   },
+  { label: 'Business Expenses', color: 'var(--prism-orange, var(--prism-amber))', leaves: () => [] },
   {
     label: 'Guilt-Free Spend', color: 'var(--prism-amber)',
     leaves: d => {
