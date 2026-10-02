@@ -32,6 +32,32 @@ function usePayrollWealth(payDate: string) {
   });
 }
 
+/** Business operating costs from the budget (business debt payments stay under Debt Freedom). */
+function useBusinessCosts(payDate: string) {
+  const { household } = useHousehold();
+  const month = `${payDate.slice(0, 7)}-01`;
+  return useQuery({
+    queryKey: ['business_costs_tree', household?.id, month],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('budgets')
+        .select('planned_amount, categories!inner(name, category_groups!inner(name, expense_type))')
+        .eq('household_id', household!.id)
+        .eq('month', month)
+        .gt('planned_amount', 0);
+      if (error) throw error;
+      return (data || [])
+        .filter((b: any) => {
+          const g = b.categories?.category_groups;
+          return /^business/i.test(g?.name || '') && !/debt|loan/i.test(g?.name || '') && g?.expense_type !== 'income';
+        })
+        .map((b: any) => ({ label: b.categories.name as string, value: Number(b.planned_amount) }))
+        .sort((a, b) => b.value - a.value);
+    },
+  });
+}
+
 /** Real debts with their minimum payments, biggest first. Budget lines for the
  *  paycheck's month win when they name the same debt (e.g. a reduced payment). */
 function useDebtMinimums(payDate: string) {
@@ -166,6 +192,7 @@ const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, c
     label: 'Wealth & Investing', color: 'var(--prism-lime)',
     leaves: d => [{ label: 'Investing goals', value: num(d, 'investment_amount') }],
   },
+  { label: 'Business Expenses', color: 'var(--prism-orange)', leaves: () => [] },
   {
     label: 'Guilt-Free Spend', color: 'var(--prism-amber)',
     leaves: d => {
@@ -184,12 +211,22 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   const { data: payrollWealth } = usePayrollWealth(deployment.pay_date);
   const { data: debts } = useDebtMinimums(deployment.pay_date);
   const { data: inactive } = useInactiveBills();
+  const { data: businessCosts } = useBusinessCosts(deployment.pay_date);
   if (net <= 0) return null;
 
   const pillars = PILLARS.map(p => {
     let leaves = p.leaves(deployment, { debts: debts || [], all: showAll, inactive });
     let value = p.label === 'Guilt-Free Spend' ? leaves[0].value : leaves.reduce((s, l) => s + l.value, 0);
     let extra = 0;
+    if (p.label === 'Business Expenses') {
+      const items = businessCosts || [];
+      const k = showAll ? items.length : 3;
+      const rest = items.slice(k).reduce((s, x) => s + x.value, 0);
+      leaves = [...items.slice(0, k), ...(rest > 0.5 ? [{ label: `${items.length - k} other bills`, value: rest }] : [])];
+      if (leaves.length === 0) leaves = [{ label: 'No business costs budgeted', value: 0 }];
+      const total = items.reduce((s, x) => s + x.value, 0);
+      return { ...p, leaves, value: total, takeHome: total };
+    }
     if (p.label === 'Wealth & Investing' && payrollWealth?.length) {
       // Payroll lines come out before take-home; employer money is shown but never counted as yours.
       const own = payrollWealth.filter(l => !l.employer);
