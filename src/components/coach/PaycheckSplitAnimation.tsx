@@ -117,6 +117,42 @@ function useDebtMinimums(payDate: string) {
   });
 }
 
+
+/** Personal share of split bills (rent, Verizon, auto insurance, utilities) from the budget's Personal/Business lines. */
+const SPLIT_RULES: { re: RegExp; key: RegExp }[] = [
+  { re: /clarke|\brent\b/i, key: /^rent$/i },
+  { re: /verizon/i, key: /verizon/i },
+  { re: /geico|liberty|progressive|auto ins/i, key: /auto insurance/i },
+  { re: /firstenergy|enbridge|ohio edison|clearview|utilit|gas\b|electric/i, key: /^utilities/i },
+];
+function usePersonalShares(payDate: string) {
+  const { household } = useHousehold();
+  const month = `${payDate.slice(0, 7)}-01`;
+  return useQuery({
+    queryKey: ['personal_shares_tree', household?.id, month],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('budgets')
+        .select('planned_amount, categories!inner(name, category_groups!inner(name))')
+        .eq('household_id', household!.id)
+        .eq('month', month)
+        .gt('planned_amount', 0);
+      if (error) throw error;
+      return SPLIT_RULES.map(r => {
+        let pers = 0, biz = 0;
+        for (const b of data || []) {
+          const name = String((b as any).categories?.name || '');
+          if (!r.key.test(name)) continue;
+          const isBiz = /^business/i.test((b as any).categories?.category_groups?.name || '');
+          if (isBiz) biz += Number((b as any).planned_amount); else pers += Number((b as any).planned_amount);
+        }
+        return { re: r.re, share: pers + biz > 0 && biz > 0 ? pers / (pers + biz) : 1 };
+      });
+    },
+  });
+}
+
 /** Merchants of bills you've turned off (cancelled / paid off). */
 function useInactiveBills() {
   const { household } = useHousehold();
@@ -143,13 +179,18 @@ type Leaf = { label: string; value: number };
 const num = (d: PaycheckDeployment, k: string) => Number((d as any)[k] || 0);
 
 /** Bills branch: biggest bills by name, the rest grouped as "Other bills". */
-function billLeaves(d: PaycheckDeployment, ctx?: { all?: boolean; inactive?: Set<string> }): Leaf[] {
+function billLeaves(d: PaycheckDeployment, ctx?: { all?: boolean; inactive?: Set<string>; shares?: { re: RegExp; share: number }[] }): Leaf[] {
   const DEBT_BILL_RE = /betr\s*link|settlement|loan|nelnet|sba\b/i;
   const norm = (s: string) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   // Hide bills you've since cancelled or paid off, even if this plan was saved before.
   const all = [...(Array.isArray(d.bills_breakdown) ? d.bills_breakdown : [])]
     .filter(b => !ctx?.inactive?.has(norm(b.merchant)))
-    .map(b => ({ label: b.merchant, value: Number(b.amount || 0) }));
+    .map(b => {
+      const full = Number(b.amount || 0);
+      const sh = ctx?.shares?.find(x => x.re.test(b.merchant || ''))?.share ?? 1;
+      return { label: sh < 1 ? `${b.merchant} (personal ${Math.round(sh * 100)}%)` : b.merchant, value: full * sh, bizPart: full * (1 - sh) };
+    });
+  const bizParts = all.reduce((s, b) => s + b.bizPart, 0);
   const debtInBills = all.filter(b => DEBT_BILL_RE.test(b.label || '')).reduce((s, b) => s + b.value, 0);
   const items = all.filter(b => !DEBT_BILL_RE.test(b.label || '')).sort((a, b) => b.value - a.value);
   const k = ctx?.all ? items.length : 3;
@@ -158,14 +199,14 @@ function billLeaves(d: PaycheckDeployment, ctx?: { all?: boolean; inactive?: Set
   const listed = top.reduce((s, b) => s + b.value, 0);
   const removed = (Array.isArray(d.bills_breakdown) ? d.bills_breakdown : [])
     .filter(b => ctx?.inactive?.has(norm(b.merchant))).reduce((s, b) => s + Number(b.amount || 0), 0);
-  const unlisted = Math.max(0, num(d, 'bills_amount') - removed - debtInBills - listed - rest);
+  const unlisted = Math.max(0, num(d, 'bills_amount') - removed - bizParts - debtInBills - listed - rest);
   const out = [...top];
   if (rest + unlisted > 0.5) out.push({ label: items.length > k ? `${items.length - k} other bills` : 'Other bills', value: rest + unlisted });
   return out;
 }
 
 // The five Cash Flow Pillars, each with its own side branches.
-const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, ctx?: { debts: Leaf[]; all?: boolean; inactive?: Set<string> }) => Leaf[] }[] = [
+const PILLARS: { label: string; color: string; leaves: (d: PaycheckDeployment, ctx?: { debts: Leaf[]; all?: boolean; inactive?: Set<string>; shares?: { re: RegExp; share: number }[] }) => Leaf[] }[] = [
   { label: 'Bills & Essentials', color: 'var(--prism-sky)', leaves: billLeaves },
   {
     label: 'Debt Freedom', color: 'var(--prism-rose)',
@@ -212,10 +253,11 @@ export default function PaycheckSplitAnimation({ deployment, compact = false }: 
   const { data: debts } = useDebtMinimums(deployment.pay_date);
   const { data: inactive } = useInactiveBills();
   const { data: businessCosts } = useBusinessCosts(deployment.pay_date);
+  const { data: shares } = usePersonalShares(deployment.pay_date);
   if (net <= 0) return null;
 
   const pillars = PILLARS.map(p => {
-    let leaves = p.leaves(deployment, { debts: debts || [], all: showAll, inactive });
+    let leaves = p.leaves(deployment, { debts: debts || [], all: showAll, inactive, shares });
     let value = p.label === 'Guilt-Free Spend' ? leaves[0].value : leaves.reduce((s, l) => s + l.value, 0);
     let extra = 0;
     if (p.label === 'Business Expenses') {
