@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Sparkles, Loader2, Wallet, Receipt, Flame, PiggyBank, TrendingUp, Shield, CheckCircle2, Info, CalendarClock, RotateCcw } from 'lucide-react';
+import PaycheckSplitAnimation from '@/components/coach/PaycheckSplitAnimation';
 import PageOverview from '@/components/PageOverview';
 import PaycheckScheduleCard from '@/components/coach/PaycheckScheduleCard';
 import { usePaycheckSchedules, toDeployFrequency } from '@/hooks/use-paycheck-schedule';
@@ -223,6 +224,7 @@ export default function PaycheckDeployment() {
             </div>
 
             <CardContent className="p-3 sm:p-4 space-y-3">
+              <PaycheckSplitAnimation deployment={d} />
               {/* Allocation grid */}
               <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
                 {BUCKET_META.map(b => {

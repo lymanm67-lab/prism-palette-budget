@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import PaycheckSplitAnimation from '@/components/coach/PaycheckSplitAnimation';
 import { Link } from 'react-router-dom';
 import { format, startOfMonth } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -945,7 +946,8 @@ function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-1.5 text-[10px]">
+          <PaycheckSplitAnimation deployment={next} compact />
+          <div className="hidden">
             {[
               { l: 'Bills', v: next.bills_amount, c: 'text-prism-sky' },
               { l: 'Debt', v: Number(next.min_debt_amount) + Number(next.extra_debt_amount), c: 'text-prism-rose' },
