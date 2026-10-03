@@ -3171,12 +3171,23 @@ const Budgets = () => {
             <div className="space-y-2">
               <Label>Category</Label>
               {editingBudget ? (
-                <div className="flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
-                  {(() => {
-                    const cat = (categories || []).find(c => c.id === form.category_id);
-                    return cat ? (<><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />{cat.name}</>) : 'Category';
-                  })()}
-                </div>
+                <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {(() => {
+                      const budgetedIds = new Set(budgetItems.filter(b => b.id !== editingBudget.id).map(b => b.category_id));
+                      const available = (categories || []).filter(c => !budgetedIds.has(c.id));
+                      return available.map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                            {c.name}
+                          </div>
+                        </SelectItem>
+                      ));
+                    })()}
+                  </SelectContent>
+                </Select>
               ) : (
                 <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
                   <SelectTrigger><SelectValue placeholder={form.group_id ? "Select category" : "Select a group first"} /></SelectTrigger>
