@@ -32,7 +32,7 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
   const [who, setWho] = useState<Who>('lyman');
   const [run, setRun] = useState(0);
   const [selectedLine, setSelectedLine] = useState<number | null>(null);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const isL = who === 'lyman';
   const checks = isL ? 1 : 2;
