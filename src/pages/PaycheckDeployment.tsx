@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Sparkles, Loader2, CalendarClock, RotateCcw } from 'lucide-react';
 import PaycheckSplitAnimation from '@/components/coach/PaycheckSplitAnimation';
+import PaystubTreeFlow from '@/components/coach/PaystubTreeFlow';
 import PaycheckDeploymentCard, { PastDeploymentList } from '@/components/coach/PaycheckDeploymentCard';
 import PageOverview from '@/components/PageOverview';
 import PaycheckScheduleCard from '@/components/coach/PaycheckScheduleCard';
@@ -193,13 +194,19 @@ export default function PaycheckDeployment() {
               </Card>
             );
           }
-           return upcoming.map(d => (
+           return (<>
+             <Card className="p-4 bg-card/60 backdrop-blur-sm border-border/60">
+               <h3 className="mb-3 text-sm font-bold">From paystub to money tree</h3>
+               <PaystubTreeFlow deployment={upcoming[0]} />
+             </Card>
+             {upcoming.map(d => (
              <PaycheckDeploymentCard
                key={d.id || d.pay_date}
                deployment={d}
                onUpdate={(id, status) => update.mutate({ id, status })}
              />
-           ));
+           ))}
+           </>);
         })()}
       </div>
 
