@@ -53,7 +53,10 @@ const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', c
 export default function MoneyCoach() {
   const { household } = useHousehold();
   const sts = useSafeToSpend('personal');
-  const anomalies = useSpendingAnomalies(0.5);
+  const rawAnomalies = useSpendingAnomalies(0.5);
+  const anomalies = rawAnomalies.filter((a: any) =>
+    !/grocer|kroger|aldi|walmart|meijer|giant eagle|costco|whole foods|medical|pharm|cvs|walgreens|health|dental/i
+      .test(`${a.merchant || ''} ${a.category || a.categoryName || ''}`));
   useSubscriptions(); // prime cache for downstream cards
   const { data: txns } = useTransactions();
   const { data: accounts } = useAccounts();
@@ -79,6 +82,9 @@ export default function MoneyCoach() {
         if (t.amount >= 0 || t.is_transfer || !t.date.startsWith(monthPrefix) || !t.category_id) continue;
         txnsByCat.set(t.category_id, (txnsByCat.get(t.category_id) || 0) + Math.abs(t.amount));
       }
+      // Groceries are reimbursed by Kateri and medical is paid from the HSA —
+      // neither is out-of-pocket, so they never raise an over-budget warning.
+      const REIMBURSED = /grocer|medical|doctor|pharm|health|dental|vision|hsa/i;
       return (data || [])
         .map((b: any) => {
           const catId = b.categories?.id;
@@ -86,7 +92,7 @@ export default function MoneyCoach() {
           const overBy = spent - b.planned_amount;
           return { id: b.id, name: b.categories?.name || 'Uncategorized', planned: b.planned_amount, spent, overBy };
         })
-        .filter(c => c.overBy > 0)
+        .filter(c => c.overBy > 0 && !REIMBURSED.test(c.name))
         .sort((a, b) => b.overBy - a.overBy);
     },
   });
