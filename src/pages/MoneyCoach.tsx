@@ -116,8 +116,21 @@ export default function MoneyCoach() {
     }, 80);
   };
 
-  // All rows always start collapsed, regardless of selected moment tab.
-  const isOpenByDefault = (_card: number) => false;
+  // Deep links like /coach#card-6 (from nudge "Fix" buttons) open + scroll to that card.
+  const location = useLocation();
+  const hashCard = useMemo(() => {
+    const m = location.hash.match(/^#card-(\d+)$/);
+    return m ? Number(m[1]) : null;
+  }, [location.hash, location.key]);
+  useEffect(() => {
+    if (hashCard == null) return;
+    setMoment('all');
+    const t = setTimeout(() => {
+      document.getElementById(`coach-card-${hashCard}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+    return () => clearTimeout(t);
+  }, [hashCard, location.key]);
+  const isOpenByDefault = (card: number) => card === hashCard;
 
   return (
     <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
