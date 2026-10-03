@@ -86,7 +86,13 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
         <div className="absolute inset-2 rounded-lg bg-prism-teal/10 blur-xl transition-opacity duration-500 group-hover/paystub:opacity-80" />
         <div className="relative overflow-hidden rounded-lg border border-prism-teal/30 bg-card/95 font-mono text-xs shadow-xl transition-transform duration-500 group-hover/paystub:-translate-y-1">
           <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-prism-teal/10 blur-3xl" />
-          <div className="relative flex flex-wrap items-start justify-between gap-3 border-b border-border/60 px-4 py-3 sm:px-5">
+          <button
+            type="button"
+            onClick={() => setOpen(o => !o)}
+            aria-expanded={open}
+            aria-label={open ? 'Collapse paystub details' : 'Expand paystub details'}
+            className="relative flex w-full flex-wrap items-start justify-between gap-3 border-b border-border/60 px-4 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-5"
+          >
             <div className="flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-md border border-prism-teal/25 bg-prism-teal/10 text-prism-teal">
                 <Building2 className="h-4 w-4" />
@@ -98,12 +104,24 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
                 </p>
               </div>
             </div>
-            <div className="text-right text-muted-foreground">
-              <p className="font-semibold text-foreground">{isL ? 'Monthly' : 'Semi-monthly'}</p>
-              <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px]"><CalendarDays className="h-3 w-3" /> {isL ? 'September 30, 2026' : deployment.pay_date}</p>
+            <div className="flex items-start gap-3">
+              <div className="text-right text-muted-foreground">
+                <p className="font-semibold text-foreground">{isL ? 'Monthly' : 'Semi-monthly'}</p>
+                <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px]"><CalendarDays className="h-3 w-3" /> {isL ? 'September 30, 2026' : deployment.pay_date}</p>
+              </div>
+              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-prism-teal/25 bg-prism-teal/10 text-prism-teal" aria-hidden="true">
+                {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </span>
             </div>
-          </div>
+          </button>
 
+          <AnimatePresence initial={false}>
+            {open && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: reduce ? 0 : 0.3, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
           <div className="relative px-4 py-4 sm:px-5">
             <div className="mb-3 flex items-end justify-between gap-3">
               <div>
