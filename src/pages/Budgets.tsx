@@ -3183,7 +3183,7 @@ const Budgets = () => {
                   <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent>
                     {(() => {
-                      const budgetedIds = new Set(budgetItems.filter(b => b.id !== editingBudget.id).map(b => b.category_id));
+                      const budgetedIds = new Set(budgetItems.filter(b => b.category_id !== editingBudget.category_id).map(b => b.category_id));
                       const available = (categories || []).filter(c => !budgetedIds.has(c.id));
                       return available.map(c => (
                         <SelectItem key={c.id} value={c.id}>
