@@ -99,7 +99,7 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
             </div>
             <div className="text-right text-muted-foreground">
               <p className="font-semibold text-foreground">{isL ? 'Monthly' : 'Semi-monthly'}</p>
-              <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px]"><CalendarDays className="h-3 w-3" /> {deployment.pay_date}</p>
+              <p className="mt-0.5 flex items-center justify-end gap-1 text-[10px]"><CalendarDays className="h-3 w-3" /> {isL ? 'September 30, 2026' : deployment.pay_date}</p>
             </div>
           </div>
 
