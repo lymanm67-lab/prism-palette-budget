@@ -89,7 +89,7 @@ export function CoachCard({
           )}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 shrink-0">
           <span className={cn(
             'hidden md:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider',
             sm.text,
