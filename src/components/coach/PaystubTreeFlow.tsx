@@ -9,13 +9,19 @@ import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 
 const money = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
-// Itemized lines from Lyman's IU stub (08/31/2026). Any gap vs the profile's current gross/net shows as its own line.
+// September 2026 IU payroll lines. Employer contributions are excluded because they do not reduce take-home pay.
 const LYMAN_LINES = [
-  { group: 'Taxes', label: 'Federal / Medicare / Social Security / Ohio', amount: 620.05 },
-  { group: 'Before-tax', label: 'Medical, dental & accident', amount: 187.95 },
-  { group: 'Before-tax', label: 'TDA + 457(b) + HSA', amount: 431.67 },
-  { group: 'After-tax', label: 'Insurance (life, CI, LTD)', amount: 146.98 },
-  { group: 'After-tax', label: 'Roth TDA + Roth 457(b)', amount: 275.0 },
+  { group: 'Taxes', label: 'Federal withholding', amount: 79.20 },
+  { group: 'Taxes', label: 'Medicare', amount: 79.37 },
+  { group: 'Taxes', label: 'Social Security', amount: 339.37 },
+  { group: 'Taxes', label: 'Ohio withholding', amount: 132.06 },
+  { group: 'Before-tax benefits', label: 'Medical, dental & accident', amount: 148.99 },
+  { group: 'Before-tax investing', label: 'Tax Deferred Account', amount: 100.00 },
+  { group: 'Before-tax investing', label: 'IU 457(b)', amount: 75.00 },
+  { group: 'Before-tax investing', label: 'Health Savings Account', amount: 116.67 },
+  { group: 'After-tax benefits', label: 'Life, critical illness & disability', amount: 146.07 },
+  { group: 'After-tax investing', label: 'Roth TDA', amount: 85.00 },
+  { group: 'After-tax investing', label: 'Roth 457(b)', amount: 75.00 },
 ];
 
 type Who = 'lyman' | 'kateri';
@@ -40,7 +46,7 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
   if (Math.abs(gap) >= 0.01) {
     lines.push({
       group: isL ? 'Adjustment' : 'Taxes & deductions',
-      label: isL ? 'Change since last itemized stub' : 'Not itemized — upload a stub to break this out',
+      label: isL ? 'Other September payroll adjustments' : 'Not itemized — upload a stub to break this out',
       amount: gap,
     });
   }
@@ -87,7 +93,7 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
               <div>
                 <p className="font-bold text-foreground">{isL ? 'INDIANA UNIVERSITY' : 'STATE OF OHIO – DODD'}</p>
                 <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <ReceiptText className="h-3 w-3" /> Earnings statement
+                  <ReceiptText className="h-3 w-3" /> {isL ? 'September 2026 earnings statement' : 'Earnings statement'}
                 </p>
               </div>
             </div>
