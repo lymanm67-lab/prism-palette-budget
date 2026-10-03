@@ -3,7 +3,6 @@ import { format, isValid, parseISO } from 'date-fns';
 import { CheckCircle2, ChevronDown, Flame, Info, Receipt, Wallet } from 'lucide-react';
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 import { usePaycheckTree, type PaycheckBillItem } from '@/components/coach/usePaycheckTree';
-import PaycheckSplitAnimation from '@/components/coach/PaycheckSplitAnimation';
 import PaycheckCharts from '@/components/coach/PaycheckCharts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -122,7 +121,6 @@ export default function PaycheckDeploymentCard({ deployment, onUpdate, historica
       </div>
 
       <CardContent className="space-y-4 p-3 sm:p-4">
-        <PaycheckSplitAnimation deployment={deployment} />
         <PaycheckCharts deployment={deployment} />
 
         <section>
