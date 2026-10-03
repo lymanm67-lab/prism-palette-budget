@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { Play, ArrowDown, Building2, CalendarDays, Check, ChevronRight, CircleDollarSign, ReceiptText } from 'lucide-react';
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
+import { Play, ArrowDown, Building2, CalendarDays, Check, ChevronDown, ChevronUp, ChevronRight, CircleDollarSign, ReceiptText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import PaycheckSplitAnimation from '@/components/coach/PaycheckSplitAnimation';
