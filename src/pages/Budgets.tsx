@@ -1204,9 +1204,12 @@ const Budgets = () => {
     if (!form.category_id || isNaN(amount) || amount < 0) return;
     await upsertBudget.mutateAsync({ category_id: form.category_id, month, planned_amount: amount, rollover: form.rollover });
     // If the category was changed while editing, remove the old budget line.
-    if (editingBudget && editingBudget.category_id !== form.category_id) {
-      await supabase.from('budgets').delete().eq('id', editingBudget.id);
-      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+    if (editingBudget && editingBudget.category_id !== form.category_id && household) {
+      await supabase.from('budgets').delete()
+        .eq('household_id', household.id)
+        .eq('category_id', editingBudget.category_id)
+        .eq('month', month);
+      qc.invalidateQueries({ queryKey: ['budgets'] });
     }
     setDialogOpen(false);
   };
