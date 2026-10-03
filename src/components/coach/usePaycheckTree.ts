@@ -116,7 +116,8 @@ function useDebtMinimums(payDate: string) {
 const SPLIT_RULES: { re: RegExp; key: RegExp }[] = [
   { re: /clarke|\brent\b/i, key: /^rent$/i },
   { re: /verizon/i, key: /verizon/i },
-  { re: /geico|liberty|progressive|auto ins/i, key: /auto insurance/i },
+  { re: /geico|progressive|auto ins/i, key: /auto insurance/i },
+  { re: /liberty|renters|rent ins/i, key: /home\/renters insurance/i },
   { re: /firstenergy|enbridge|ohio edison|clearview|utilit|gas\b|electric/i, key: /^utilities/i },
 ];
 function usePersonalShares(payDate: string) {
