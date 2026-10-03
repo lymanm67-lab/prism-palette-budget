@@ -185,6 +185,9 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
               <AnimatedNumber value={net} from={0} duration={reduce ? 0 : 900} formatFn={money} />
             </span>
           </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
 
