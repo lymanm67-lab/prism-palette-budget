@@ -106,7 +106,7 @@ const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; 
   fixed: { min: 40, max: 45, label: 'LIVE (fixed essentials) 45%' },
   debt: { min: 15, max: 25, label: 'ELIMINATE DEBT 20%' },
   flexible: { min: 0, max: 10, label: 'ENJOY (flexible) ≤ 10%' },
-  non_monthly: { min: 0, max: 10, label: 'ENJOY (non-monthly) ≤ 10%' },
+  non_monthly: { min: 0, max: 10, label: 'Non-monthly & sinking funds ≤ 10%' },
 };
 
 
