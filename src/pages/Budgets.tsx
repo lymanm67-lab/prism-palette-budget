@@ -77,7 +77,7 @@ const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
   debt: 'ELIMINATE DEBT — Debt Payoff (20%)',
   wealth: 'BUILD WEALTH — Savings & Credit Builders (25%)',
   flexible: 'ENJOY — Flexible Spending (10%)',
-  non_monthly: 'ENJOY — Non-Monthly & Sinking Funds',
+  non_monthly: 'Non-Monthly & Sinking Funds',
 };
 
 const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
