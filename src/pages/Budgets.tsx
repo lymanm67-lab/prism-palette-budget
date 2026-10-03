@@ -1203,6 +1203,14 @@ const Budgets = () => {
     const amount = parseFloat(form.planned_amount);
     if (!form.category_id || isNaN(amount) || amount < 0) return;
     await upsertBudget.mutateAsync({ category_id: form.category_id, month, planned_amount: amount, rollover: form.rollover });
+    // If the category was changed while editing, remove the old budget line.
+    if (editingBudget && editingBudget.category_id !== form.category_id && household) {
+      await supabase.from('budgets').delete()
+        .eq('household_id', household.id)
+        .eq('category_id', editingBudget.category_id)
+        .eq('month', month);
+      qc.invalidateQueries({ queryKey: ['budgets'] });
+    }
     setDialogOpen(false);
   };
 
@@ -3171,12 +3179,23 @@ const Budgets = () => {
             <div className="space-y-2">
               <Label>Category</Label>
               {editingBudget ? (
-                <div className="flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
-                  {(() => {
-                    const cat = (categories || []).find(c => c.id === form.category_id);
-                    return cat ? (<><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />{cat.name}</>) : 'Category';
-                  })()}
-                </div>
+                <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {(() => {
+                      const budgetedIds = new Set(budgetItems.filter(b => b.category_id !== editingBudget.category_id).map(b => b.category_id));
+                      const available = (categories || []).filter(c => !budgetedIds.has(c.id));
+                      return available.map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                            {c.name}
+                          </div>
+                        </SelectItem>
+                      ));
+                    })()}
+                  </SelectContent>
+                </Select>
               ) : (
                 <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
                   <SelectTrigger><SelectValue placeholder={form.group_id ? "Select category" : "Select a group first"} /></SelectTrigger>
@@ -3235,21 +3254,26 @@ const Budgets = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <Label>Transactions behind this total — {formatMonth(month)}</Label>
-                  {isOverspent && (
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    {isOverspent && (
                       <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={drillBusy || upsertBudget.isPending} onClick={allowOverspend}>
                         <CheckCircle2 className="h-3 w-3" /> Allow overspend
                       </Button>
-                      <Button size="sm" variant={reassignMode ? 'secondary' : 'outline'} className="h-7 text-xs gap-1"
-                        onClick={() => { setReassignMode(v => !v); setReassignIds(new Set()); setReassignTarget(''); }}>
-                        <ArrowRightLeft className="h-3 w-3" /> Reassign
-                      </Button>
-                    </div>
-                  )}
+                    )}
+                    <Button size="sm" variant={reassignMode ? 'secondary' : 'outline'} className="h-7 text-xs gap-1"
+                      onClick={() => { setReassignMode(v => !v); setReassignIds(new Set()); setReassignTarget(''); }}>
+                      <ArrowRightLeft className="h-3 w-3" /> Reassign
+                    </Button>
+                  </div>
                 </div>
                 {isOverspent && (
                   <p className="text-[11px] text-amber-600 dark:text-amber-400">
                     Overspent by {formatCurrency(editingSpent - planned)}. "Allow overspend" raises this month's plan to the actual spend; "Reassign" moves selected transactions to the correct category (reversible via audit).
+                  </p>
+                )}
+                {!isOverspent && !reassignMode && editingBudgetTxns.length > 0 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Tap "Reassign" to move any transaction to the correct category (reversible via audit).
                   </p>
                 )}
                 {editingDupeClusters.length > 0 && (
