@@ -3235,21 +3235,26 @@ const Budgets = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <Label>Transactions behind this total — {formatMonth(month)}</Label>
-                  {isOverspent && (
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    {isOverspent && (
                       <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={drillBusy || upsertBudget.isPending} onClick={allowOverspend}>
                         <CheckCircle2 className="h-3 w-3" /> Allow overspend
                       </Button>
-                      <Button size="sm" variant={reassignMode ? 'secondary' : 'outline'} className="h-7 text-xs gap-1"
-                        onClick={() => { setReassignMode(v => !v); setReassignIds(new Set()); setReassignTarget(''); }}>
-                        <ArrowRightLeft className="h-3 w-3" /> Reassign
-                      </Button>
-                    </div>
-                  )}
+                    )}
+                    <Button size="sm" variant={reassignMode ? 'secondary' : 'outline'} className="h-7 text-xs gap-1"
+                      onClick={() => { setReassignMode(v => !v); setReassignIds(new Set()); setReassignTarget(''); }}>
+                      <ArrowRightLeft className="h-3 w-3" /> Reassign
+                    </Button>
+                  </div>
                 </div>
                 {isOverspent && (
                   <p className="text-[11px] text-amber-600 dark:text-amber-400">
                     Overspent by {formatCurrency(editingSpent - planned)}. "Allow overspend" raises this month's plan to the actual spend; "Reassign" moves selected transactions to the correct category (reversible via audit).
+                  </p>
+                )}
+                {!isOverspent && !reassignMode && editingBudgetTxns.length > 0 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Tap "Reassign" to move any transaction to the correct category (reversible via audit).
                   </p>
                 )}
                 {editingDupeClusters.length > 0 && (
