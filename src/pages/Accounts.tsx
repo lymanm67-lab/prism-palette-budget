@@ -459,6 +459,25 @@ const Accounts = () => {
   return (
     <TooltipProvider delayDuration={300}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+        {household && (
+          <DuplicateReviewDialog
+            open={dupeOpen}
+            onOpenChange={setDupeOpen}
+            groups={dupeGroups}
+            householdId={household.id}
+            accountNames={Object.fromEntries((accounts || []).map((a) => [a.id, a.name]))}
+            onResolved={(key) => setDupeGroups((gs) => gs.filter((g) => g.key !== key))}
+          />
+        )}
+        {dupeGroups.length > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-prism-amber/40 bg-prism-amber/10 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-prism-amber" />
+              {dupeGroups.length} possible duplicate{dupeGroups.length === 1 ? '' : 's'} to review
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setDupeOpen(true)}>Review</Button>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
