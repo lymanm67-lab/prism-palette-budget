@@ -4,6 +4,7 @@ export const BUDGET_ACTUAL_PILLARS = [
   { key: 'savings', label: 'Savings & Buffer', color: 'var(--prism-teal)' },
   { key: 'wealth', label: 'Wealth & Investing', color: 'var(--prism-lime)' },
   { key: 'business', label: 'Business Expenses', color: 'var(--prism-orange)' },
+  { key: 'sinkingFunds', label: 'Non-Monthly & Sinking Funds', color: 'var(--prism-violet)' },
   { key: 'guiltFree', label: 'Guilt-Free Spend', color: 'var(--prism-amber)' },
 ] as const;
 
@@ -32,7 +33,8 @@ export function classifyBudgetActualPillar(category: BudgetActualCategory): Budg
   if (business) return 'business';
   if (expense === 'payroll_deduction' || /payroll|pre[ -]?tax/.test(group) || /roth|457|tda|403|401|hsa|retire|brokerage|ira/.test(name)) return 'wealth';
   if (purpose === 'build_wealth' || expense === 'wealth' || /savings|buffer|future fund/.test(group)) return 'savings';
-  if (purpose === 'enjoy' || expense === 'flexible' || expense === 'non_monthly' || /guilt.?free|enjoy/.test(group)) return 'guiltFree';
+  if (expense === 'non_monthly' || /non[ -]?monthly|sinking/.test(group)) return 'sinkingFunds';
+  if (purpose === 'enjoy' || expense === 'flexible' || /guilt.?free|enjoy/.test(group)) return 'guiltFree';
   return 'bills';
 }
 
