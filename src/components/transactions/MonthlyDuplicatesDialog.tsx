@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Loader2 } from 'lucide-react';
+import { CheckCircle2, Copy, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,7 +87,7 @@ export default function MonthlyDuplicatesDialog({ householdId }: { householdId: 
   };
   const keep = async (g: MonthGroup) => {
     setBusy(g.key);
-    try { await markGroupNotDuplicate(g); toast.success('Kept all — won’t be flagged again'); done(g.key); }
+    try { await markGroupNotDuplicate(g); toast.success('Kept all — won’t be flagged again'); done(g.key, 'Extra payment kept'); }
     catch (e) { toast.error(e instanceof Error ? e.message : 'Could not save'); }
     finally { setBusy(null); }
   };
