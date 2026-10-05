@@ -36,6 +36,7 @@ import PageOverview from '@/components/PageOverview';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 import { isDupeGuardExempt } from '@/lib/refresh-dupe-guard';
 import MerchantIcon from '@/components/MerchantIcon';
+import MonthlyDuplicatesDialog from '@/components/transactions/MonthlyDuplicatesDialog';
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonTable } from '@/components/SkeletonCard';
 
@@ -774,6 +775,7 @@ const Transactions = () => {
         <h1 className="font-display text-2xl font-bold shrink-0">Transactions</h1>
         <TooltipProvider delayDuration={300}>
         <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          {household?.id && <MonthlyDuplicatesDialog householdId={household.id} />}
           {/* Search */}
           <Tooltip>
             <TooltipTrigger asChild>
