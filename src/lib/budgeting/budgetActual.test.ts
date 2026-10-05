@@ -10,6 +10,9 @@ describe('budget actual classification', () => {
     expect(classifyBudgetActualPillar(cat({ expenseType: 'payroll_deduction', name: 'Roth 457' }))).toBe('wealth');
     expect(classifyBudgetActualPillar(cat({ moneyPurpose: 'build_wealth' }))).toBe('savings');
     expect(classifyBudgetActualPillar(cat({ expenseType: 'flexible' }))).toBe('guiltFree');
+    expect(classifyBudgetActualPillar(cat({ groupName: 'Sinking Funds (Non-Monthly)', expenseType: 'non_monthly', name: 'Auto Maintenance & Tags' }))).toBe('sinkingFunds');
+    expect(classifyBudgetActualPillar(cat({ groupName: 'Non-Monthly', expenseType: 'non_monthly' }))).toBe('sinkingFunds');
+    expect(classifyBudgetActualPillar(cat({ groupName: 'Enjoy', purpose: 'enjoy' }))).toBe('guiltFree');
   });
   it('keeps personal and business modes separate', () => {
     expect(modeIncludes('personal', cat())).toBe(true);

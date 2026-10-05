@@ -41,7 +41,7 @@ export default function BudgetVsActual() {
     const actual = pillars.reduce((sum, p) => sum + p.actual, 0) + (data?.uncategorized.reduce((sum, line) => sum + line.actual, 0) || 0);
     return { budgeted, actual, variance: budgeted - actual, used: budgeted > 0 ? actual / budgeted * 100 : 0 };
   }, [data]);
-  const chartData = data?.pillars.map(p => ({ ...p, short: p.label.replace(' & Essentials', '').replace(' & Investing', '').replace(' Expenses', '').replace(' Spend', '') })) || [];
+  const chartData = data?.pillars.map(p => ({ ...p, short: p.label.replace(' & Essentials', '').replace(' & Investing', '').replace(' Expenses', '').replace(' Spend', '').replace(' & Sinking Funds', '') })) || [];
   const largestOver = chartData.map(p => ({ ...p, over: p.actual - p.budgeted })).sort((a, b) => b.over - a.over)[0];
   const largestRoom = chartData.map(p => ({ ...p, room: p.budgeted - p.actual })).sort((a, b) => b.room - a.room)[0];
   const now = new Date();
@@ -64,7 +64,7 @@ export default function BudgetVsActual() {
         <div>
           <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-prism-teal">Monthly reconciliation</div>
           <h1 className="text-2xl font-bold md:text-3xl">Budget vs Actual</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Your plan and cleared spending, organized into the same six areas as the paycheck tree.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Your plan and cleared spending, organized into the paycheck-tree areas — with non-monthly and sinking funds shown separately from fun money.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => moveMonth(-1)} aria-label="Previous month"><ArrowLeft /></Button>
