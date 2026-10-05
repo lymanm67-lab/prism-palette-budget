@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
  * Merchants that legitimately post multiple identical same-day charges
  * (Lovable AI credit top-ups), so they must never be flagged as duplicates.
  */
-const DUPE_GUARD_EXEMPT = [/lovable/i, /movable/i];
+const DUPE_GUARD_EXEMPT = [/lovabl/i, /vabl/i, /movabl/i];
 export const NOT_DUPLICATE_TAG = 'not_duplicate';
 
 export function isDupeGuardExempt(merchant?: string | null): boolean {
