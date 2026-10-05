@@ -15,7 +15,8 @@ import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } fro
 import { useSyncSnapTrade, useSnapTradeConnections, useRevokeSnapTrade, useReconnectSnapTrade, usePlaidConnections, useRevokePlaid } from '@/hooks/use-investment-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { flagRefreshDuplicates } from '@/lib/refresh-dupe-guard';
+import { flagRefreshDuplicates, fetchRefreshDuplicateGroups, type RefreshDupeGroup } from '@/lib/refresh-dupe-guard';
+import DuplicateReviewDialog from '@/components/accounts/DuplicateReviewDialog';
 import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw, AlertTriangle, Clock, Unlink, RotateCcw } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton, { type PlaidLinkButtonHandle } from '@/components/PlaidLinkButton';
@@ -69,6 +70,8 @@ const Accounts = () => {
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(null);
+  const [dupeGroups, setDupeGroups] = useState<RefreshDupeGroup[]>([]);
+  const [dupeOpen, setDupeOpen] = useState(false);
   const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
   const plaidLinkRef = useRef<PlaidLinkButtonHandle>(null);
 
@@ -206,14 +209,24 @@ const Accounts = () => {
     return true;
   }, [qc, requestPlaidRelink]);
 
-  // Duplicate guard — flags extra same-day/same-amount copies for review (Lovable exempt).
+  // Duplicate guard — flags extra same-account/same-amount copies for review (Lovable exempt).
+  const loadDupeGroups = useCallback(async () => {
+    if (!household) return [];
+    const g = await fetchRefreshDuplicateGroups(household.id);
+    setDupeGroups(g);
+    return g;
+  }, [household]);
+  useEffect(() => { loadDupeGroups().catch(() => {}); }, [loadDupeGroups]);
+
   const runDupeGuard = async () => {
     if (!household) return;
     try {
-      const flagged = await flagRefreshDuplicates(household.id);
-      if (flagged > 0) {
-        toast.warning(`${flagged} possible duplicate transaction${flagged === 1 ? '' : 's'} flagged for review`, {
-          description: 'Lovable charges are excluded. Review them in Data Cleanup.',
+      await flagRefreshDuplicates(household.id);
+      const g = await loadDupeGroups();
+      if (g.length > 0) {
+        toast.warning(`${g.length} possible duplicate${g.length === 1 ? '' : 's'} found`, {
+          description: 'Lovable charges are excluded.',
+          action: { label: 'Review', onClick: () => setDupeOpen(true) },
         });
       }
     } catch { /* non-blocking */ }
@@ -446,6 +459,25 @@ const Accounts = () => {
   return (
     <TooltipProvider delayDuration={300}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+        {household && (
+          <DuplicateReviewDialog
+            open={dupeOpen}
+            onOpenChange={setDupeOpen}
+            groups={dupeGroups}
+            householdId={household.id}
+            accountNames={Object.fromEntries((accounts || []).map((a) => [a.id, a.name]))}
+            onResolved={(key) => setDupeGroups((gs) => gs.filter((g) => g.key !== key))}
+          />
+        )}
+        {dupeGroups.length > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-prism-amber/40 bg-prism-amber/10 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-prism-amber" />
+              {dupeGroups.length} possible duplicate{dupeGroups.length === 1 ? '' : 's'} to review
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setDupeOpen(true)}>Review</Button>
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
