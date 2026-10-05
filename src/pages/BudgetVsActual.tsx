@@ -64,7 +64,7 @@ export default function BudgetVsActual() {
         <div>
           <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-prism-teal">Monthly reconciliation</div>
           <h1 className="text-2xl font-bold md:text-3xl">Budget vs Actual</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Your plan and cleared spending, organized into the same six areas as the paycheck tree.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Your plan and cleared spending, organized into the paycheck-tree areas — with non-monthly and sinking funds shown separately from fun money.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => moveMonth(-1)} aria-label="Previous month"><ArrowLeft /></Button>
