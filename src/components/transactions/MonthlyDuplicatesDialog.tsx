@@ -100,7 +100,7 @@ export default function MonthlyDuplicatesDialog({ householdId }: { householdId: 
         <Copy className="h-4 w-4" /> <span className="hidden sm:inline">Duplicates by month</span>
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-[98vw] w-[98vw] h-[98vh] max-h-[98vh] overflow-y-auto p-6">
           <DialogHeader>
             <DialogTitle>Duplicates by month ({groups.length})</DialogTitle>
             <DialogDescription>
