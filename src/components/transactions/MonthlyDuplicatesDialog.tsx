@@ -28,6 +28,7 @@ export default function MonthlyDuplicatesDialog({ householdId }: { householdId: 
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [resolved, setResolved] = useState<Set<string>>(new Set());
+  const [cleared, setCleared] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!open) return;
@@ -69,8 +70,9 @@ export default function MonthlyDuplicatesDialog({ householdId }: { householdId: 
     return [...m.entries()];
   }, [groups]);
 
-  const done = (k: string) => {
-    setResolved((s) => new Set(s).add(k));
+  const done = (k: string, label = 'Duplicate removed') => {
+    setCleared((c) => ({ ...c, [k]: label }));
+    setTimeout(() => setResolved((s) => new Set(s).add(k)), 1500);
     qc.invalidateQueries({ queryKey: ['transactions'] });
     qc.invalidateQueries({ queryKey: ['accounts'] });
   };
@@ -126,12 +128,18 @@ export default function MonthlyDuplicatesDialog({ householdId }: { householdId: 
                       </li>
                     ))}
                   </ul>
+                  {cleared[g.key] ? (
+                    <div className="flex items-center justify-end gap-2 text-sm font-semibold text-primary">
+                      <CheckCircle2 className="h-4 w-4" /> Cleared · {cleared[g.key]}
+                    </div>
+                  ) : (
                   <div className="flex flex-wrap gap-2 justify-end">
                     <Button size="sm" variant="outline" disabled={busy === g.key} onClick={() => keep(g)}>Extra payment (keep all)</Button>
                     <Button size="sm" variant="destructive" disabled={busy === g.key} onClick={() => remove(g)}>
                       {busy === g.key && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}Duplicate (remove extras)
                     </Button>
                   </div>
+                  )}
                 </div>
               ))}
             </div>
