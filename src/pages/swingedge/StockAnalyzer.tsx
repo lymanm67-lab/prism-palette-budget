@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import CandlestickChart from '@/components/swingedge/CandlestickChart';
+import LiquidityPressureCard from '@/components/swingedge/LiquidityPressureCard';
 import HeikinAshiCard, { heikinAshiSummary, type HeikinAshiTimeframeInput } from '@/components/swingedge/HeikinAshiCard';
 import { HA_CONFIRMATION_LABEL } from '@/lib/swingedge/heikinAshi';
 import ReadThisChartCard from '@/components/swingedge/ReadThisChartCard';
@@ -643,6 +644,8 @@ export default function StockAnalyzer() {
               </div>
             </CardContent>
           </Card>
+
+          <LiquidityPressureCard candles={chartResult?.candles ?? []} symbol={analysis.symbol} />
 
           <ReadThisChartCard
             symbol={analysis.symbol}
