@@ -29,6 +29,7 @@ import PlannerSummaryBar from '@/components/swingedge/PlannerSummaryBar';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
 import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
+import LiquidityChecklistCard from '@/components/swingedge/LiquidityChecklistCard';
 import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
 import ExecutionGuideButton from '@/components/swingedge/ExecutionGuideButton';
 import ExecutionPlanPanel from '@/components/swingedge/ExecutionPlanPanel';
@@ -1409,6 +1410,15 @@ export default function TradePlanner() {
             defaultOpen={false}
           >
             <RuleChecklistCard checks={ruleChecks} />
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            id="planner-liquidity"
+            title="Liquidity confirmation"
+            description="Buyer/seller pressure and fill quality, checked before you commit."
+            defaultOpen
+          >
+            <LiquidityChecklistCard candles={L?.candles ?? []} />
           </CollapsibleSection>
 
           <CollapsibleSection
