@@ -326,6 +326,65 @@ export default function SwingEdgeDashboard() {
 
       <WatchlistDashboardCard />
 
+      {/* Where each liquidity phase lives */}
+      <CollapsibleSection
+        id="dash-liquidity-map"
+        title={
+          <span className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-prism-teal" />
+            Buyer / seller liquidity: where to find each part
+          </span>
+        }
+        description="Three pieces, three pages. Same engine behind all of them — estimates from where each candle closed in its range, never real order flow."
+        defaultOpen={false}
+      >
+        <div className="space-y-3">
+          {[
+            {
+              icon: LineChart,
+              phase: 'Phase 1',
+              where: 'Stock Analyzer',
+              to: '/swingedge/analyzer',
+              what: 'The "Buyer vs seller pressure" card sits under the price chart: who has been in control over the last 20 candles, the pressure score out of 100, buy share, how busy today was versus normal, and how easy the name is to trade.',
+            },
+            {
+              icon: ClipboardCheck,
+              phase: 'Phase 2',
+              where: 'Trade Planner',
+              to: '/swingedge/planner',
+              what: 'The "Liquidity confirmation" checklist runs before you commit, next to "Your rules, checked": liquidity grade, buyer/seller pressure, money flow and volume trend, each one pass, warn or fail.',
+            },
+            {
+              icon: Search,
+              phase: 'Phase 3',
+              where: 'Market Scanner',
+              to: '/swingedge/scanner',
+              what: 'The Liquidity column on every scan row shows who is in control and how easily the name trades, and the "Buyer/seller pressure" filter narrows the list to buyer-controlled, seller-controlled, balanced, or thinly traded names.',
+            },
+          ].map((row) => (
+            <div key={row.phase} className="rounded-lg border border-border/50 bg-card/50 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <row.icon className="h-4 w-4 shrink-0 text-prism-teal" />
+                <Badge variant="outline" className="border-prism-teal/50 text-prism-teal">
+                  {row.phase}
+                </Badge>
+                <span className="text-sm font-semibold">{row.where}</span>
+                <Button asChild variant="outline" size="sm" className="ml-auto">
+                  <Link to={row.to}>
+                    Open {row.where} <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{row.what}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          None of these decide a trade on their own. Price structure and your risk rules still come first; liquidity is
+          supporting evidence. When there is not enough history, each page says "not available" instead of guessing.
+        </p>
+      </CollapsibleSection>
+
       {/* The loop */}
       <CollapsibleSection
         id="dash-the-loop"
