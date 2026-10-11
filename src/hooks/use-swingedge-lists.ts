@@ -13,6 +13,7 @@ import {
   type BiasDirection,
 } from '@/lib/swingedge/directionalBias';
 import { conditionsFromNow } from '@/lib/swingedge/historicalMatch';
+import { analyzeLiquidity, type LiquidityRead } from '@/lib/swingedge/liquidity';
 import { performanceStats, rankMistakes, type ClosedTrade } from '@/lib/swingedge/performance';
 import { LESSONS } from '@/lib/swingedge/lessons';
 
@@ -142,6 +143,8 @@ export interface ScoredSymbol extends SymbolScore {
   fetchedAt: string | null;
   /** Historical tendency for today's conditions. Null when history is too short. */
   bias: ScoredSymbolBias | null;
+  /** Buyer/seller pressure + liquidity read. Null when history is too short. */
+  liquidity: LiquidityRead | null;
 }
 
 /**
@@ -195,6 +198,7 @@ export function useScoredSymbols(symbols: string[], batchSize = 4) {
             source: result.source,
             fetchedAt: result.fetchedAt,
             bias,
+            liquidity: result.candles.length >= 30 ? analyzeLiquidity(result.candles) : null,
           });
         }
       }

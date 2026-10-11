@@ -47,6 +47,7 @@ import {
 } from '@/lib/swingedge/tradeGeometry';
 import { VERDICT_MEANING, VERDICT_TONE } from '@/lib/swingedge/score';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
+import { PRESSURE_LABEL, type PressureState } from '@/lib/swingedge/liquidity';
 
 
 const money = (n: number | null | undefined) =>
@@ -88,6 +89,23 @@ const EVENT_TONE: Record<string, string> = {
   SEVERE: 'text-destructive',
 };
 
+const PRESSURE_TONE: Record<PressureState, string> = {
+  BUYERS_IN_CONTROL: 'text-emerald-500',
+  BUYERS_LEANING: 'text-emerald-400',
+  BALANCED: 'text-muted-foreground',
+  SELLERS_LEANING: 'text-orange-500',
+  SELLERS_IN_CONTROL: 'text-destructive',
+};
+
+const GRADE_TONE: Record<string, string> = {
+  HIGH: 'text-emerald-500',
+  ADEQUATE: 'text-muted-foreground',
+  THIN: 'text-amber-500',
+  UNKNOWN: 'text-muted-foreground',
+};
+
+type PressureFilter = 'ANY' | 'BUYERS' | 'BALANCED' | 'SELLERS' | 'THIN_ONLY';
+
 const VERDICT_RANK: Record<Verdict, number> = {
   QUALIFIES: 0,
   WATCH: 1,
@@ -111,6 +129,7 @@ export default function MarketScanner() {
   const [minRToRes, setMinRToRes] = useState<string>('ANY');
   const [pathFilter, setPathFilter] = useState<'ANY' | TargetPath>('ANY');
   const [minQuality, setMinQuality] = useState<string>('ANY');
+  const [pressureFilter, setPressureFilter] = useState<PressureFilter>('ANY');
   const [geometryFor, setGeometryFor] = useState<string | null>(null);
 
   const multiple = settings.advanced_mode ? rewardMultiple : 2;
@@ -226,6 +245,21 @@ export default function MarketScanner() {
           TARGET_QUALITY_RANK[geometryBySymbol[r.symbol]?.targetQuality ?? 'INSUFFICIENT_DATA'] >= min,
       );
     }
+    if (pressureFilter === 'BUYERS') {
+      list = list.filter(
+        (r) =>
+          r.liquidity?.state === 'BUYERS_IN_CONTROL' || r.liquidity?.state === 'BUYERS_LEANING',
+      );
+    } else if (pressureFilter === 'SELLERS') {
+      list = list.filter(
+        (r) =>
+          r.liquidity?.state === 'SELLERS_IN_CONTROL' || r.liquidity?.state === 'SELLERS_LEANING',
+      );
+    } else if (pressureFilter === 'BALANCED') {
+      list = list.filter((r) => r.liquidity?.state === 'BALANCED');
+    } else if (pressureFilter === 'THIN_ONLY') {
+      list = list.filter((r) => r.liquidity?.grade === 'THIN');
+    }
     return [...list].sort(
       (a, b) => VERDICT_RANK[a.verdict] - VERDICT_RANK[b.verdict] || b.score - a.score,
     );
@@ -239,6 +273,7 @@ export default function MarketScanner() {
     minRToRes,
     pathFilter,
     minQuality,
+    pressureFilter,
   ]);
 
 
@@ -434,6 +469,25 @@ export default function MarketScanner() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Buyer/seller pressure</label>
+              <Select
+                value={pressureFilter}
+                onValueChange={(v) => setPressureFilter(v as PressureFilter)}
+              >
+                <SelectTrigger className="w-44" aria-label="Buyer/seller pressure">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  <SelectItem value="BUYERS">Buyers in control or leaning</SelectItem>
+                  <SelectItem value="BALANCED">Balanced</SelectItem>
+                  <SelectItem value="SELLERS">Sellers leaning or in control</SelectItem>
+                  <SelectItem value="THIN_ONLY">Thinly traded only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             Targets use entry + (risk per share × {multiple}) and are checked against the nearest
@@ -489,6 +543,7 @@ export default function MarketScanner() {
                     <TableHead className="text-right">Day</TableHead>
                     <TableHead>Setup</TableHead>
                     <TableHead>Bias</TableHead>
+                    <TableHead>Liquidity</TableHead>
                     <TableHead>Event risk</TableHead>
                     <TableHead className="text-right">Est. entry</TableHead>
                     <TableHead className="text-right">Est. stop</TableHead>
@@ -506,7 +561,7 @@ export default function MarketScanner() {
                 <TableBody>
                   {shown.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={18} className="py-8 text-center text-sm text-muted-foreground">
+                      <TableCell colSpan={19} className="py-8 text-center text-sm text-muted-foreground">
                         {isFetching
                           ? 'Scanning…'
                           : preset !== 'NONE'
@@ -571,6 +626,21 @@ export default function MarketScanner() {
                                   ? 'Down'
                                   : 'Sideways'}{' '}
                               {r.bias.leadingPct}%
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Not enough history</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {r.liquidity ? (
+                            <span
+                              className={PRESSURE_TONE[r.liquidity.state]}
+                              title={`Pressure score ${r.liquidity.score}/100 · ${r.liquidity.grade.toLowerCase()} liquidity · estimated from where each candle closed in its range, not actual order flow`}
+                            >
+                              {PRESSURE_LABEL[r.liquidity.state]}{' '}
+                              <span className={GRADE_TONE[r.liquidity.grade]}>
+                                · {r.liquidity.grade === 'THIN' ? 'thin' : r.liquidity.grade.toLowerCase()}
+                              </span>
                             </span>
                           ) : (
                             <span className="text-muted-foreground">Not enough history</span>
