@@ -13,6 +13,7 @@ import {
   type BiasDirection,
 } from '@/lib/swingedge/directionalBias';
 import { conditionsFromNow } from '@/lib/swingedge/historicalMatch';
+import { analyzeLiquidity, type LiquidityRead } from '@/lib/swingedge/liquidity';
 import { performanceStats, rankMistakes, type ClosedTrade } from '@/lib/swingedge/performance';
 import { LESSONS } from '@/lib/swingedge/lessons';
 

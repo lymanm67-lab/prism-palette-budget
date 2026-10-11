@@ -47,6 +47,7 @@ import {
 } from '@/lib/swingedge/tradeGeometry';
 import { VERDICT_MEANING, VERDICT_TONE } from '@/lib/swingedge/score';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
+import { PRESSURE_LABEL, type PressureState } from '@/lib/swingedge/liquidity';
 
 
 const money = (n: number | null | undefined) =>
