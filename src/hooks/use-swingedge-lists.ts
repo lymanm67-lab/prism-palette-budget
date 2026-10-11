@@ -142,6 +142,8 @@ export interface ScoredSymbol extends SymbolScore {
   fetchedAt: string | null;
   /** Historical tendency for today's conditions. Null when history is too short. */
   bias: ScoredSymbolBias | null;
+  /** Buyer/seller pressure + liquidity read. Null when history is too short. */
+  liquidity: LiquidityRead | null;
 }
 
 /**
@@ -195,6 +197,7 @@ export function useScoredSymbols(symbols: string[], batchSize = 4) {
             source: result.source,
             fetchedAt: result.fetchedAt,
             bias,
+            liquidity: result.candles.length >= 30 ? analyzeLiquidity(result.candles) : null,
           });
         }
       }
