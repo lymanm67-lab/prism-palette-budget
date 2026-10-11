@@ -469,6 +469,25 @@ export default function MarketScanner() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Buyer/seller pressure</label>
+              <Select
+                value={pressureFilter}
+                onValueChange={(v) => setPressureFilter(v as PressureFilter)}
+              >
+                <SelectTrigger className="w-44" aria-label="Buyer/seller pressure">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ANY">Any</SelectItem>
+                  <SelectItem value="BUYERS">Buyers in control or leaning</SelectItem>
+                  <SelectItem value="BALANCED">Balanced</SelectItem>
+                  <SelectItem value="SELLERS">Sellers leaning or in control</SelectItem>
+                  <SelectItem value="THIN_ONLY">Thinly traded only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             Targets use entry + (risk per share × {multiple}) and are checked against the nearest
@@ -524,6 +543,7 @@ export default function MarketScanner() {
                     <TableHead className="text-right">Day</TableHead>
                     <TableHead>Setup</TableHead>
                     <TableHead>Bias</TableHead>
+                    <TableHead>Liquidity</TableHead>
                     <TableHead>Event risk</TableHead>
                     <TableHead className="text-right">Est. entry</TableHead>
                     <TableHead className="text-right">Est. stop</TableHead>
