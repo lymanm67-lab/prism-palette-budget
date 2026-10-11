@@ -561,7 +561,7 @@ export default function MarketScanner() {
                 <TableBody>
                   {shown.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={18} className="py-8 text-center text-sm text-muted-foreground">
+                      <TableCell colSpan={19} className="py-8 text-center text-sm text-muted-foreground">
                         {isFetching
                           ? 'Scanning…'
                           : preset !== 'NONE'
@@ -626,6 +626,21 @@ export default function MarketScanner() {
                                   ? 'Down'
                                   : 'Sideways'}{' '}
                               {r.bias.leadingPct}%
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Not enough history</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {r.liquidity ? (
+                            <span
+                              className={PRESSURE_TONE[r.liquidity.state]}
+                              title={`Pressure score ${r.liquidity.score}/100 · ${r.liquidity.grade.toLowerCase()} liquidity · estimated from where each candle closed in its range, not actual order flow`}
+                            >
+                              {PRESSURE_LABEL[r.liquidity.state]}{' '}
+                              <span className={GRADE_TONE[r.liquidity.grade]}>
+                                · {r.liquidity.grade === 'THIN' ? 'thin' : r.liquidity.grade.toLowerCase()}
+                              </span>
                             </span>
                           ) : (
                             <span className="text-muted-foreground">Not enough history</span>
