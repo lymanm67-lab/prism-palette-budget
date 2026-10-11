@@ -245,6 +245,21 @@ export default function MarketScanner() {
           TARGET_QUALITY_RANK[geometryBySymbol[r.symbol]?.targetQuality ?? 'INSUFFICIENT_DATA'] >= min,
       );
     }
+    if (pressureFilter === 'BUYERS') {
+      list = list.filter(
+        (r) =>
+          r.liquidity?.state === 'BUYERS_IN_CONTROL' || r.liquidity?.state === 'BUYERS_LEANING',
+      );
+    } else if (pressureFilter === 'SELLERS') {
+      list = list.filter(
+        (r) =>
+          r.liquidity?.state === 'SELLERS_IN_CONTROL' || r.liquidity?.state === 'SELLERS_LEANING',
+      );
+    } else if (pressureFilter === 'BALANCED') {
+      list = list.filter((r) => r.liquidity?.state === 'BALANCED');
+    } else if (pressureFilter === 'THIN_ONLY') {
+      list = list.filter((r) => r.liquidity?.grade === 'THIN');
+    }
     return [...list].sort(
       (a, b) => VERDICT_RANK[a.verdict] - VERDICT_RANK[b.verdict] || b.score - a.score,
     );
@@ -258,6 +273,7 @@ export default function MarketScanner() {
     minRToRes,
     pathFilter,
     minQuality,
+    pressureFilter,
   ]);
 
 
