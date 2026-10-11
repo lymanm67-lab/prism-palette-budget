@@ -89,6 +89,23 @@ const EVENT_TONE: Record<string, string> = {
   SEVERE: 'text-destructive',
 };
 
+const PRESSURE_TONE: Record<PressureState, string> = {
+  BUYERS_IN_CONTROL: 'text-emerald-500',
+  BUYERS_LEANING: 'text-emerald-400',
+  BALANCED: 'text-muted-foreground',
+  SELLERS_LEANING: 'text-orange-500',
+  SELLERS_IN_CONTROL: 'text-destructive',
+};
+
+const GRADE_TONE: Record<string, string> = {
+  HIGH: 'text-emerald-500',
+  ADEQUATE: 'text-muted-foreground',
+  THIN: 'text-amber-500',
+  UNKNOWN: 'text-muted-foreground',
+};
+
+type PressureFilter = 'ANY' | 'BUYERS' | 'BALANCED' | 'SELLERS' | 'THIN_ONLY';
+
 const VERDICT_RANK: Record<Verdict, number> = {
   QUALIFIES: 0,
   WATCH: 1,
@@ -112,6 +129,7 @@ export default function MarketScanner() {
   const [minRToRes, setMinRToRes] = useState<string>('ANY');
   const [pathFilter, setPathFilter] = useState<'ANY' | TargetPath>('ANY');
   const [minQuality, setMinQuality] = useState<string>('ANY');
+  const [pressureFilter, setPressureFilter] = useState<PressureFilter>('ANY');
   const [geometryFor, setGeometryFor] = useState<string | null>(null);
 
   const multiple = settings.advanced_mode ? rewardMultiple : 2;
