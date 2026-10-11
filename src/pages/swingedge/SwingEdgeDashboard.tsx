@@ -9,7 +9,17 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, ArrowRight, CheckCircle2, Info, ShieldCheck, XCircle } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  ClipboardCheck,
+  Info,
+  LineChart,
+  Search,
+  ShieldCheck,
+  XCircle,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
