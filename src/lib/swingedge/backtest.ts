@@ -53,7 +53,7 @@ export interface BacktestRun {
 const WARMUP = 60;
 
 export function computeStats(trades: BacktestTrade[]): BacktestStats {
-  const closed = trades.filter((t) => t.netPl != null);
+  const closed = trades.filter((t) => t.netPl != null && t.exitDate != null);
   const wins = closed.filter((t) => (t.netPl ?? 0) > 0);
   const losses = closed.filter((t) => (t.netPl ?? 0) <= 0);
   const sum = (a: BacktestTrade[]) => a.reduce((s, t) => s + (t.netPl ?? 0), 0);
