@@ -361,6 +361,13 @@ export default function SwingEdgeDashboard() {
               to: '/swingedge/scanner',
               what: 'The Liquidity column on every scan row shows who is in control and how easily the name trades, and the "Buyer/seller pressure" filter narrows the list to buyer-controlled, seller-controlled, balanced, or thinly traded names.',
             },
+            {
+              icon: Search,
+              phase: 'Phase 4',
+              where: 'Historical Testing',
+              to: '/swingedge/backtester',
+              what: 'Runs your rules on past prices twice — rules only, then rules plus the liquidity check — and compares drawdown, win rate, average R and growth side by side, with every simulated trade listed.',
+            },
           ].map((row) => (
             <div key={row.phase} className="rounded-lg border border-border/50 bg-card/50 p-4">
               <div className="flex flex-wrap items-center gap-2">
