@@ -45,7 +45,9 @@ export function groupRefreshDuplicates(rows: RefreshDupeTxn[]): RefreshDupeGroup
   );
   const buckets = new Map<string, RefreshDupeTxn[]>();
   for (const t of eligible) {
-    const k = `${t.account_id || ''}|${Math.abs(Number(t.amount)).toFixed(2)}`;
+    const amt = Number(t.amount);
+    // Sign matters: a charge and its refund share an amount but must never be grouped.
+    const k = `${t.account_id || ''}|${amt < 0 ? 'out' : 'in'}|${Math.abs(amt).toFixed(2)}`;
     buckets.set(k, [...(buckets.get(k) || []), t]);
   }
   const groups: RefreshDupeGroup[] = [];

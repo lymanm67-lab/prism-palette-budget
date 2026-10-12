@@ -645,7 +645,7 @@ export default function StockAnalyzer() {
             </CardContent>
           </Card>
 
-          <LiquidityPressureCard candles={chartResult?.candles ?? []} symbol={analysis.symbol} />
+          <LiquidityPressureCard candles={candleResult?.candles ?? []} symbol={analysis.symbol} />
 
           <ReadThisChartCard
             symbol={analysis.symbol}

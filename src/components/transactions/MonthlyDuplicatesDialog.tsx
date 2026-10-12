@@ -54,7 +54,9 @@ export default function MonthlyDuplicatesDialog({ householdId }: { householdId: 
     const map = new Map<string, RefreshDupeTxn[]>();
     for (const t of rows) {
       if (isDupeGuardExempt(t.merchant) || (t.tags || []).includes(NOT_DUPLICATE_TAG)) continue;
-      const k = `${t.date.slice(0, 7)}|${vendorKey(t.merchant)}|${Math.abs(Number(t.amount)).toFixed(2)}`;
+      const amt = Number(t.amount);
+      // Sign matters: a purchase and its refund are not duplicates of each other.
+      const k = `${t.date.slice(0, 7)}|${vendorKey(t.merchant)}|${amt < 0 ? 'out' : 'in'}|${Math.abs(amt).toFixed(2)}`;
       map.set(k, [...(map.get(k) || []), t]);
     }
     return [...map.entries()].filter(([k, l]) => l.length > 1 && !resolved.has(k)).map(([k, l]) => {
