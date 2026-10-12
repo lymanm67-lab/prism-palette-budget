@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,8 +73,8 @@ function RunCard({ title, run }: { title: string; run: BacktestRun }) {
             </thead>
             <tbody>
               {run.trades.map((t, idx) => (
-                <>
-                  <tr key={idx} className="cursor-pointer border-t border-border/40 hover:bg-muted/40" onClick={() => setOpen(open === idx ? null : idx)}>
+                <Fragment key={idx}>
+                  <tr className="cursor-pointer border-t border-border/40 hover:bg-muted/40" onClick={() => setOpen(open === idx ? null : idx)}>
                     <td className="p-2">{t.entryDate.slice(0, 10)}</td>
                     <td className="p-2">{t.exitDate?.slice(0, 10) ?? 'still open'}</td>
                     <td className="p-2"><Badge variant="outline">{t.kind}</Badge></td>
@@ -88,7 +88,7 @@ function RunCard({ title, run }: { title: string; run: BacktestRun }) {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
               {run.trades.length === 0 && (
                 <tr><td colSpan={5} className="p-3 text-center text-muted-foreground">No setups met the rules in this period.</td></tr>
