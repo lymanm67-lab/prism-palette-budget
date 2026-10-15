@@ -138,7 +138,9 @@ export function allocate(
     return a;
   }
   let left = available;
+  let transition = false;
   if (emergencyBal < t.three) {
+    transition = true;
     const need = t.three - emergencyBal;
     const e = Math.min(need, left);
     a.emergency += e;
@@ -150,7 +152,9 @@ export function allocate(
   const invest = Math.round((left * i.investPct) / 100);
   const housing = Math.round((left * i.housingPct) / 100);
   const guilt = Math.round((left * i.guiltPct) / 100);
-  const vac = Math.max(0, Math.min(vacationMonthSlice, vacationRemaining));
+  let vac = Math.max(0, Math.min(vacationMonthSlice, vacationRemaining));
+  // Milestone month: only the leftover reaches split rules, so vacation takes what fits.
+  if (transition) vac = Math.max(0, Math.min(vac, left - invest - housing - guilt));
   const fixed = invest + housing + guilt + vac;
   a.retire += invest;
   a.housing += housing;
