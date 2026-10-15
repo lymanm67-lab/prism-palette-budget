@@ -8,6 +8,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { FiveBucketLink } from '@/components/fiveBucket/FiveBucketLink';
 import PageOverview from '@/components/PageOverview';
 import ReadinessHero from '@/components/home-buying/ReadinessHero';
 import AiHomeBuyingCoach from '@/components/home-buying/AiHomeBuyingCoach';
@@ -78,6 +79,7 @@ const HomeBuyingChecklist = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-7xl">
+      <FiveBucketLink note="Housing Fund savings (10% of surplus) from the surplus plan" />
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-tight">

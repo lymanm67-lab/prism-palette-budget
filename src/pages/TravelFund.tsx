@@ -10,6 +10,7 @@ import { TripBudgetBuilder } from '@/components/travel/TripBudgetBuilder';
 import { BookingTrackerTab } from '@/components/travel/BookingTrackerTab';
 import { BusinessTravelTab } from '@/components/travel/BusinessTravelTab';
 import { TrendPlannerTab } from '@/components/travel/TrendPlannerTab';
+import { FiveBucketLink } from '@/components/fiveBucket/FiveBucketLink';
 
 const VIEWS = [
   { key: 'overview', label: 'Overview & Cycle', icon: Gauge },
@@ -79,6 +80,8 @@ export default function TravelFund() {
           the life you want.
         </p>
       </header>
+
+      <FiveBucketLink note="vacation funding of $416.67/mo inside the surplus plan" />
 
       <div className="flex flex-wrap gap-1.5">
         {VIEWS.map(({ key, label, icon: Icon }) => (

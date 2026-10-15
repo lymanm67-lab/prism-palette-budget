@@ -4,6 +4,7 @@ import { VehicleMaintenanceCard } from '@/components/reserves/VehicleMaintenance
 import { SofiInvestmentsCard } from '@/components/reserves/SofiInvestmentsCard';
 import { FinancialResilienceSection } from '@/components/reserves/FinancialResilienceSection';
 import { RedirectExcessPanel } from '@/components/reserves/RedirectExcessPanel';
+import { FiveBucketLink } from '@/components/fiveBucket/FiveBucketLink';
 
 
 export default function Reserves() {
@@ -21,6 +22,8 @@ export default function Reserves() {
           retirement.
         </p>
       </header>
+
+      <FiveBucketLink note="see how surplus builds the reserve in stages ($2,000, 3 months, 6 months)" />
 
       <FinancialResilienceSection />
       <EmergencyFundCard />
