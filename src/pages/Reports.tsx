@@ -27,6 +27,7 @@ import PayrollReportTab from '@/components/PayrollReportTab';
 import InvestmentGrowthProjector from '@/components/InvestmentGrowthProjector';
 import ReportTabGuide from '@/components/ReportTabGuide';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
 import type { InfographicSpec, Tone } from '@/lib/reports/infographic';
 
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
@@ -717,6 +718,16 @@ const Reports = () => {
       {reportMode === 'business' ? (
         <BusinessReports startDate={startDate} endDate={endDate} budgetMonth={budgetMonth} />
       ) : (
+      <>
+      <RelatedToolsBar
+        label="More reports"
+        tools={[
+          { to: '/reports/monthly', icon: CalendarIcon, label: 'Monthly Report' },
+          { to: '/reports/budgets-bills', icon: Scale, label: 'Budgets & Bills' },
+          { to: '/reports/capital-events', icon: Wallet, label: 'Capital Events' },
+          { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends' },
+        ]}
+      />
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TooltipProvider delayDuration={0}>
         <TabsList className="flex-wrap h-auto gap-1">
@@ -1460,6 +1471,7 @@ const Reports = () => {
         </TabsContent>
         </div>
       </Tabs>
+      </>
       )}
     </motion.div>
   );

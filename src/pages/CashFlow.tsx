@@ -12,7 +12,8 @@ import {
   parseISO, isWithinInterval, startOfQuarter, endOfQuarter,
   startOfYear, endOfYear, subQuarters, subYears,
 } from 'date-fns';
-import { Loader2, CalendarIcon, X, ArrowLeft, Filter } from 'lucide-react';
+import { Loader2, CalendarIcon, X, ArrowLeft, Filter, TrendingUp, Wallet, Receipt } from 'lucide-react';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
 import { Badge } from '@/components/ui/badge';
 import {
   ComposedChart, Bar, BarChart, Line, XAxis, YAxis, CartesianGrid,
@@ -344,6 +345,14 @@ const CashFlow = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <RelatedToolsBar
+        label="Next steps"
+        tools={[
+          { to: '/forecast', icon: TrendingUp, label: 'Forecast' },
+          { to: '/budgets', icon: Wallet, label: 'Budgets' },
+          { to: '/transactions', icon: Receipt, label: 'Transactions' },
+        ]}
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">Cash Flow</h1>

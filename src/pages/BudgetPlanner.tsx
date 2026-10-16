@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Wallet, Copy, FileSpreadsheet, Trash2, Plus, CalendarRange } from 'lucide-react';
+import { Loader2, Wallet, Copy, FileSpreadsheet, Trash2, Plus, CalendarRange, PiggyBank, Scale, CalendarCheck } from 'lucide-react';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
 import InlineEditCell from '@/components/InlineEditCell';
 import { toast } from '@/hooks/use-toast';
 import { useBlueprintAssumptions, useSaveBlueprintAssumptions } from '@/hooks/use-blueprint-assumptions';
@@ -318,6 +319,15 @@ export default function BudgetPlanner() {
           Money Blueprint read — one source of truth, no parallel copy.
         </p>
       </header>
+
+      <RelatedToolsBar
+        label="Next steps"
+        tools={[
+          { to: '/budgets', icon: PiggyBank, label: 'Budgets & Bills' },
+          { to: '/budgets/actual', icon: Scale, label: 'Budget vs Actual' },
+          { to: '/budgets/month-end', icon: CalendarCheck, label: 'Month-End Close' },
+        ]}
+      />
 
       <Card>
         <CardHeader className="pb-3">
