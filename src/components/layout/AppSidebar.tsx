@@ -111,7 +111,7 @@ export const NAV_SECTIONS: NavSection[] = [
       ] },
       { subLabel: 'Retirement', items: [
         { to: '/planning/retirement-tax', icon: Sparkles, label: 'Retirement Tax Center', color: 'text-prism-amber' },
-        { to: '/planning/stress-test', icon: Activity, label: 'Retirement Stress Test', color: 'text-prism-rose' },
+        { to: '/retirement?tab=stress-test', icon: Activity, label: 'Retirement Stress Test', color: 'text-prism-rose' },
         { to: '/planning/wealth-projection', icon: TrendingUp, label: 'Wealth Projection', color: 'text-prism-teal' },
       ] },
     ],

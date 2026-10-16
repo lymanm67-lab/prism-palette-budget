@@ -89,7 +89,6 @@ const Cleanup = lazy(() => import("@/pages/Cleanup"));
 const CategorizationAudit = lazy(() => import("@/pages/CategorizationAudit"));
 const RulesManager = lazy(() => import("@/pages/RulesManager"));
 const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
-const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
 const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
 const InvestmentStrategy = lazy(() => import("@/pages/InvestmentStrategy"));
 
@@ -107,11 +106,6 @@ const MedicalHousingPlanner = lazy(() => import("@/pages/legacy/MedicalHousingPl
 const TinyHomeVillage = lazy(() => import("@/pages/legacy/TinyHomeVillage"));
 const FamilyFoundation = lazy(() => import("@/pages/legacy/FamilyFoundation"));
 const RealEstateCommunityImpact = lazy(() => import("@/pages/legacy/RealEstateCommunityImpact"));
-const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
-const RetirementPreservation = lazy(() => import("@/pages/RetirementPreservation"));
-const SequenceRisk = lazy(() => import("@/pages/SequenceRisk"));
-const WithdrawalSequencerPage = lazy(() => import("@/pages/WithdrawalSequencer"));
-const ContributionWaterfall = lazy(() => import("@/pages/ContributionWaterfall"));
 const HouseholdWealth = lazy(() => import("@/pages/HouseholdWealth"));
 const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 const LongTermCare = lazy(() => import("@/pages/LongTermCare"));
@@ -119,9 +113,7 @@ const LtcTaxReport = lazy(() => import("@/pages/LtcTaxReport"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
-const InvestmentPortfolio = lazy(() => import("./pages/InvestmentPortfolio"));
 const RetirementTaxCenter = lazy(() => import("./pages/RetirementTaxCenter"));
-const RetirementStressTest = lazy(() => import("./pages/RetirementStressTest"));
 const TravelFund = lazy(() => import("./pages/TravelFund"));
 const ZeroBasedPlan = lazy(() => import("./pages/ZeroBasedPlan"));
 const MonthEndClose = lazy(() => import("./pages/MonthEndClose"));
@@ -307,7 +299,7 @@ const App = () => (
               <Route path="/cleanup/rules" element={<Suspense fallback={<PageLoader />}><RulesManager /></Suspense>} />
               <Route path="/experiments" element={<Suspense fallback={<PageLoader />}><ExperimentsDashboard /></Suspense>} />
               <Route path="/app-store-readiness" element={<Suspense fallback={<PageLoader />}><AppStoreReadiness /></Suspense>} />
-              <Route path="/crossover-tracker" element={<Suspense fallback={<PageLoader />}><CrossoverTracker /></Suspense>} />
+              <Route path="/crossover-tracker" element={<Navigate to="/retirement?tab=crossover-tracker" replace />} />
               <Route path="/planning/investments" element={<Suspense fallback={<PageLoader />}><InvestmentPlanning /></Suspense>} />
               <Route path="/investing/strategy" element={<Suspense fallback={<PageLoader />}><InvestmentStrategy /></Suspense>} />
 
@@ -318,11 +310,11 @@ const App = () => (
               <Route path="/money-blueprint" element={<Suspense fallback={<PageLoader />}><MoneyBlueprint /></Suspense>} />
               <Route path="/ltc" element={<Suspense fallback={<PageLoader />}><LongTermCare /></Suspense>} />
 
-              <Route path="/legacy/crossover" element={<Suspense fallback={<PageLoader />}><CompoundingCrossover /></Suspense>} />
-              <Route path="/legacy/preservation" element={<Suspense fallback={<PageLoader />}><RetirementPreservation /></Suspense>} />
-              <Route path="/legacy/sequence-risk" element={<Suspense fallback={<PageLoader />}><SequenceRisk /></Suspense>} />
-              <Route path="/legacy/withdrawal-tax" element={<Suspense fallback={<PageLoader />}><WithdrawalSequencerPage /></Suspense>} />
-              <Route path="/legacy/waterfall" element={<Suspense fallback={<PageLoader />}><ContributionWaterfall /></Suspense>} />
+              <Route path="/legacy/crossover" element={<Navigate to="/retirement?tab=crossover" replace />} />
+              <Route path="/legacy/preservation" element={<Navigate to="/retirement?tab=preservation" replace />} />
+              <Route path="/legacy/sequence-risk" element={<Navigate to="/retirement?tab=sequence-risk" replace />} />
+              <Route path="/legacy/withdrawal-tax" element={<Navigate to="/retirement?tab=withdrawal-tax" replace />} />
+              <Route path="/legacy/waterfall" element={<Navigate to="/retirement?tab=waterfall" replace />} />
               <Route path="/legacy/real-estate/medical-housing" element={<Suspense fallback={<PageLoader />}><MedicalHousingPlanner /></Suspense>} />
               <Route path="/legacy/real-estate" element={<Suspense fallback={<PageLoader />}><RealEstateCommunityImpact /></Suspense>} />
               <Route path="/legacy/real-estate/tiny-home-village" element={<Suspense fallback={<PageLoader />}><TinyHomeVillage /></Suspense>} />
@@ -332,7 +324,7 @@ const App = () => (
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
               <Route path="/retirement" element={<Suspense fallback={<PageLoader />}><RetirementHub /></Suspense>} />
               <Route path="/planning/retirement-tax" element={<Suspense fallback={<PageLoader />}><RetirementTaxCenter /></Suspense>} />
-              <Route path="/planning/stress-test" element={<Suspense fallback={<PageLoader />}><RetirementStressTest /></Suspense>} />
+              <Route path="/planning/stress-test" element={<Navigate to="/retirement?tab=stress-test" replace />} />
               <Route path="/planning/travel-fund" element={<Suspense fallback={<PageLoader />}><TravelFund /></Suspense>} />
               <Route path="/planning/fifty-percent" element={<Suspense fallback={<PageLoader />}><FiftyPercentPlan /></Suspense>} />
               <Route path="/budgets/month-end" element={<Suspense fallback={<PageLoader />}><MonthEndClose /></Suspense>} />
@@ -342,7 +334,7 @@ const App = () => (
               <Route path="/planning/wealth-projection" element={<Suspense fallback={<PageLoader />}><WealthProjection /></Suspense>} />
               <Route path="/planning/freed-cash" element={<Suspense fallback={<PageLoader />}><FreedCash /></Suspense>} />
               <Route path="/planning/freed-cash/reconcile" element={<Suspense fallback={<PageLoader />}><FreedCashReconcile /></Suspense>} />
-              <Route path="/investments/portfolio" element={<Suspense fallback={<PageLoader />}><InvestmentPortfolio /></Suspense>} />
+              <Route path="/investments/portfolio" element={<Navigate to="/retirement?tab=portfolio" replace />} />
               <Route path="/health" element={<Suspense fallback={<PageLoader />}><HealthDashboard /></Suspense>} />
               <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
               <Route path="/swingedge" element={<Suspense fallback={<PageLoader />}><SwingEdgeDashboard /></Suspense>} />
