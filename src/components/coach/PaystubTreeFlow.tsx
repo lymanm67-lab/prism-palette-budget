@@ -51,12 +51,11 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
   const [open, setOpen] = useState(false);
 
   const isL = who === 'lyman';
-  const checks = isL ? 1 : 2;
-  const gross = Number(isL ? profile?.lyman_gross_monthly : profile?.kateri_gross_monthly) / checks || 0;
-  const net = Number(isL ? profile?.lyman_net_monthly : profile?.kateri_net_monthly) / checks || 0;
+  const gross = isL ? Number(profile?.lyman_gross_monthly) || 0 : KATERI_GROSS;
+  const net = isL ? Number(profile?.lyman_net_monthly) || 0 : KATERI_NET;
   if (gross <= 0 || net <= 0) return null;
 
-  const base = isL ? LYMAN_LINES : [];
+  const base = isL ? LYMAN_LINES : KATERI_LINES;
   const listed = base.reduce((s, l) => s + l.amount, 0);
   const gap = Math.round((gross - net - listed) * 100) / 100;
   const lines = [...base];
