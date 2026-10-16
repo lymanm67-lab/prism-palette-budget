@@ -480,6 +480,8 @@ const AppSidebar = () => {
               {!collapsed && (
                 <button
                   onClick={() => toggleSection(section.label)}
+                  aria-expanded={sectionOpen}
+                  aria-controls={`sidebar-section-${sIdx}-content`}
                   className={cn(
                     'flex w-full items-center gap-1.5 px-3 pb-1 pt-1 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-md',
                     hasActiveInSection
