@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Heart, CreditCard, Clock, Shield, BarChart3, FileText,
-  TrendingUp, TrendingDown, ArrowUpRight, Minus, RefreshCw, Landmark,
+  TrendingUp, TrendingDown, ArrowUpRight, Minus, RefreshCw, Landmark, ListChecks,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -263,6 +263,7 @@ const CreditHealthDashboard = () => {
         <motion.div variants={fadeUp}>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
+              { label: 'Getting Started', icon: ListChecks, to: '/capital/credit-health/onboarding', color: 'text-primary' },
               { label: 'Score Breakdown', icon: BarChart3, to: '/capital/credit-health/breakdown', color: 'text-blue-500' },
               { label: 'Issue Tracker', icon: FileText, to: '/capital/credit-health/issues', color: 'text-amber-500' },
               { label: 'Explain My Score', icon: Heart, to: '/capital/credit-health/explain', color: 'text-primary' },

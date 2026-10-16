@@ -1066,6 +1066,21 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <CardTitle className="font-display">Auto-Split Rules</CardTitle>
+              </div>
+              <CardDescription>Automatically split transactions between personal and business categories.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="gap-2" onClick={() => window.location.href = '/settings/auto-split-rules'}>
+                <Calendar className="h-4 w-4" />
+                Manage Auto-Split Rules
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ==================== SECURITY ==================== */}
