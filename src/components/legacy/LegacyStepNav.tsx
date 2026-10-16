@@ -5,17 +5,14 @@ import { Button } from '@/components/ui/button';
 
 export const LEGACY_STEPS = [
   { to: '/legacy/household', label: '1. Household Wealth', why: 'Map every asset and tag ownership.' },
-  { to: '/legacy/crossover', label: '2. Compounding Crossover', why: 'See when growth outruns contributions.' },
-  { to: '/retirement-optimizer', label: '3. Retirement Optimizer', why: 'Tune contributions, Roth mix, and returns.' },
-  { to: '/legacy/preservation', label: '4. Retirement Preservation', why: 'Plan withdrawals and the Social Security bridge.' },
-  { to: '/legacy/sequence-risk', label: '4b. Sequence Risk', why: 'Stress-test the first decade of withdrawals.' },
-  { to: '/legacy/waterfall', label: '4c. Contribution Waterfall', why: 'Route every new dollar in tax-efficient order.' },
-  { to: '/legacy/withdrawal-tax', label: '4d. Withdrawal & Tax', why: 'Sequence withdrawals to fill brackets and dodge IRMAA.' },
-  { to: '/kungfoo', label: '5. KUNG FOO Plan', why: 'Lock the order of operations for every dollar.' },
-  { to: '/legacy/family', label: '6. Family Legacy', why: 'Protect it with trusts, docs, and constitution.' },
+  { to: '/retirement', label: '2. Retirement Hub', why: 'Optimize, preserve, stress-test and sequence — all retirement models in one place.' },
+  { to: '/kungfoo', label: '3. KUNG FOO Plan', why: 'Lock the order of operations for every dollar.' },
+  { to: '/legacy/belts', label: '4. Belt Progress', why: 'Track mastery and keep momentum.' },
+  { to: '/legacy/family', label: '5. Family Legacy', why: 'Protect it with trusts, docs, and constitution.' },
+  { to: '/legacy', label: '6. Legacy Mode', why: 'Score readiness across 14 factors.' },
   { to: '/legacy/wealth-os', label: '7. Wealth OS Binder', why: 'Package the whole plan into a report.' },
-  { to: '/legacy', label: '8. Legacy Mode', why: 'Score readiness across 14 factors.' },
-  { to: '/legacy/belts', label: '9. Belt Progress', why: 'Track mastery and keep momentum.' },
+  { to: '/legacy/real-estate', label: '8. Real Estate & Impact', why: 'Plan community-impact real estate goals.' },
+  { to: '/legacy/foundation', label: '9. Family Foundation', why: 'Set up charitable giving that outlives you.' },
 ] as const;
 
 

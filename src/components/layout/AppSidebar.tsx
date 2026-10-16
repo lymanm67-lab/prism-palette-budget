@@ -164,20 +164,16 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/legacy/household', icon: Users, label: '1. Household Wealth', color: 'text-prism-teal' },
       { to: '/retirement', icon: Layers, label: '2. Retirement Hub', color: 'text-prism-amber', essential: true },
-      { to: '/legacy/family', icon: Heart, label: '4. Family Legacy', color: 'text-prism-rose' },
+      { to: '/kungfoo', icon: Layers, label: '3. KUNG FOO Plan', color: 'text-prism-teal' },
+      { to: '/legacy/belts', icon: Target, label: '4. Belt Progress', color: 'text-prism-lime' },
+      { to: '/legacy/family', icon: Heart, label: '5. Family Legacy', color: 'text-prism-rose' },
+      { to: '/legacy', icon: Sparkles, label: '6. Legacy Mode', color: 'text-prism-amber', essential: true },
+      { to: '/legacy/wealth-os', icon: BookOpen, label: '7. Wealth OS Binder', color: 'text-prism-amber' },
       { to: '/legacy/foundation', icon: Landmark, label: '9. Family Foundation', color: 'text-prism-amber' },
       { to: '/ltc', icon: ShieldCheck, label: 'Long-Term Care', color: 'text-prism-sky' },
-    ],
+     ],
     subGroups: [
-      { subLabel: '3. KUNG FOO Plan', items: [
-        { to: '/kungfoo', icon: Layers, label: 'KUNG FOO Plan', color: 'text-prism-teal' },
-        { to: '/legacy/belts', icon: Target, label: 'Belt Progress', color: 'text-prism-lime' },
-      ] },
-      { subLabel: '6. Legacy Mode', items: [
-        { to: '/legacy', icon: Sparkles, label: 'Legacy Mode', color: 'text-prism-amber', essential: true },
-        { to: '/legacy/wealth-os', icon: BookOpen, label: 'Wealth OS Binder', color: 'text-prism-amber' },
-      ] },
-      { subLabel: '8. Real Estate & Impact', items: [
+       { subLabel: '8. Real Estate & Impact', items: [
         { to: '/legacy/real-estate', icon: Sparkles, label: 'Real Estate & Community Impact', color: 'text-prism-amber' },
         { to: '/legacy/real-estate/medical-housing', icon: Building2, label: 'Goal 1 — Medical Housing', color: 'text-prism-teal' },
         { to: '/legacy/real-estate/tiny-home-village', icon: Heart, label: 'Goal 2 — Tiny Home Village', color: 'text-prism-rose' },
