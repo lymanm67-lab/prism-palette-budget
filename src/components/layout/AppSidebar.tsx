@@ -561,7 +561,7 @@ const AppSidebar = () => {
                       })}
 
                       {collapsed && section.subGroups?.map((sg) =>
-                        sg.items.map(renderNavItem)
+                        sg.items[0] ? renderNavItem({ ...sg.items[0], label: sg.subLabel }) : null
                       )}
                     </div>
                   </motion.div>
