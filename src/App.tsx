@@ -89,7 +89,6 @@ const Cleanup = lazy(() => import("@/pages/Cleanup"));
 const CategorizationAudit = lazy(() => import("@/pages/CategorizationAudit"));
 const RulesManager = lazy(() => import("@/pages/RulesManager"));
 const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
-const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
 const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
 const InvestmentStrategy = lazy(() => import("@/pages/InvestmentStrategy"));
 
@@ -107,11 +106,6 @@ const MedicalHousingPlanner = lazy(() => import("@/pages/legacy/MedicalHousingPl
 const TinyHomeVillage = lazy(() => import("@/pages/legacy/TinyHomeVillage"));
 const FamilyFoundation = lazy(() => import("@/pages/legacy/FamilyFoundation"));
 const RealEstateCommunityImpact = lazy(() => import("@/pages/legacy/RealEstateCommunityImpact"));
-const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
-const RetirementPreservation = lazy(() => import("@/pages/RetirementPreservation"));
-const SequenceRisk = lazy(() => import("@/pages/SequenceRisk"));
-const WithdrawalSequencerPage = lazy(() => import("@/pages/WithdrawalSequencer"));
-const ContributionWaterfall = lazy(() => import("@/pages/ContributionWaterfall"));
 const HouseholdWealth = lazy(() => import("@/pages/HouseholdWealth"));
 const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 const LongTermCare = lazy(() => import("@/pages/LongTermCare"));
@@ -119,9 +113,7 @@ const LtcTaxReport = lazy(() => import("@/pages/LtcTaxReport"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
-const InvestmentPortfolio = lazy(() => import("./pages/InvestmentPortfolio"));
 const RetirementTaxCenter = lazy(() => import("./pages/RetirementTaxCenter"));
-const RetirementStressTest = lazy(() => import("./pages/RetirementStressTest"));
 const TravelFund = lazy(() => import("./pages/TravelFund"));
 const ZeroBasedPlan = lazy(() => import("./pages/ZeroBasedPlan"));
 const MonthEndClose = lazy(() => import("./pages/MonthEndClose"));
