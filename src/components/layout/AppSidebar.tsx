@@ -48,37 +48,52 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky', essential: true },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange', essential: true },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
-      { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-violet' },
-      { to: '/cleanup', icon: Sparkles, label: 'Data Cleanup', color: 'text-prism-amber' },
+    ],
+    subGroups: [
+      { subLabel: 'Data Health', items: [
+        { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-violet' },
+        { to: '/cleanup', icon: Sparkles, label: 'Data Cleanup', color: 'text-prism-amber' },
+      ] },
     ],
   },
   {
     label: 'Plan & Budget',
     items: [
-      { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber', essential: true },
-      { to: '/budgets/actual', icon: BarChart3, label: 'Budget vs Actual', color: 'text-prism-sky', essential: true },
-      { to: '/planning/budget', icon: Wallet, label: 'Budget Planner', color: 'text-prism-teal' },
       { to: '/money-blueprint', icon: PiggyBank, label: 'Money Blueprint', color: 'text-prism-lime' },
-
-      { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
-      { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
-      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
+    ],
+    subGroups: [
+      { subLabel: 'Budgets', items: [
+        { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber', essential: true },
+        { to: '/budgets/actual', icon: BarChart3, label: 'Budget vs Actual', color: 'text-prism-sky', essential: true },
+        { to: '/planning/budget', icon: Wallet, label: 'Budget Planner', color: 'text-prism-teal' },
+        { to: '/budgets/month-end', icon: Wallet, label: 'Month-End Close', color: 'text-prism-lime' },
+      ] },
+      { subLabel: 'Cash Flow & Forecast', items: [
+        { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
+        { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
+      ] },
     ],
   },
   {
     label: 'Save & Optimize',
     items: [
-      { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions & Recurring', color: 'text-prism-violet', essential: true },
-      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
-      { to: '/planning/travel-fund', icon: Plane, label: 'Annual Travel Fund', color: 'text-prism-sky' },
-      { to: '/planning/zero-based', icon: Wallet, label: 'Zero-Based Plan', color: 'text-prism-teal' },
-      { to: '/budgets/month-end', icon: Wallet, label: 'Month-End Close', color: 'text-prism-lime' },
-      { to: '/planning/fifty-percent', icon: Target, label: 'Live on 50% Plan', color: 'text-prism-amber' },
-      { to: '/planning/reserves', icon: ShieldCheck, label: 'Emergency Fund & Liquidity', color: 'text-prism-teal' },
-      { to: '/planning/five-bucket', icon: Target, label: 'Five-Bucket Wealth Plan', color: 'text-prism-teal' },
       { to: '/planning/freed-cash', icon: Scissors, label: 'Freed Cash Engine', color: 'text-prism-amber' },
-      { to: '/planning/wealth-projection', icon: TrendingUp, label: 'Wealth Projection', color: 'text-prism-teal' },
+    ],
+    subGroups: [
+      { subLabel: 'Bills & Subscriptions', items: [
+        { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions & Recurring', color: 'text-prism-violet', essential: true },
+        { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
+      ] },
+      { subLabel: 'Savings Plans', items: [
+        { to: '/planning/fifty-percent', icon: Target, label: 'Live on 50% Plan', color: 'text-prism-amber' },
+        { to: '/planning/five-bucket', icon: Target, label: 'Five-Bucket Wealth Plan', color: 'text-prism-teal' },
+        { to: '/planning/zero-based', icon: Wallet, label: 'Zero-Based Plan', color: 'text-prism-teal' },
+      ] },
+      { subLabel: 'Emergency & Reserves', items: [
+        { to: '/planning/reserves', icon: ShieldCheck, label: 'Emergency Fund & Liquidity', color: 'text-prism-teal' },
+        { to: '/planning/travel-fund', icon: Plane, label: 'Annual Travel Fund', color: 'text-prism-sky' },
+      ] },
     ],
   },
   {
@@ -86,52 +101,62 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime', essential: true },
-      { to: '/investments', icon: TrendingUp, label: 'Investment Holdings', color: 'text-prism-indigo' },
-      { to: '/investing/strategy', icon: Layers, label: 'Investment Strategy (5 Roles)', color: 'text-prism-teal' },
-
-      { to: '/planning/investments', icon: Sparkles, label: 'Investment Planning', color: 'text-prism-amber' },
-      { to: '/planning/retirement-tax', icon: Sparkles, label: 'Retirement Tax Center', color: 'text-prism-amber' },
-      { to: '/planning/stress-test', icon: Activity, label: 'Retirement Stress Test', color: 'text-prism-rose' },
-      { to: '/ltc', icon: ShieldCheck, label: 'Long-Term Care', color: 'text-prism-sky' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
+    ],
+    subGroups: [
+      { subLabel: 'Investments', items: [
+        { to: '/investments', icon: TrendingUp, label: 'Investment Holdings', color: 'text-prism-indigo' },
+        { to: '/investing/strategy', icon: Layers, label: 'Investment Strategy (5 Roles)', color: 'text-prism-teal' },
+        { to: '/planning/investments', icon: Sparkles, label: 'Investment Planning', color: 'text-prism-amber' },
+      ] },
+      { subLabel: 'Retirement', items: [
+        { to: '/planning/retirement-tax', icon: Sparkles, label: 'Retirement Tax Center', color: 'text-prism-amber' },
+        { to: '/planning/stress-test', icon: Activity, label: 'Retirement Stress Test', color: 'text-prism-rose' },
+        { to: '/planning/wealth-projection', icon: TrendingUp, label: 'Wealth Projection', color: 'text-prism-teal' },
+      ] },
     ],
   },
   {
     label: 'Trading (SwingEdge)',
     items: [
       { to: '/swingedge', icon: Gauge, label: 'Trading Dashboard', color: 'text-prism-teal' },
-      { to: '/swingedge/recommendations', icon: Sparkles, label: 'Recommendations', color: 'text-prism-amber' },
-      { to: '/swingedge/academy', icon: BookOpen, label: 'Trading Academy', color: 'text-prism-lime' },
-      { to: '/swingedge/training', icon: GraduationCap, label: 'Six-Week Training', color: 'text-prism-violet' },
-      { to: '/swingedge/live', icon: Activity, label: 'Live Data', color: 'text-prism-lime' },
-      { to: '/swingedge/scanner', icon: Search, label: 'Market Scanner', color: 'text-prism-amber' },
-      { to: '/swingedge/analyzer', icon: LineChart, label: 'Stock Analyzer', color: 'text-prism-sky' },
-      { to: '/swingedge/fundamentals', icon: FileText, label: 'Company & Fund Figures', color: 'text-prism-amber' },
-      { to: '/swingedge/watchlists', icon: Layers, label: 'Watchlists', color: 'text-prism-indigo' },
-      { to: '/swingedge/planner', icon: ClipboardCheck, label: 'Trade Planner', color: 'text-prism-lime' },
-      { to: '/swingedge/rulebook', icon: ShieldCheck, label: 'My Rulebook', color: 'text-prism-lime' },
-      { to: '/swingedge/practice', icon: Monitor, label: 'Practice Lab', color: 'text-prism-violet' },
-      { to: '/swingedge/execution-guides', icon: ClipboardCheck, label: 'Execution Guides', color: 'text-prism-teal' },
-
-      { to: '/swingedge/paper-trading', icon: Activity, label: 'Paper Trading', color: 'text-prism-violet' },
-      { to: '/swingedge/orders', icon: ClipboardList, label: 'Thinkorswim Orders', color: 'text-prism-orange' },
-      { to: '/swingedge/journal', icon: FileText, label: 'Trade Journal', color: 'text-prism-amber' },
-      { to: '/swingedge/performance', icon: BarChart3, label: 'Performance Review', color: 'text-prism-teal' },
       { to: '/swingedge/risk-lab', icon: FlaskConical, label: 'Risk Lab', color: 'text-prism-violet' },
-      { to: '/swingedge/backtester', icon: Clock, label: 'Historical Testing', color: 'text-prism-orange' },
       { to: '/swingedge/settings', icon: Settings, label: 'Trading Settings', color: 'text-prism-sky' },
     ],
+    subGroups: [
+      { subLabel: 'Learn', items: [
+        { to: '/swingedge/academy', icon: BookOpen, label: 'Trading Academy', color: 'text-prism-lime' },
+        { to: '/swingedge/training', icon: GraduationCap, label: 'Six-Week Training', color: 'text-prism-violet' },
+        { to: '/swingedge/execution-guides', icon: ClipboardCheck, label: 'Execution Guides', color: 'text-prism-teal' },
+      ] },
+      { subLabel: 'Research', items: [
+        { to: '/swingedge/scanner', icon: Search, label: 'Market Scanner', color: 'text-prism-amber' },
+        { to: '/swingedge/analyzer', icon: LineChart, label: 'Stock Analyzer', color: 'text-prism-sky' },
+        { to: '/swingedge/fundamentals', icon: FileText, label: 'Company & Fund Figures', color: 'text-prism-amber' },
+        { to: '/swingedge/watchlists', icon: Layers, label: 'Watchlists', color: 'text-prism-indigo' },
+        { to: '/swingedge/live', icon: Activity, label: 'Live Data', color: 'text-prism-lime' },
+      ] },
+      { subLabel: 'Plan & Rules', items: [
+        { to: '/swingedge/planner', icon: ClipboardCheck, label: 'Trade Planner', color: 'text-prism-lime' },
+        { to: '/swingedge/rulebook', icon: ShieldCheck, label: 'My Rulebook', color: 'text-prism-lime' },
+        { to: '/swingedge/recommendations', icon: Sparkles, label: 'Recommendations', color: 'text-prism-amber' },
+      ] },
+      { subLabel: 'Practice', items: [
+        { to: '/swingedge/practice', icon: Monitor, label: 'Practice Lab', color: 'text-prism-violet' },
+        { to: '/swingedge/paper-trading', icon: Activity, label: 'Paper Trading', color: 'text-prism-violet' },
+        { to: '/swingedge/orders', icon: ClipboardList, label: 'Thinkorswim Orders', color: 'text-prism-orange' },
+      ] },
+      { subLabel: 'Review', items: [
+        { to: '/swingedge/journal', icon: FileText, label: 'Trade Journal', color: 'text-prism-amber' },
+        { to: '/swingedge/performance', icon: BarChart3, label: 'Performance Review', color: 'text-prism-teal' },
+        { to: '/swingedge/backtester', icon: Clock, label: 'Historical Testing', color: 'text-prism-orange' },
+      ] },
+    ],
   },
-
   {
     label: 'Health & Longevity',
     items: [
       { to: '/health', icon: HeartPulse, label: 'Health Dashboard', color: 'text-prism-rose', essential: true },
-      { to: '/health?tab=longevity', icon: Sparkles, label: 'Longevity & Dividend', color: 'text-prism-amber' },
-      { to: '/health?tab=nutrition', icon: Heart, label: 'Nutrition & Meals', color: 'text-prism-lime' },
-      { to: '/health?tab=exercise', icon: Target, label: 'Exercise & Coach Arty', color: 'text-prism-teal' },
-      { to: '/health?tab=energy', icon: BarChart3, label: 'Energy Report', color: 'text-prism-orange' },
-      { to: '/health?tab=preventive', icon: ShieldCheck, label: 'Preventive Care', color: 'text-prism-sky' },
     ],
   },
   {
@@ -139,29 +164,40 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/legacy/household', icon: Users, label: '1. Household Wealth', color: 'text-prism-teal' },
       { to: '/retirement', icon: Layers, label: '2. Retirement Hub', color: 'text-prism-amber', essential: true },
-      { to: '/kungfoo', icon: Layers, label: '3. KUNG FOO Plan', color: 'text-prism-teal' },
       { to: '/legacy/family', icon: Heart, label: '4. Family Legacy', color: 'text-prism-rose' },
-      { to: '/legacy/wealth-os', icon: BookOpen, label: '5. Wealth OS Binder', color: 'text-prism-amber' },
-      { to: '/legacy', icon: Sparkles, label: '6. Legacy Mode', color: 'text-prism-amber', essential: true },
-      { to: '/legacy/belts', icon: Target, label: '7. Belt Progress', color: 'text-prism-lime' },
-      { to: '/legacy/real-estate', icon: Sparkles, label: '8. Real Estate & Community Impact', color: 'text-prism-amber' },
-      { to: '/legacy/real-estate/medical-housing', icon: Building2, label: '8a. Goal 1 — Medical Housing', color: 'text-prism-teal' },
-      { to: '/legacy/real-estate/tiny-home-village', icon: Heart, label: '8b. Goal 2 — Tiny Home Village', color: 'text-prism-rose' },
       { to: '/legacy/foundation', icon: Landmark, label: '9. Family Foundation', color: 'text-prism-amber' },
+      { to: '/ltc', icon: ShieldCheck, label: 'Long-Term Care', color: 'text-prism-sky' },
     ],
-
+    subGroups: [
+      { subLabel: '3. KUNG FOO Plan', items: [
+        { to: '/kungfoo', icon: Layers, label: 'KUNG FOO Plan', color: 'text-prism-teal' },
+        { to: '/legacy/belts', icon: Target, label: 'Belt Progress', color: 'text-prism-lime' },
+      ] },
+      { subLabel: '6. Legacy Mode', items: [
+        { to: '/legacy', icon: Sparkles, label: 'Legacy Mode', color: 'text-prism-amber', essential: true },
+        { to: '/legacy/wealth-os', icon: BookOpen, label: 'Wealth OS Binder', color: 'text-prism-amber' },
+      ] },
+      { subLabel: '8. Real Estate & Impact', items: [
+        { to: '/legacy/real-estate', icon: Sparkles, label: 'Real Estate & Community Impact', color: 'text-prism-amber' },
+        { to: '/legacy/real-estate/medical-housing', icon: Building2, label: 'Goal 1 — Medical Housing', color: 'text-prism-teal' },
+        { to: '/legacy/real-estate/tiny-home-village', icon: Heart, label: 'Goal 2 — Tiny Home Village', color: 'text-prism-rose' },
+      ] },
+    ],
   },
-
   {
     label: 'Insights',
     items: [
-      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange', essential: true },
-      { to: '/reports/monthly', icon: FileText, label: 'Monthly Spending Report', color: 'text-prism-orange' },
-      { to: '/reports/budgets-bills', icon: FileText, label: 'Budgets & Bills Report', color: 'text-prism-amber' },
-      { to: '/reports/capital-events', icon: FileText, label: 'Capital Events Report', color: 'text-prism-lime' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
       { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
+    ],
+    subGroups: [
+      { subLabel: 'Reports', items: [
+        { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange', essential: true },
+        { to: '/reports/monthly', icon: FileText, label: 'Monthly Spending Report', color: 'text-prism-orange' },
+        { to: '/reports/budgets-bills', icon: FileText, label: 'Budgets & Bills Report', color: 'text-prism-amber' },
+        { to: '/reports/capital-events', icon: FileText, label: 'Capital Events Report', color: 'text-prism-lime' },
+      ] },
     ],
   },
   {
@@ -269,12 +305,10 @@ const AppSidebar = () => {
       ...section,
       items: filterItems(section.items),
       topItems: filterItems(section.topItems),
-      subGroups: navMode !== 'full'
-        ? section.subGroups?.filter(sg => {
-            if (sg.mode && sg.mode !== navMode) return false;
-            return true;
-          })
-        : section.subGroups,
+      subGroups: section.subGroups
+        ?.filter(sg => navMode === 'full' || !sg.mode || sg.mode === navMode)
+        .map(sg => ({ ...sg, items: filterItems(sg.items) ?? [] }))
+        .filter(sg => sg.items.length > 0),
     };
 
     // In essentials mode, hide Capital section entirely (it's advanced)
@@ -311,11 +345,10 @@ const AppSidebar = () => {
 
   // Track which capital sub-groups are open — auto-open the one with the active route
   const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>(() => {
-    const capitalSection = NAV_SECTIONS.find(s => s.label === 'Capital');
     const initial: Record<string, boolean> = {};
-    capitalSection?.subGroups?.forEach(sg => {
+    NAV_SECTIONS.forEach(s => s.subGroups?.forEach(sg => {
       initial[sg.subLabel] = sg.items.some(i => location.pathname === i.to);
-    });
+    }));
     return initial;
   });
 
