@@ -99,12 +99,10 @@ export function pickMentorTop5(
   for (const { c, family } of eligibleRows) {
     if (picks.length >= PICK_COUNT) break;
     if (family) {
-      if (heldFamilies.has(family)) {
-        skippedForDiversity.push({ symbol: c.symbol, familyLabel: family });
-        continue;
-      }
-      const used = usedFamilies.get(family) ?? 0;
-      if (used >= MAX_PER_FAMILY) {
+      const clashes =
+        [...heldFamilies].some((h) => familiesRelated(h, family)) ||
+        [...usedFamilies.keys()].some((u) => familiesRelated(u, family));
+      if (clashes || (usedFamilies.get(family) ?? 0) >= MAX_PER_FAMILY) {
         skippedForDiversity.push({ symbol: c.symbol, familyLabel: family });
         continue;
       }
