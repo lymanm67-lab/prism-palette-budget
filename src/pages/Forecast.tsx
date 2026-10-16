@@ -65,6 +65,13 @@ const Forecast = () => {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+      <RelatedToolsBar
+        label="Next steps"
+        tools={[
+          { to: '/cash-flow', icon: Wallet, label: 'Cash Flow' },
+          { to: '/budgets', icon: PiggyBank, label: 'Budgets' },
+        ]}
+      />
       <motion.div variants={item} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
