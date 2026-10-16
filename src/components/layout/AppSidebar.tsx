@@ -518,7 +518,7 @@ const AppSidebar = () => {
                       {section.topItems?.map(renderNavItem)}
                       {section.items?.map(renderNavItem)}
 
-                      {!collapsed && section.subGroups?.map((sg) => {
+                      {!collapsed && section.subGroups?.map((sg, subIdx) => {
                         const isOpen = openSubGroups[sg.subLabel] ?? false;
                         const hasActive = sg.items.some(i => location.pathname === i.to);
                         return (
@@ -547,6 +547,7 @@ const AppSidebar = () => {
                               {isOpen && (
                                 <motion.div
                                   key={sg.subLabel}
+                                  id={`sidebar-subgroup-${sIdx}-${subIdx}-content`}
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
