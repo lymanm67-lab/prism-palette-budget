@@ -28,6 +28,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import HowToUse from '@/components/swingedge/HowToUse';
+import MentorTop5Card from '@/components/swingedge/MentorTop5Card';
+import { pickMentorTop5 } from '@/lib/swingedge/mentorTop5';
+import { useTradeJournal } from '@/hooks/use-swingedge-lists';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import TradeGeometryPanel from '@/components/swingedge/TradeGeometryPanel';
 import { useTradingSettings, useTradingTitle, useCuratedUniverse } from '@/hooks/use-swingedge';
@@ -277,6 +280,32 @@ export default function MarketScanner() {
   ]);
 
 
+  const { openTrades } = useTradeJournal();
+
+  /**
+   * Mentor Top 5 — the diversified shortlist. Recomputed from the same scan
+   * rows, geometry and event reads the table uses, so it can never disagree
+   * with what the table shows.
+   */
+  const mentorTop5 = useMemo(
+    () =>
+      pickMentorTop5(
+        rows.map((r) => ({
+          symbol: r.symbol,
+          verdict: r.verdict,
+          score: r.score,
+          setup: r.setup,
+          rewardRisk: geometryBySymbol[r.symbol]?.rewardRisk ?? null,
+          eventBand: eventBySymbol[r.symbol]?.band ?? null,
+          liquidityGrade: r.liquidity?.grade ?? null,
+          pressureState: r.liquidity?.state ?? null,
+          biasDirection: r.bias?.direction ?? null,
+        })),
+        openTrades.map((t) => t.symbol),
+      ),
+    [rows, geometryBySymbol, eventBySymbol, openTrades],
+  );
+
   const counts = useMemo(() => {
     const base: Record<Verdict, number> = {
       QUALIFIES: 0,
@@ -514,7 +543,9 @@ export default function MarketScanner() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <>
+          {rows.length > 0 && <MentorTop5Card result={mentorTop5} />}
+          <Card>
           <CardHeader className="gap-3 pb-3">
             <CardTitle className="text-base">
               Results {rows.length > 0 && <span className="text-muted-foreground">({rows.length})</span>}
@@ -736,7 +767,8 @@ export default function MarketScanner() {
               </Table>
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </>
       )}
 
       <p className="text-xs italic text-muted-foreground">
