@@ -507,6 +507,7 @@ const AppSidebar = () => {
                 {(sectionOpen || collapsed) && (
                   <motion.div
                     key={section.label + '-content'}
+                    id={`sidebar-section-${sIdx}-content`}
                     initial={collapsed ? false : { height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -524,6 +525,8 @@ const AppSidebar = () => {
                           <div key={sg.subLabel} className="mt-1">
                             <button
                               onClick={() => toggleSubGroup(sg.subLabel)}
+                              aria-expanded={isOpen}
+                              aria-controls={`sidebar-subgroup-${sIdx}-${subIdx}-content`}
                               className={cn(
                                 'flex w-full items-center gap-2 rounded-lg px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors',
                                 hasActive
