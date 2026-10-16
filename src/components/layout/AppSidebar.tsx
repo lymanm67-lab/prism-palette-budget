@@ -480,6 +480,8 @@ const AppSidebar = () => {
               {!collapsed && (
                 <button
                   onClick={() => toggleSection(section.label)}
+                  aria-expanded={sectionOpen}
+                  aria-controls={`sidebar-section-${sIdx}-content`}
                   className={cn(
                     'flex w-full items-center gap-1.5 px-3 pb-1 pt-1 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-md',
                     hasActiveInSection
@@ -505,6 +507,7 @@ const AppSidebar = () => {
                 {(sectionOpen || collapsed) && (
                   <motion.div
                     key={section.label + '-content'}
+                    id={`sidebar-section-${sIdx}-content`}
                     initial={collapsed ? false : { height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -515,13 +518,15 @@ const AppSidebar = () => {
                       {section.topItems?.map(renderNavItem)}
                       {section.items?.map(renderNavItem)}
 
-                      {!collapsed && section.subGroups?.map((sg) => {
+                      {!collapsed && section.subGroups?.map((sg, subIdx) => {
                         const isOpen = openSubGroups[sg.subLabel] ?? false;
                         const hasActive = sg.items.some(i => location.pathname === i.to);
                         return (
                           <div key={sg.subLabel} className="mt-1">
                             <button
                               onClick={() => toggleSubGroup(sg.subLabel)}
+                              aria-expanded={isOpen}
+                              aria-controls={`sidebar-subgroup-${sIdx}-${subIdx}-content`}
                               className={cn(
                                 'flex w-full items-center gap-2 rounded-lg px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors',
                                 hasActive
@@ -542,6 +547,7 @@ const AppSidebar = () => {
                               {isOpen && (
                                 <motion.div
                                   key={sg.subLabel}
+                                  id={`sidebar-subgroup-${sIdx}-${subIdx}-content`}
                                   initial={{ height: 0, opacity: 0 }}
                                   animate={{ height: 'auto', opacity: 1 }}
                                   exit={{ height: 0, opacity: 0 }}
