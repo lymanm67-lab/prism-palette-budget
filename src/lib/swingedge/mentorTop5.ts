@@ -8,7 +8,7 @@
 // Nothing here invents data: a candidate with missing geometry or event
 // information is simply not eligible, and an empty result is a valid answer.
 
-import { familyFor, type ExposureFamily } from './exposureFamily';
+import { familyFor, familiesRelated, type ExposureFamily } from './exposureFamily';
 import type { Verdict } from './types';
 
 export interface MentorCandidate {
