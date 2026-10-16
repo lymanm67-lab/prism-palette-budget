@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { useCashFlowForecast } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
 import {
-  Loader2, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Sparkles, RefreshCw,
+  Loader2, TrendingUp, TrendingDown, AlertTriangle, DollarSign, Sparkles, RefreshCw, Wallet, PiggyBank,
 } from 'lucide-react';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
 import { toast } from 'sonner';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,

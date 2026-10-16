@@ -12,7 +12,8 @@ import {
   parseISO, isWithinInterval, startOfQuarter, endOfQuarter,
   startOfYear, endOfYear, subQuarters, subYears,
 } from 'date-fns';
-import { Loader2, CalendarIcon, X, ArrowLeft, Filter } from 'lucide-react';
+import { Loader2, CalendarIcon, X, ArrowLeft, Filter, TrendingUp, Wallet, Receipt } from 'lucide-react';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
 import { Badge } from '@/components/ui/badge';
 import {
   ComposedChart, Bar, BarChart, Line, XAxis, YAxis, CartesianGrid,

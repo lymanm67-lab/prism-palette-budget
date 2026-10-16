@@ -1471,6 +1471,7 @@ const Reports = () => {
         </TabsContent>
         </div>
       </Tabs>
+      </>
       )}
     </motion.div>
   );
