@@ -24,6 +24,22 @@ const LYMAN_LINES = [
   { group: 'After-tax investing', label: 'Roth 457(b)', amount: 75.00 },
 ];
 
+// Kateri — State of Ohio DODD biweekly stub, advice date 07/24/2026
+const KATERI_GROSS = 4317.60;
+const KATERI_NET = 1951.10;
+const KATERI_LINES = [
+  { group: 'Taxes', label: 'Federal withholding', amount: 498.90 },
+  { group: 'Taxes', label: 'Medicare', amount: 61.89 },
+  { group: 'Taxes', label: 'Ohio withholding', amount: 103.04 },
+  { group: 'Taxes', label: 'Highland Hills city tax', amount: 106.70 },
+  { group: 'Before-tax investing', label: 'OPERS retirement', amount: 431.76 },
+  { group: 'Before-tax benefits', label: 'Health insurance', amount: 76.51 },
+  { group: 'Before-tax investing', label: 'Ohio Deferred Compensation', amount: 25.00 },
+  { group: 'After-tax deductions', label: 'District 1199 SEIU dues', amount: 75.56 },
+  { group: 'After-tax deductions', label: 'Bankruptcy garnishment', amount: 958.62 },
+  { group: 'After-tax benefits', label: 'Supplemental life insurance', amount: 28.52 },
+];
+
 type Who = 'lyman' | 'kateri';
 
 export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDeployment }) {
@@ -35,12 +51,11 @@ export default function PaystubTreeFlow({ deployment }: { deployment: PaycheckDe
   const [open, setOpen] = useState(false);
 
   const isL = who === 'lyman';
-  const checks = isL ? 1 : 2;
-  const gross = Number(isL ? profile?.lyman_gross_monthly : profile?.kateri_gross_monthly) / checks || 0;
-  const net = Number(isL ? profile?.lyman_net_monthly : profile?.kateri_net_monthly) / checks || 0;
+  const gross = isL ? Number(profile?.lyman_gross_monthly) || 0 : KATERI_GROSS;
+  const net = isL ? Number(profile?.lyman_net_monthly) || 0 : KATERI_NET;
   if (gross <= 0 || net <= 0) return null;
 
-  const base = isL ? LYMAN_LINES : [];
+  const base = isL ? LYMAN_LINES : KATERI_LINES;
   const listed = base.reduce((s, l) => s + l.amount, 0);
   const gap = Math.round((gross - net - listed) * 100) / 100;
   const lines = [...base];
