@@ -19,7 +19,7 @@ export async function buildAkronPdf(source: Uint8Array, answers: AkronAnswers, f
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   for (const f of AKRON_FIELDS) {
     const page = pdf.getPage(f.page - 1);
-    const rect = { x: f.x, y: 792 - f.y - f.height, width: f.width, height: f.height, borderWidth: 0, backgroundColor: undefined };
+    const rect = { x: f.x, y: 792 - f.y - f.height, width: f.width, height: f.height, borderWidth: 0, borderColor: undefined, backgroundColor: undefined };
     const value = answers[f.id];
     if (f.kind === 'checkbox') {
       const check = form.createCheckBox(f.id);
@@ -32,8 +32,10 @@ export async function buildAkronPdf(source: Uint8Array, answers: AkronAnswers, f
     } else {
       const text = form.createTextField(f.id);
       text.addToPage(page, { ...rect, font });
-      // Zero-size PDF font invokes pdf-lib's auto-fit appearance sizing.
-      text.setFontSize(0);
+      const content = typeof value === 'string' ? value : '';
+      const maximum = Math.min(10, f.height - 3);
+      const measured = content ? font.widthOfTextAtSize(content, maximum) : 0;
+      text.setFontSize(measured > f.width - 4 ? maximum * (f.width - 4) / measured : maximum);
       if (typeof value === 'string' && value) text.setText(value);
     }
   }

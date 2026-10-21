@@ -17,10 +17,10 @@ field('applicant_ssn', 'Primary applicant — Social Security number', 3, 427.92
 field('applicant_cell', 'Primary applicant — Cell phone', 3, 431.91, 354.61, 104.39, 11.95, 'text');
 field('coapplicant_name', 'Co-applicant — Full name', 3, 197.62, 405.61, 212.77, 11.95, 'text');
 field('coapplicant_email', 'Co-applicant — Email address', 3, 194.44, 419.16, 195.23, 11.95, 'text');
-field('coapplicant_address', 'Co-applicant — Current address', 3, 199.22, 432.7, 337.88, 11.95, 'text');
+field('coapplicant_address', 'Co-applicant — Current address', 3, 212, 432.7, 325, 11.95, 'text');
 field('coapplicant_city', 'Co-applicant — City', 3, 145.83, 446.25, 191.25, 11.95, 'text');
 field('coapplicant_state', 'Co-applicant — State', 3, 372.14, 446.25, 35.86, 11.95, 'text');
-field('coapplicant_zip', 'Co-applicant — ZIP code', 3, 455.81, 446.25, 82.88, 11.95, 'text');
+field('coapplicant_zip', 'Co-applicant — ZIP code', 3, 477, 446.25, 46, 11.95, 'text');
 field('coapplicant_phone', 'Co-applicant — Phone number', 3, 172.12, 459.8, 239.06, 11.95, 'text');
 field('coapplicant_dob', 'Co-applicant — Date of birth', 3, 191.25, 477.33, 151.41, 11.95, 'text');
 field('coapplicant_ssn', 'Co-applicant — Social Security number', 3, 404.02, 477.33, 119.53, 11.95, 'text');
@@ -33,7 +33,7 @@ field('applicant_job_state', 'Primary employment — Employer state', 3, 337.08,
 field('applicant_job_zip', 'Primary employment — Employer ZIP', 3, 436.69, 568.97, 39.05, 11.95, 'text');
 field('applicant_job_phone', 'Primary employment — Employer phone', 3, 158.58, 581.72, 199.22, 11.95, 'text');
 field('applicant_job_duration', 'Primary employment — Duration of employment', 3, 231.89, 595.27, 71.72, 11.95, 'text');
-field('applicant_job_gross', 'Primary employment — Gross annual income', 3, 217.55, 608.02, 86.86, 11.95, 'text');
+field('applicant_job_gross', 'Primary employment — Gross annual income', 3, 224, 608.02, 80, 11.95, 'text');
 field('applicant_job_status', 'Primary employment — Full / part-time status', 3, 421.55, 608.02, 53.39, 11.95, 'text');
 field('applicant_job_hours', 'Primary employment — Weekly hours', 3, 179.3, 621.56, 82.08, 11.95, 'text');
 field('applicant_job_frequency', 'Primary employment — Pay frequency', 3, 400.83, 621.56, 68.53, 11.95, 'text');
@@ -101,7 +101,7 @@ for (const [prefix, who, offset] of [['applicant', 'Primary applicant', 0], ['co
   field(`${prefix}_discharge`, `${who} — Bankruptcy discharge date`, 5, 422, 329 + offset, 72, 11);
 }
 const assets: [string, string, number, number, number][] = [
-  ['checking', 'Checking account', 210, 434, 95], ['savings', 'Savings account', 428, 434, 65],
+  ['checking', 'Checking account', 217, 434, 88], ['savings', 'Savings account', 428, 434, 65],
   ['cd', 'Certificates of deposit', 225, 447, 47], ['stocks', 'Stocks', 313, 447, 60], ['bonds', 'Bonds', 418, 447, 77],
   ['mutual', 'Mutual funds', 181, 460, 57], ['pension', 'Pension plan', 315, 460, 58], ['ira', 'IRAs', 405, 460, 95],
   ['life', 'Whole life insurance cash value', 291, 474, 46], ['other', 'Other assets', 374, 474, 108],
