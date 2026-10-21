@@ -1,0 +1,46 @@
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { AKRON_FIELDS } from './fields';
+
+export type AkronAnswers = Record<string, string | boolean>;
+/** Browser-only answers; source pages are retained without reflow or rasterization. */
+export async function buildAkronPdf(source: Uint8Array, answers: AkronAnswers, flatten: boolean) {
+  const pdf = await PDFDocument.load(source);
+  if (pdf.getPageCount() !== 9) throw new Error('The original nine-page application is required.');
+  const form = pdf.getForm();
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  for (const f of AKRON_FIELDS) {
+    const page = pdf.getPage(f.page - 1);
+    const rect = { x: f.x, y: 792 - f.y - f.height, width: f.width, height: f.height, borderWidth: 0 };
+    const value = answers[f.id];
+    if (f.kind === 'checkbox') {
+      const check = form.createCheckBox(f.id);
+      check.addToPage(page, { ...rect, borderWidth: 0.5, borderColor: rgb(0, 0, 0) });
+      if (value === true) check.check();
+    } else if (f.kind === 'signature' && typeof value === 'string' && value.startsWith('data:image/png')) {
+      const image = await pdf.embedPng(value);
+      const fitted = image.scaleToFit(f.width, f.height);
+      page.drawImage(image, { x: f.x, y: rect.y, width: fitted.width, height: fitted.height });
+    } else {
+      const text = form.createTextField(f.id);
+      text.addToPage(page, { ...rect, font });
+      // Zero-size PDF font invokes pdf-lib's auto-fit appearance sizing.
+      text.setFontSize(0);
+      if (typeof value === 'string' && value) text.setText(value);
+    }
+  }
+  form.updateFieldAppearances(font);
+  if (flatten) form.flatten();
+  return pdf.save();
+}
+
+export function akronDownload(bytes: Uint8Array, filename: string) {
+  const blob = new Blob([new Uint8Array(bytes).buffer], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}

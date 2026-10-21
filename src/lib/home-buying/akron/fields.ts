@@ -94,4 +94,47 @@ field('coapplicant_income_foster', 'Co-applicant other income — Foster care', 
 field('coapplicant_income_afdc', 'Co-applicant other income — AFDC', 4, 363.38, 656.62, 107.58, 11.95, 'text');
 field('coapplicant_income_other', 'Co-applicant other income — Other (specify)', 4, 227.91, 670.17, 231.09, 11.95, 'text');
 
+for (const [prefix, who, offset] of [['applicant', 'Primary applicant', 0], ['coapplicant', 'Co-applicant', 66]] as const) {
+  field(`${prefix}_alimony`, `${who} — Alimony payments`, 5, 197, 301 + offset, 86, 11);
+  field(`${prefix}_childsupport`, `${who} — Child support payments`, 5, 411, 301 + offset, 83, 11);
+  field(`${prefix}_bankruptcy`, `${who} — Filed bankruptcy (yes/no)`, 5, 232, 329 + offset, 68, 11);
+  field(`${prefix}_discharge`, `${who} — Bankruptcy discharge date`, 5, 422, 329 + offset, 72, 11);
+}
+const assets: [string, string, number, number, number][] = [
+  ['checking', 'Checking account', 210, 434, 95], ['savings', 'Savings account', 428, 434, 65],
+  ['cd', 'Certificates of deposit', 225, 447, 47], ['stocks', 'Stocks', 313, 447, 60], ['bonds', 'Bonds', 418, 447, 77],
+  ['mutual', 'Mutual funds', 181, 460, 57], ['pension', 'Pension plan', 315, 460, 58], ['ira', 'IRAs', 405, 460, 95],
+  ['life', 'Whole life insurance cash value', 291, 474, 46], ['other', 'Other assets', 374, 474, 108],
+];
+for (const [prefix, who, offset] of [['applicant', 'Primary applicant', 0], ['coapplicant', 'Co-applicant', 80]] as const) {
+  for (const [key, label, x, y, width] of assets) field(`${prefix}_asset_${key}`, `${who} — ${label}`, 5, x, y + offset, width, 11);
+}
+for (const [prefix, who, page, start] of [['applicant', 'Primary applicant', 5, 607], ['coapplicant', 'Co-applicant', 6, 105]] as const) {
+  for (let row = 0; row < 7; row++) {
+    for (const [key, label, x, width] of [['name', 'Creditor name', 116, 84], ['payment', 'Monthly payment', 204, 96], ['owner', 'Primary / Co / Both', 304, 92], ['balance', 'Outstanding balance', 401, 94]] as const) {
+      field(`${prefix}_creditor_${row + 1}_${key}`, `${who} creditor ${row + 1} — ${label}`, page, x, start + row * 13.3, width, 11);
+    }
+  }
+}
+for (let row = 0; row < 7; row++) {
+  for (const [key, label, x, width] of [['name', 'Full name', 115, 109], ['relationship', 'Relationship', 228, 66], ['dob', 'Date of birth', 298, 64], ['ssn', 'Social Security number', 366, 69], ['income', 'Annual gross income', 439, 95]] as const) {
+    field(`member_${row + 1}_${key}`, `Household member ${row + 1} — ${label}`, 6, x, 274 + row * 28.5, width, 18);
+  }
+}
+field('property_address', 'Property address', 7, 205, 78, 215, 12);
+for (const [prefix, who, page, sx, sy, sw, dx, dy, dw] of [
+  ['guide_applicant', 'Guide — Applicant', 2, 184, 568, 278, 111, 593, 168],
+  ['guide_coapplicant', 'Guide — Co-applicant', 2, 207, 641, 250, 111, 665, 168],
+  ['disclosure_applicant', 'Disclosure — Applicant', 6, 227, 588, 142, 396, 588, 38],
+  ['disclosure_coapplicant', 'Disclosure — Co-applicant', 6, 298, 616, 71, 396, 616, 42],
+  ['certification_applicant', 'Certification — Applicant', 7, 222, 331, 181, 469, 331, 51],
+  ['certification_coapplicant', 'Certification — Co-applicant', 7, 228, 358, 158, 465, 358, 43],
+] as const) {
+  field(`${prefix}_signature`, `${who} signature`, page, sx, sy, sw, 12, 'signature');
+  field(`${prefix}_date`, `${who} date`, page, dx, dy, dw, 12);
+}
+const checklist = ['Signed Application Guide', 'Complete Akron Dreams Application', 'Picture ID', 'Social Security Card', 'Previous two months of paystubs', 'Past two years of Federal tax returns', 'Self-employed year-to-date financial statements', 'Other income verification', 'Three consecutive months of bank statements', 'Proof of prior twelve months rent', 'HUD-approved homebuyer education certificate', 'Lender preapproval letter'];
+const checklistCenters = [183, 222, 261, 300, 339, 377, 416, 462, 507, 546, 600, 656];
+checklist.forEach((label, i) => field(`included_${i + 1}`, `Included — ${label}`, 8, 113, checklistCenters[i] - 6, 12, 12, 'checkbox'));
+
 export { fields as AKRON_FIELDS };
