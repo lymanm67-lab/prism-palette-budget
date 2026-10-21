@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, ArrowRight, Download, FileText, List, PenLine, ZoomIn, ZoomOut, Loader2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, FileText, List, PenLine, ZoomIn, ZoomOut, Loader2, RotateCcw, Save, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import sourceAsset from '@/assets/akron-dreams-application.pdf.asset.json';
 import { AKRON_FIELDS, AKRON_PAGE_LABELS, type AkronField } from '@/lib/home-buying/akron/fields';
 import { buildAkronPdf, akronDownload, type AkronAnswers } from '@/lib/home-buying/akron/pdf';
+import { createAkronDraft, readAkronDraft } from '@/lib/home-buying/akron/draft';
 import AkronSignature from './AkronSignature';
 import './akron-application.css';
 
@@ -30,7 +31,9 @@ export default function AkronDreamsApplication() {
   const [rendering, setRendering] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const dirty = Object.values(answers).some(Boolean);
+  const draftInput = useRef<HTMLInputElement>(null);
+  const [savedAnswers, setSavedAnswers] = useState('{}');
+  const dirty = JSON.stringify(answers) !== savedAnswers;
   const current = AKRON_FIELDS.filter((f) => f.page === page);
   const scale = Math.min(available, 816) / 612 * zoom;
   const set = (id: string, value: string | boolean) => setAnswers((old) => ({ ...old, [id]: value }));
@@ -101,6 +104,29 @@ export default function AkronDreamsApplication() {
     finally { setBusy(false); }
   };
 
+  const saveProgress = () => {
+    const draft = createAkronDraft(answers, page);
+    const url = URL.createObjectURL(new Blob([draft], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'akron-dreams-progress.json';
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    setSavedAnswers(JSON.stringify(answers));
+    toast.success('Draft download started. Keep this file private and use Resume Application to reopen it.');
+  };
+
+  const resumeProgress = async (file: File) => {
+    try {
+      if (file.size > 10_000_000) throw new Error('This draft file is too large.');
+      const draft = readAkronDraft(await file.text());
+      if (dirty && !window.confirm('Replace your current unsaved answers with this draft?')) return;
+      setAnswers(draft.answers); setPage(draft.page); setSignature(undefined);
+      setSavedAnswers(JSON.stringify(draft.answers));
+      toast.success('Application resumed from your saved draft.');
+    } catch { toast.error('Unable to open this file. Choose a draft downloaded with Save Progress.'); }
+  };
+
   const fieldControl = (f: AkronField, positioned: boolean) => {
     const geometry = positioned ? { left: f.x * scale, top: f.y * scale, width: f.width * scale, height: f.height * scale, fontSize: Math.min(10, f.height - 2) * scale } : undefined;
     if (f.kind === 'checkbox') return <Checkbox id={`akron-${f.id}`} aria-label={f.label} checked={answers[f.id] === true} onCheckedChange={(v) => set(f.id, v === true)} className={positioned ? 'akron-field' : ''} style={geometry} />;
@@ -116,15 +142,19 @@ export default function AkronDreamsApplication() {
   return <section className="akron-application space-y-4" aria-label="Akron Dreams online application">
     <div className="space-y-2">
       <h2 className="text-xl font-semibold">Akron Dreams 2026 — Application & Guide</h2>
-      <p className="text-sm text-muted-foreground">Your answers stay only in this open page. Download a copy before leaving, switching tabs or reloading; unsaved answers will be cleared. No application is submitted automatically.</p>
+      <p className="text-sm text-muted-foreground">Save Progress downloads a private draft to your device. Resume Application reopens that file later. Keep it secure: it contains your personal information. Nothing is saved online or submitted automatically.</p>
       <p className="text-xs text-muted-foreground">Original program wording and dates are preserved. Confirm current eligibility and electronic signature acceptance with EANDC. Office-only sections remain blank.</p>
     </div>
     <div className="flex flex-wrap gap-2">
+      <Button variant="outline" onClick={saveProgress} className="gap-2"><Save className="h-4 w-4" />Save Progress</Button>
+      <Button variant="outline" onClick={() => draftInput.current?.click()} className="gap-2"><Upload className="h-4 w-4" />Resume Application</Button>
+      <input ref={draftInput} type="file" accept=".json,application/json" className="hidden" aria-label="Open saved application draft" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void resumeProgress(file); }} />
       <Button disabled={!bytes || busy} onClick={() => exportPdf(true)} className="gap-2">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}Download Completed PDF</Button>
       <Button variant="outline" disabled={!bytes || busy} onClick={() => exportPdf(false)} className="gap-2"><FileText className="h-4 w-4" />Download Fillable PDF</Button>
       <Button variant="ghost" disabled={!bytes} onClick={() => { if (bytes) akronDownload(bytes, 'akron-dreams-original-application-guide.pdf'); }}>Original Application & Guide</Button>
       <Button variant="ghost" disabled={!dirty} title="Clear all answers" aria-label="Clear all answers" onClick={() => { if (window.confirm('Clear all answers and signatures? Download a copy first if needed.')) setAnswers({}); }}><RotateCcw className="h-4 w-4" /></Button>
     </div>
+    {dirty && <p role="status" className="text-xs text-prism-amber">Unsaved changes — save your draft before leaving this page.</p>}
     {error ? <div role="alert" className="text-destructive">{error}</div> : !pdf ? <p role="status" className="text-muted-foreground">Loading original application…</p> : <>
       <div className="flex flex-wrap items-center gap-2 border-y border-border py-3">
         <Button size="icon" variant="outline" aria-label="Previous application page" disabled={page === 1} onClick={() => setPage(page - 1)}><ArrowLeft className="h-4 w-4" /></Button>
