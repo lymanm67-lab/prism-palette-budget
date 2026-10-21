@@ -1,0 +1,140 @@
+/** Rectangles are PDF points, top-left origin, on the unchanged US Letter template. */
+export interface AkronField { id: string; label: string; page: number; x: number; y: number; width: number; height: number; kind: 'text' | 'checkbox' | 'signature'; }
+export const AKRON_PAGE_LABELS = ['Application Guide', 'Guide & Acknowledgement', 'Applicants & Employment', 'Employment & Other Income', 'Liabilities, Assets & Creditors', 'Creditors, Household & Disclosure', 'Application Certification', 'Required Document Checklist', 'Homebuyer Selection Plan'];
+const fields: AkronField[] = [];
+function field(id: string, label: string, page: number, x: number, y: number, width: number, height = 13, kind: AkronField['kind'] = 'text') {
+  fields.push({ id, label, page, x, y, width, height, kind });
+}
+field('applicant_name', 'Primary applicant — Full name', 3, 221.53, 300.42, 211.97, 11.95, 'text');
+field('applicant_email', 'Primary applicant — Email address', 3, 194.44, 313.97, 195.23, 11.95, 'text');
+field('applicant_address', 'Primary applicant — Current address', 3, 199.22, 327.52, 337.88, 11.95, 'text');
+field('applicant_city', 'Primary applicant — City', 3, 145.83, 341.06, 191.25, 11.95, 'text');
+field('applicant_state', 'Primary applicant — State', 3, 372.14, 341.06, 35.86, 11.95, 'text');
+field('applicant_zip', 'Primary applicant — ZIP code', 3, 455.81, 341.06, 82.88, 11.95, 'text');
+field('applicant_phone', 'Primary applicant — Phone number', 3, 172.12, 354.61, 184.08, 11.95, 'text');
+field('applicant_dob', 'Primary applicant — Date of birth', 3, 191.25, 368.16, 151.41, 11.95, 'text');
+field('applicant_ssn', 'Primary applicant — Social Security number', 3, 427.92, 368.16, 94.03, 11.95, 'text');
+field('applicant_cell', 'Primary applicant — Cell phone', 3, 431.91, 354.61, 104.39, 11.95, 'text');
+field('coapplicant_name', 'Co-applicant — Full name', 3, 197.62, 405.61, 212.77, 11.95, 'text');
+field('coapplicant_email', 'Co-applicant — Email address', 3, 194.44, 419.16, 195.23, 11.95, 'text');
+field('coapplicant_address', 'Co-applicant — Current address', 3, 212, 432.7, 325, 11.95, 'text');
+field('coapplicant_city', 'Co-applicant — City', 3, 145.83, 446.25, 191.25, 11.95, 'text');
+field('coapplicant_state', 'Co-applicant — State', 3, 372.14, 446.25, 35.86, 11.95, 'text');
+field('coapplicant_zip', 'Co-applicant — ZIP code', 3, 477, 446.25, 46, 11.95, 'text');
+field('coapplicant_phone', 'Co-applicant — Phone number', 3, 172.12, 459.8, 239.06, 11.95, 'text');
+field('coapplicant_dob', 'Co-applicant — Date of birth', 3, 191.25, 477.33, 151.41, 11.95, 'text');
+field('coapplicant_ssn', 'Co-applicant — Social Security number', 3, 404.02, 477.33, 119.53, 11.95, 'text');
+field('household_size', 'Number of people in household', 3, 285.28, 382.5, 60.56, 11.95, 'text');
+field('applicant_job_employer', 'Primary employment — Employer name', 3, 207.19, 527.53, 266.95, 11.95, 'text');
+field('applicant_job_title', 'Primary employment — Position / title', 3, 177.7, 541.08, 290.86, 11.95, 'text');
+field('applicant_job_address', 'Primary employment — Employer address', 3, 155.39, 554.62, 317.16, 11.95, 'text');
+field('applicant_job_city', 'Primary employment — Employer city', 3, 128.3, 568.97, 176.11, 11.95, 'text');
+field('applicant_job_state', 'Primary employment — Employer state', 3, 337.08, 568.97, 42.23, 11.95, 'text');
+field('applicant_job_zip', 'Primary employment — Employer ZIP', 3, 436.69, 568.97, 39.05, 11.95, 'text');
+field('applicant_job_phone', 'Primary employment — Employer phone', 3, 158.58, 581.72, 199.22, 11.95, 'text');
+field('applicant_job_duration', 'Primary employment — Duration of employment', 3, 231.89, 595.27, 71.72, 11.95, 'text');
+field('applicant_job_gross', 'Primary employment — Gross annual income', 3, 224, 608.02, 80, 11.95, 'text');
+field('applicant_job_status', 'Primary employment — Full / part-time status', 3, 421.55, 608.02, 53.39, 11.95, 'text');
+field('applicant_job_hours', 'Primary employment — Weekly hours', 3, 179.3, 621.56, 82.08, 11.95, 'text');
+field('applicant_job_frequency', 'Primary employment — Pay frequency', 3, 400.83, 621.56, 68.53, 11.95, 'text');
+field('applicant_job_overtime', 'Primary employment — Overtime hours', 3, 194.44, 635.11, 79.69, 11.95, 'text');
+field('coapplicant_job_employer', 'Co-applicant employment — Employer name', 4, 210.38, 105.19, 258.98, 11.95, 'text');
+field('coapplicant_job_title', 'Co-applicant employment — Position / title', 4, 179.3, 119.53, 272.53, 11.95, 'text');
+field('coapplicant_job_address', 'Co-applicant employment — Employer address', 4, 154.59, 133.08, 297.23, 11.95, 'text');
+field('coapplicant_job_city', 'Co-applicant employment — Employer city', 4, 129.89, 147.42, 170.53, 11.95, 'text');
+field('coapplicant_job_state', 'Co-applicant employment — Employer state', 4, 341.86, 147.42, 34.27, 11.95, 'text');
+field('coapplicant_job_zip', 'Co-applicant employment — Employer ZIP', 4, 432.7, 147.42, 32.67, 11.95, 'text');
+field('coapplicant_job_phone', 'Co-applicant employment — Home phone', 4, 156.98, 160.17, 306.8, 11.95, 'text');
+field('coapplicant_job_duration', 'Co-applicant employment — Duration of employment', 4, 227.91, 174.52, 71.72, 11.95, 'text');
+field('coapplicant_job_gross', 'Co-applicant employment — Gross annual income', 4, 201.61, 188.86, 99.61, 11.95, 'text');
+field('coapplicant_job_status', 'Co-applicant employment — Full / part-time status', 4, 421.55, 188.86, 29.48, 11.95, 'text');
+field('coapplicant_job_hours', 'Co-applicant employment — Weekly hours', 4, 171.33, 201.61, 88.45, 11.95, 'text');
+field('coapplicant_job_frequency', 'Co-applicant employment — Pay frequency', 4, 379.31, 201.61, 81.28, 11.95, 'text');
+field('coapplicant_job_overtime', 'Co-applicant employment — Overtime hours', 4, 188.86, 215.16, 77.3, 11.95, 'text');
+field('applicant_otherjob_employer', 'Primary other employment — Employer name', 4, 239.06, 266.16, 218.34, 11.95, 'text');
+field('applicant_otherjob_title', 'Primary other employment — Position / title', 4, 185.67, 278.91, 266.95, 11.95, 'text');
+field('applicant_otherjob_address', 'Primary other employment — Employer address', 4, 154.59, 291.66, 302.81, 11.95, 'text');
+field('applicant_otherjob_city', 'Primary other employment — Employer city', 4, 129.89, 306.0, 173.72, 11.95, 'text');
+field('applicant_otherjob_state', 'Primary other employment — Employer state', 4, 334.69, 306.0, 43.03, 11.95, 'text');
+field('applicant_otherjob_zip', 'Primary other employment — Employer ZIP', 4, 443.86, 306.0, 25.5, 11.95, 'text');
+field('applicant_otherjob_phone', 'Primary other employment — Home phone', 4, 179.3, 320.34, 120.33, 11.95, 'text');
+field('applicant_otherjob_duration', 'Primary other employment — Duration of employment', 4, 228.7, 333.89, 70.92, 11.95, 'text');
+field('applicant_otherjob_gross', 'Primary other employment — Gross annual income', 4, 201.61, 349.03, 99.61, 11.95, 'text');
+field('applicant_otherjob_status', 'Primary other employment — Full / part-time status', 4, 421.55, 349.03, 31.08, 11.95, 'text');
+field('applicant_otherjob_hours', 'Primary other employment — Weekly hours', 4, 171.33, 362.58, 89.25, 11.95, 'text');
+field('applicant_otherjob_frequency', 'Primary other employment — Pay frequency', 4, 380.11, 362.58, 82.88, 11.95, 'text');
+field('applicant_otherjob_overtime', 'Primary other employment — Overtime hours', 4, 190.45, 376.12, 109.17, 11.95, 'text');
+field('applicant_otherjob_cell', 'Primary other employment — Cell phone', 4, 373.73, 320.34, 94.83, 11.95, 'text');
+field('coapplicant_otherjob_employer', 'Co-applicant other employment — Employer name', 4, 252, 492.4, 226, 11.95, 'text');
+field('coapplicant_otherjob_title', 'Co-applicant other employment — Position / title', 4, 175.31, 504.42, 293.25, 11.95, 'text');
+field('coapplicant_otherjob_address', 'Co-applicant other employment — Employer address', 4, 154.59, 517.97, 312.38, 11.95, 'text');
+field('coapplicant_otherjob_city', 'Co-applicant other employment — Employer city', 4, 129.89, 531.52, 175.31, 11.95, 'text');
+field('coapplicant_otherjob_state', 'Co-applicant other employment — Employer state', 4, 339.47, 531.52, 31.88, 11.95, 'text');
+field('coapplicant_otherjob_zip', 'Co-applicant other employment — Employer ZIP', 4, 436.69, 531.52, 30.28, 11.95, 'text');
+field('coapplicant_otherjob_phone', 'Co-applicant other employment — Home phone', 4, 179.3, 545.06, 123.52, 11.95, 'text');
+field('coapplicant_otherjob_duration', 'Co-applicant other employment — Duration of employment', 4, 231.09, 559.41, 70.92, 11.95, 'text');
+field('coapplicant_otherjob_gross', 'Co-applicant other employment — Gross annual income', 4, 214.36, 572.95, 88.45, 11.95, 'text');
+field('coapplicant_otherjob_status', 'Co-applicant other employment — Full / part-time status', 4, 422.34, 572.95, 51.8, 11.95, 'text');
+field('coapplicant_otherjob_hours', 'Co-applicant other employment — Weekly hours', 4, 175.31, 586.5, 90.05, 11.95, 'text');
+field('coapplicant_otherjob_frequency', 'Co-applicant other employment — Pay frequency', 4, 402.42, 586.5, 51.8, 11.95, 'text');
+field('coapplicant_otherjob_overtime', 'Co-applicant other employment — Overtime hours', 4, 190.45, 600.05, 113.95, 11.95, 'text');
+field('coapplicant_otherjob_cell', 'Co-applicant other employment — Cell phone', 4, 373.73, 545.06, 94.83, 11.95, 'text');
+field('applicant_income_alimony', 'Primary other income — Alimony', 4, 152.2, 401.62, 46.22, 11.95, 'text');
+field('applicant_income_childsupport', 'Primary other income — Child support', 4, 282.09, 401.62, 39.05, 11.95, 'text');
+field('applicant_income_pension', 'Primary other income — Pension plan', 4, 400.03, 401.62, 51.8, 11.95, 'text');
+field('applicant_income_disability', 'Primary other income — Social Security Disability', 4, 237.47, 415.17, 59.77, 11.95, 'text');
+field('applicant_income_foster', 'Primary other income — Foster care', 4, 370.55, 415.17, 83.67, 11.95, 'text');
+field('applicant_income_afdc', 'Primary other income — AFDC', 4, 363.38, 428.72, 107.58, 11.95, 'text');
+field('applicant_income_other', 'Primary other income — Other (specify)', 4, 227.91, 442.27, 231.09, 11.95, 'text');
+field('coapplicant_income_alimony', 'Co-applicant other income — Alimony', 4, 152.2, 629.53, 46.22, 11.95, 'text');
+field('coapplicant_income_childsupport', 'Co-applicant other income — Child support', 4, 282.09, 629.53, 39.05, 11.95, 'text');
+field('coapplicant_income_pension', 'Co-applicant other income — Pension plan', 4, 400.03, 629.53, 51.8, 11.95, 'text');
+field('coapplicant_income_disability', 'Co-applicant other income — Social Security Disability', 4, 237.47, 643.08, 59.77, 11.95, 'text');
+field('coapplicant_income_foster', 'Co-applicant other income — Foster care', 4, 370.55, 643.08, 83.67, 11.95, 'text');
+field('coapplicant_income_afdc', 'Co-applicant other income — AFDC', 4, 363.38, 656.62, 107.58, 11.95, 'text');
+field('coapplicant_income_other', 'Co-applicant other income — Other (specify)', 4, 227.91, 670.17, 231.09, 11.95, 'text');
+
+for (const [prefix, who, offset] of [['applicant', 'Primary applicant', 0], ['coapplicant', 'Co-applicant', 66]] as const) {
+  field(`${prefix}_alimony`, `${who} — Alimony payments`, 5, 197, 301 + offset, 86, 11);
+  field(`${prefix}_childsupport`, `${who} — Child support payments`, 5, 411, 301 + offset, 83, 11);
+  field(`${prefix}_bankruptcy`, `${who} — Filed bankruptcy (yes/no)`, 5, 232, 329 + offset, 68, 11);
+  field(`${prefix}_discharge`, `${who} — Bankruptcy discharge date`, 5, 422, 329 + offset, 72, 11);
+}
+const assets: [string, string, number, number, number][] = [
+  ['checking', 'Checking account', 217, 434, 88], ['savings', 'Savings account', 428, 434, 65],
+  ['cd', 'Certificates of deposit', 225, 447, 47], ['stocks', 'Stocks', 313, 447, 60], ['bonds', 'Bonds', 418, 447, 77],
+  ['mutual', 'Mutual funds', 181, 460, 57], ['pension', 'Pension plan', 315, 460, 58], ['ira', 'IRAs', 405, 460, 95],
+  ['life', 'Whole life insurance cash value', 291, 474, 46], ['other', 'Other assets', 374, 474, 108],
+];
+for (const [prefix, who, offset] of [['applicant', 'Primary applicant', 0], ['coapplicant', 'Co-applicant', 80]] as const) {
+  for (const [key, label, x, y, width] of assets) field(`${prefix}_asset_${key}`, `${who} — ${label}`, 5, x, y + offset, width, 11);
+}
+for (const [prefix, who, page, start] of [['applicant', 'Primary applicant', 5, 607], ['coapplicant', 'Co-applicant', 6, 105]] as const) {
+  for (let row = 0; row < 7; row++) {
+    for (const [key, label, x, width] of [['name', 'Creditor name', 116, 84], ['payment', 'Monthly payment', 204, 96], ['owner', 'Primary / Co / Both', 304, 92], ['balance', 'Outstanding balance', 401, 94]] as const) {
+      field(`${prefix}_creditor_${row + 1}_${key}`, `${who} creditor ${row + 1} — ${label}`, page, x, start + row * 13.3, width, 11);
+    }
+  }
+}
+for (let row = 0; row < 7; row++) {
+  for (const [key, label, x, width] of [['name', 'Full name', 115, 109], ['relationship', 'Relationship', 228, 66], ['dob', 'Date of birth', 298, 64], ['ssn', 'Social Security number', 366, 69], ['income', 'Annual gross income', 439, 95]] as const) {
+    field(`member_${row + 1}_${key}`, `Household member ${row + 1} — ${label}`, 6, x, 274 + row * 28.5, width, 18);
+  }
+}
+field('property_address', 'Property address', 7, 205, 78, 215, 12);
+for (const [prefix, who, page, sx, sy, sw, dx, dy, dw] of [
+  ['guide_applicant', 'Guide — Applicant', 2, 184, 568, 278, 111, 593, 168],
+  ['guide_coapplicant', 'Guide — Co-applicant', 2, 207, 641, 250, 111, 665, 168],
+  ['disclosure_applicant', 'Disclosure — Applicant', 6, 227, 588, 142, 396, 588, 38],
+  ['disclosure_coapplicant', 'Disclosure — Co-applicant', 6, 298, 616, 71, 396, 616, 42],
+  ['certification_applicant', 'Certification — Applicant', 7, 222, 331, 181, 469, 331, 51],
+  ['certification_coapplicant', 'Certification — Co-applicant', 7, 228, 358, 158, 465, 358, 43],
+] as const) {
+  field(`${prefix}_signature`, `${who} signature`, page, sx, sy, sw, 12, 'signature');
+  field(`${prefix}_date`, `${who} date`, page, dx, dy, dw, 12);
+}
+const checklist = ['Signed Application Guide', 'Complete Akron Dreams Application', 'Picture ID', 'Social Security Card', 'Previous two months of paystubs', 'Past two years of Federal tax returns', 'Self-employed year-to-date financial statements', 'Other income verification', 'Three consecutive months of bank statements', 'Proof of prior twelve months rent', 'HUD-approved homebuyer education certificate', 'Lender preapproval letter'];
+const checklistCenters = [183, 222, 261, 300, 339, 377, 416, 462, 507, 546, 600, 656];
+checklist.forEach((label, i) => field(`included_${i + 1}`, `Included — ${label}`, 8, 113, checklistCenters[i] - 6, 12, 12, 'checkbox'));
+
+export { fields as AKRON_FIELDS };
