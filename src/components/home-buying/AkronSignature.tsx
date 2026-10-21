@@ -22,7 +22,20 @@ export default function AkronSignature({ label, open, onClose, onSave }: { label
         onPointerUp={() => { drawing.current = false; }} onPointerCancel={() => { drawing.current = false; }} />
       <div className="flex justify-between gap-2">
         <Button variant="outline" onClick={() => { ref.current?.getContext('2d')?.clearRect(0, 0, 720, 180); setInk(false); }}><Eraser className="mr-2 h-4 w-4" />Clear</Button>
-        <Button disabled={!ink} onClick={() => { const c = ref.current; if (c) onSave(c.toDataURL('image/png')); }}><Check className="mr-2 h-4 w-4" />Use signature</Button>
+        <Button disabled={!ink} onClick={() => {
+          const c = ref.current; const ctx = c?.getContext('2d');
+          if (!c || !ctx) return;
+          const pixels = ctx.getImageData(0, 0, c.width, c.height).data;
+          let left = c.width, top = c.height, right = 0, bottom = 0;
+          for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+            if (pixels[(y * c.width + x) * 4 + 3] > 0) { left = Math.min(left, x); top = Math.min(top, y); right = Math.max(right, x); bottom = Math.max(bottom, y); }
+          }
+          if (right < left) return;
+          const cropped = document.createElement('canvas');
+          cropped.width = right - left + 3; cropped.height = bottom - top + 3;
+          cropped.getContext('2d')?.drawImage(c, left, top, right - left + 1, bottom - top + 1, 1, 1, right - left + 1, bottom - top + 1);
+          onSave(cropped.toDataURL('image/png'));
+        }}><Check className="mr-2 h-4 w-4" />Use signature</Button>
       </div>
     </DialogContent>
   </Dialog>;
