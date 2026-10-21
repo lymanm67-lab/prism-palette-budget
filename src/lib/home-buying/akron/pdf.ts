@@ -39,7 +39,7 @@ export async function buildAkronPdf(source: Uint8Array, answers: AkronAnswers, f
   }
   form.updateFieldAppearances(font);
   if (flatten) form.flatten();
-  return pdf.save();
+  return pdf.save({ useObjectStreams: false });
 }
 
 export function akronDownload(bytes: Uint8Array, filename: string) {

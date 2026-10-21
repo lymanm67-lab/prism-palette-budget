@@ -5,7 +5,7 @@ import { buildAkronPdf } from './pdf';
 
 async function template() {
   const doc = await PDFDocument.create();
-  for (let i = 0; i < 9; i++) doc.addPage([612, 792]);
+  for (let i = 0; i < 9; i++) doc.addPage([612, 792]).drawText(`Original page ${i + 1}`, { x: 20, y: 750 });
   return doc.save();
 }
 
