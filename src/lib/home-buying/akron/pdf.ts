@@ -19,7 +19,7 @@ export async function buildAkronPdf(source: Uint8Array, answers: AkronAnswers, f
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   for (const f of AKRON_FIELDS) {
     const page = pdf.getPage(f.page - 1);
-    const rect = { x: f.x, y: 792 - f.y - f.height, width: f.width, height: f.height, borderWidth: 0 };
+    const rect = { x: f.x, y: 792 - f.y - f.height, width: f.width, height: f.height, borderWidth: 0, backgroundColor: undefined };
     const value = answers[f.id];
     if (f.kind === 'checkbox') {
       const check = form.createCheckBox(f.id);
