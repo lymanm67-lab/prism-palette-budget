@@ -1,11 +1,20 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, degrees } from 'pdf-lib';
 import { AKRON_FIELDS } from './fields';
 
 export type AkronAnswers = Record<string, string | boolean>;
 /** Browser-only answers; source pages are retained without reflow or rasterization. */
 export async function buildAkronPdf(source: Uint8Array, answers: AkronAnswers, flatten: boolean) {
-  const pdf = await PDFDocument.load(source);
-  if (pdf.getPageCount() !== 9) throw new Error('The original nine-page application is required.');
+  const original = await PDFDocument.load(source);
+  if (original.getPageCount() !== 9) throw new Error('The original nine-page application is required.');
+  const pdf = await PDFDocument.create();
+  // The scanned source's first eight pages use landscape media boxes rotated 270°.
+  // Preserve their exact content while making the entry coordinate space upright.
+  for (const sourcePage of original.getPages()) {
+    const embedded = await pdf.embedPage(sourcePage);
+    const page = pdf.addPage([612, 792]);
+    if (sourcePage.getRotation().angle === 270) page.drawPage(embedded, { x: 612, y: 0, rotate: degrees(90) });
+    else page.drawPage(embedded, { x: 0, y: 0 });
+  }
   const form = pdf.getForm();
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   for (const f of AKRON_FIELDS) {

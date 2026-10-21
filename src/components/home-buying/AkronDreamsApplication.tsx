@@ -41,7 +41,9 @@ export default function AkronDreamsApplication() {
     const controller = new AbortController();
     (async () => {
       try {
-        const response = await fetch(sourceAsset.url, { signal: controller.signal });
+        // Local Vite does not serve the hosted asset gateway; production stays same-origin.
+        const sourceUrl = window.location.hostname === 'localhost' ? `https://prismbudget.com${sourceAsset.url}` : sourceAsset.url;
+        const response = await fetch(sourceUrl, { signal: controller.signal });
         if (!response.ok) throw new Error('Unable to load the original application.');
         const data = new Uint8Array(await response.arrayBuffer());
         loaded = await pdfjs.getDocument({ data: data.slice() }).promise;
