@@ -294,7 +294,7 @@ const AppSidebar = () => {
       if (!items) return items;
       if (sidebarDepth === 'all') return items;
       // In essentials mode, show essential items + any item on the current path
-      return items.filter(i => i.essential || location.pathname === i.to);
+      return items.filter(i => i.essential || (location.pathname + location.search === i.to || location.pathname === i.to));
     };
 
     const filtered = {
@@ -330,7 +330,7 @@ const AppSidebar = () => {
         ...(section.topItems ?? []),
         ...(section.subGroups?.flatMap(sg => sg.items) ?? []),
       ];
-      initial[section.label] = allItems.some(i => location.pathname === i.to) || section.label === 'Home';
+      initial[section.label] = allItems.some(i => (location.pathname + location.search === i.to || location.pathname === i.to)) || section.label === 'Home';
     });
     return initial;
   });
@@ -343,7 +343,7 @@ const AppSidebar = () => {
   const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     NAV_SECTIONS.forEach(s => s.subGroups?.forEach(sg => {
-      initial[sg.subLabel] = sg.items.some(i => location.pathname === i.to);
+      initial[sg.subLabel] = sg.items.some(i => (location.pathname + location.search === i.to || location.pathname === i.to));
     }));
     return initial;
   });
@@ -359,7 +359,7 @@ const AppSidebar = () => {
   };
 
   const renderNavItem = (item: NavItem) => {
-    const isActive = location.pathname === item.to;
+    const isActive = location.pathname === item.to || location.pathname + location.search === item.to;
     return (
       <NavLink
         key={item.to}
@@ -469,7 +469,7 @@ const AppSidebar = () => {
             ...(section.topItems ?? []),
             ...(section.subGroups?.flatMap(sg => sg.items) ?? []),
           ];
-          const hasActiveInSection = allSectionItems.some(i => location.pathname === i.to);
+          const hasActiveInSection = allSectionItems.some(i => (location.pathname + location.search === i.to || location.pathname === i.to));
 
           return (
             <div key={section.label}>
@@ -516,7 +516,7 @@ const AppSidebar = () => {
 
                       {!collapsed && section.subGroups?.map((sg, subIdx) => {
                         const isOpen = openSubGroups[sg.subLabel] ?? false;
-                        const hasActive = sg.items.some(i => location.pathname === i.to);
+                        const hasActive = sg.items.some(i => (location.pathname + location.search === i.to || location.pathname === i.to));
                         return (
                           <div key={sg.subLabel} className="mt-1">
                             <button
