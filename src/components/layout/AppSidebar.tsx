@@ -86,9 +86,9 @@ export const NAV_SECTIONS: NavSection[] = [
         { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
       ] },
       { subLabel: 'Savings Plans', items: [
-        { to: '/planning/fifty-percent', icon: Target, label: 'Live on 50% Plan', color: 'text-prism-amber' },
-        { to: '/planning/five-bucket', icon: Target, label: 'Five-Bucket Wealth Plan', color: 'text-prism-teal' },
-        { to: '/planning/zero-based', icon: Wallet, label: 'Zero-Based Plan', color: 'text-prism-teal' },
+        { to: '/planning/savings-plans?tab=fifty-percent', icon: Target, label: 'Live on 50% Plan', color: 'text-prism-amber' },
+        { to: '/planning/savings-plans?tab=five-bucket', icon: Target, label: 'Five-Bucket Wealth Plan', color: 'text-prism-teal' },
+        { to: '/planning/savings-plans?tab=zero-based', icon: Wallet, label: 'Zero-Based Plan', color: 'text-prism-teal' },
       ] },
       { subLabel: 'Emergency & Reserves', items: [
         { to: '/planning/reserves', icon: ShieldCheck, label: 'Emergency Fund & Liquidity', color: 'text-prism-teal' },

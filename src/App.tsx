@@ -114,12 +114,10 @@ const LtcTaxReport = lazy(() => import("@/pages/LtcTaxReport"));
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 const RetirementTaxCenter = lazy(() => import("./pages/RetirementTaxCenter"));
+const SavingsPlans = lazy(() => import("./pages/SavingsPlans"));
 const TravelFund = lazy(() => import("./pages/TravelFund"));
-const ZeroBasedPlan = lazy(() => import("./pages/ZeroBasedPlan"));
 const MonthEndClose = lazy(() => import("./pages/MonthEndClose"));
-const FiftyPercentPlan = lazy(() => import("./pages/FiftyPercentPlan"));
 const Reserves = lazy(() => import("./pages/Reserves"));
-const FiveBucketPlan = lazy(() => import("./pages/FiveBucketPlan"));
 const FreedCash = lazy(() => import("./pages/FreedCash"));
 const WealthProjection = lazy(() => import("./pages/WealthProjection"));
 const FreedCashReconcile = lazy(() => import("./pages/FreedCashReconcile"));
@@ -326,10 +324,11 @@ const App = () => (
               <Route path="/planning/retirement-tax" element={<Suspense fallback={<PageLoader />}><RetirementTaxCenter /></Suspense>} />
               <Route path="/planning/stress-test" element={<Navigate to="/retirement?tab=stress-test" replace />} />
               <Route path="/planning/travel-fund" element={<Suspense fallback={<PageLoader />}><TravelFund /></Suspense>} />
-              <Route path="/planning/fifty-percent" element={<Suspense fallback={<PageLoader />}><FiftyPercentPlan /></Suspense>} />
+              <Route path="/planning/fifty-percent" element={<Navigate to="/planning/savings-plans?tab=fifty-percent" replace />} />
               <Route path="/budgets/month-end" element={<Suspense fallback={<PageLoader />}><MonthEndClose /></Suspense>} />
-              <Route path="/planning/zero-based" element={<Suspense fallback={<PageLoader />}><ZeroBasedPlan /></Suspense>} />
-              <Route path="/planning/five-bucket" element={<Suspense fallback={<PageLoader />}><FiveBucketPlan /></Suspense>} />
+              <Route path="/planning/zero-based" element={<Navigate to="/planning/savings-plans?tab=zero-based" replace />} />
+              <Route path="/planning/five-bucket" element={<Navigate to="/planning/savings-plans?tab=five-bucket" replace />} />
+              <Route path="/planning/savings-plans" element={<Suspense fallback={<PageLoader />}><SavingsPlans /></Suspense>} />
               <Route path="/planning/reserves" element={<Suspense fallback={<PageLoader />}><Reserves /></Suspense>} />
               <Route path="/planning/wealth-projection" element={<Suspense fallback={<PageLoader />}><WealthProjection /></Suspense>} />
               <Route path="/planning/freed-cash" element={<Suspense fallback={<PageLoader />}><FreedCash /></Suspense>} />
