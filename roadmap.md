@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Add identical nine-page Akron Dreams online application and guide under Home-Buying Readiness (awaiting plan approval)
+- [x] Add identical nine-page Akron Dreams online application and guide under Home-Buying Readiness
 - [x] Build Budget vs Actual page with paycheck-tree pillar reconciliation
 - [x] Align Paycheck Deployment summaries, bills, progress, history, and duplicate protection
 - [x] Net worth tile showed 166k — now uses Household Wealth math (~$1.3M)

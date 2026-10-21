@@ -65,7 +65,7 @@ field('applicant_otherjob_hours', 'Primary other employment — Weekly hours', 4
 field('applicant_otherjob_frequency', 'Primary other employment — Pay frequency', 4, 380.11, 362.58, 82.88, 11.95, 'text');
 field('applicant_otherjob_overtime', 'Primary other employment — Overtime hours', 4, 190.45, 376.12, 109.17, 11.95, 'text');
 field('applicant_otherjob_cell', 'Primary other employment — Cell phone', 4, 373.73, 320.34, 94.83, 11.95, 'text');
-field('coapplicant_otherjob_employer', 'Co-applicant other employment — Employer name', 4, 239.06, 491.67, 239.06, 11.95, 'text');
+field('coapplicant_otherjob_employer', 'Co-applicant other employment — Employer name', 4, 252, 493.5, 226, 11.95, 'text');
 field('coapplicant_otherjob_title', 'Co-applicant other employment — Position / title', 4, 175.31, 504.42, 293.25, 11.95, 'text');
 field('coapplicant_otherjob_address', 'Co-applicant other employment — Employer address', 4, 154.59, 517.97, 312.38, 11.95, 'text');
 field('coapplicant_otherjob_city', 'Co-applicant other employment — Employer city', 4, 129.89, 531.52, 175.31, 11.95, 'text');
