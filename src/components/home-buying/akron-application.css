@@ -1,0 +1,21 @@
+.akron-application {
+  --paper-background: 0 0% 100%;
+  --paper-ink: 0 0% 0%;
+  --paper-field: 174 70% 38%;
+}
+.akron-signature { background: hsl(0 0% 100%); color: hsl(0 0% 0%); }
+.akron-paper { background: hsl(var(--paper-background)); color: hsl(var(--paper-ink)); }
+.akron-field {
+  position: absolute;
+  border: 1px solid hsl(var(--paper-field) / .3);
+  border-radius: 0;
+  padding: 0 1px;
+  background: hsl(var(--paper-field) / .06);
+  color: hsl(var(--paper-ink));
+  font-family: Arial, sans-serif;
+  line-height: 1;
+  box-shadow: none;
+  min-height: 0;
+}
+.akron-field:focus-visible { outline: 2px solid hsl(var(--paper-field)); outline-offset: 1px; background: hsl(var(--paper-background)); }
+.akron-field[data-state="checked"] { background: hsl(var(--paper-field)); color: hsl(var(--paper-background)); }
