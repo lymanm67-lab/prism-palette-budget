@@ -4,6 +4,7 @@ import { CheckCircle2, ChevronDown, Flame, Info, Receipt, Wallet } from 'lucide-
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 import { usePaycheckTree, type PaycheckBillItem } from '@/components/coach/usePaycheckTree';
 import PaycheckCharts from '@/components/coach/PaycheckCharts';
+import EditDeploymentDialog from '@/components/coach/EditDeploymentDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -114,6 +115,7 @@ export default function PaycheckDeploymentCard({ deployment, onUpdate, historica
           <Badge variant="outline" className="border-prism-teal/30 bg-prism-teal/10 text-[10px] text-prism-teal"><CheckCircle2 className="mr-1 h-3 w-3" /> Applied</Badge>
         ) : deployment.id && !historical ? (
           <div className="flex gap-1.5">
+            <EditDeploymentDialog deployment={deployment} />
             <Button size="sm" className="h-7 text-[11px]" onClick={() => onUpdate(deployment.id || '', 'applied')}>Mark applied</Button>
             <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => onUpdate(deployment.id || '', 'skipped')}>Skip</Button>
           </div>

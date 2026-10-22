@@ -89,8 +89,8 @@ export function useBuildPaycheckDeployment() {
 export function useUpdatePaycheckDeployment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { id: string; status?: PaycheckDeployment['status'] }) => {
-      const patch: any = {};
+    mutationFn: async (vars: { id: string; status?: PaycheckDeployment['status']; fields?: Partial<PaycheckDeployment> }) => {
+      const patch: any = { ...(vars.fields || {}) };
       if (vars.status) {
         patch.status = vars.status;
         if (vars.status === 'applied') patch.applied_at = new Date().toISOString();
