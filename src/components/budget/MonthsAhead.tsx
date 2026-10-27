@@ -30,6 +30,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
   });
 
   const cols = months.map(m => {
+    const revisedDebtMonth = futureDebtPayments(m) !== null;
     const rows = data.filter(r => r.month.slice(0, 10) === m && (budgetType === 'all' || (r.categories?.category_groups?.budget_type || 'personal') === budgetType));
     const businessRows = data.filter(r => r.month.slice(0, 10) === m && r.categories?.category_groups?.budget_type === 'business');
     const businessBalance = businessRows.reduce((sum, r) => {
@@ -49,7 +50,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       const type = r.categories?.category_groups?.expense_type;
       const amt = Number(r.planned_amount || 0);
       if (!amt || type === 'payroll_deduction') continue;
-      if (r.categories?.money_purpose === 'business' && r.categories.category_groups?.budget_type === 'personal') continue;
+      if (revisedDebtMonth && r.categories?.money_purpose === 'business' && r.categories.category_groups?.budget_type === 'personal') continue;
       if (type === 'income') { income += amt; if (/speaking/i.test(name)) notes.push({ name, amount: amt }); continue; }
       if (excludesTakeHomeAllocation(name, false)) continue;
       if (name.startsWith('Five-Bucket · ')) savings += amt;
@@ -57,11 +58,11 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       else expenses += amt;
       if (HIGHLIGHT.test(name)) notes.push({ name, amount: amt });
     }
-    if (budgetType === 'personal') expenses += ownerContribution;
-    if (budgetType === 'business') income += ownerContribution;
+    if (revisedDebtMonth && budgetType === 'personal') expenses += ownerContribution;
+    if (revisedDebtMonth && budgetType === 'business') income += ownerContribution;
     const left = income - expenses - debt - savings;
     const split = budgetFunding(BASELINE, savings + Math.max(0, left), m).allocation;
-    return { m, income, expenses, debt, savings, left, notes, split, ownerContribution, debtLines: debtLines.sort((a, b) => b.amount - a.amount) };
+    return { m, income, expenses, debt, savings, left, notes, split, ownerContribution: revisedDebtMonth ? ownerContribution : 0, debtLines: debtLines.sort((a, b) => b.amount - a.amount) };
   });
 
   return (
