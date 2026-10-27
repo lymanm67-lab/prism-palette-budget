@@ -2365,7 +2365,7 @@ const Budgets = () => {
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
       />}
       {budgetType === 'personal' && (() => {
-        const totalExpenseBudgetAll = totalExpenseBudget;
+        const totalExpenseBudgetAll = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
         const baselineKey = `budget-baseline:${month}`;
         const baseline = Number(localStorage.getItem(baselineKey)) || 3055.57;
         const fiveBucketPlan = budgetItems.filter(b => (categoryNameById.get(b.category_id) || '').startsWith('Five-Bucket · ')).reduce((s, b) => s + Number(b.planned_amount || 0), 0);
