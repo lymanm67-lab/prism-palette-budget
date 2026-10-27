@@ -1,6 +1,6 @@
 # Roadmap
 - [x] Complete January–April budgets with confirmed debt changes and assign genuine surplus to Five-Bucket
-- [ ] Resolve January/February $534.30 and April $534.29 shortfalls — waiting on user's choice of reduced costs or additional funding
+- [ ] Resolve January/February $34.30 and April $34.29 shortfalls after removing ended Marketing — waiting on user's choice of reduced costs or additional funding
 - [x] Save Loan 3004 December–April payments and verify the budget notes and monthly amounts
 - [x] Allocate unassigned budget money through existing Five-Bucket priorities and show the same saved funding in the plan
 - [x] Add identical nine-page Akron Dreams online application and guide under Home-Buying Readiness
