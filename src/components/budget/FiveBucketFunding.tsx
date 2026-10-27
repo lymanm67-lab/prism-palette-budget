@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BASELINE, BUCKETS, STAGE_LABEL, type PlanInputs } from '@/lib/fiveBucket/engine';
 import { budgetFunding, FUNDING_PREFIX, fundingName } from '@/lib/fiveBucket/budgetFunding';
 import { Loader2, PiggyBank } from 'lucide-react';
+import FiveBucketGrowth from './FiveBucketGrowth';
 
 interface Props {
   amount: number; month: string;
@@ -68,7 +69,7 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
     finally { setBusy(false); }
   };
 
-  return <section aria-label="Five-Bucket funding" className="space-y-3 border-b border-border py-4">
+  return <><section aria-label="Five-Bucket funding" className="space-y-3 border-b border-border py-4">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h2 className="font-semibold">Five-Bucket funding</h2>
       <Button asChild variant="outline" size="sm"><Link to={`/planning/savings-plans?tab=five-bucket&budgetMonth=${month}`}>View funded plan</Link></Button>
@@ -85,5 +86,5 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
         Assign {formatCurrency(funding.available / 100)} to Five-Bucket
       </Button>
     </>}
-  </section>;
+  </section>{household && <FiveBucketGrowth householdId={household.id} />}</>;
 }
