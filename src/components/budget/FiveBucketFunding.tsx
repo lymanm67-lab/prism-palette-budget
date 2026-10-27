@@ -27,7 +27,10 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
     try { return { ...BASELINE, ...JSON.parse(localStorage.getItem('five-bucket-plan:v1') || '{}') }; }
     catch { return BASELINE; }
   });
-  const funding = budgetFunding(inputs, amount, month);
+  // Round to whole cents so microscopic floating-point leftovers never trigger a phantom "Assign $0.00".
+  const remaining = Math.round(amount * 100) / 100;
+  const funding = budgetFunding(inputs, remaining, month);
+  const fullyAssigned = remaining <= 0.005;
   const existing = budgets.filter(b => categories.some(c => c.id === b.category_id && c.name.startsWith(FUNDING_PREFIX)))
     .reduce((sum, b) => sum + Number(b.planned_amount), 0);
   const valid = funding.total === funding.available && funding.allocation.shortfall === 0;
