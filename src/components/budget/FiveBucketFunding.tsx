@@ -37,7 +37,7 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
       let savingsGroupId = groupId;
       if (!savingsGroupId) {
         const { data, error } = await supabase.from('category_groups').insert({
-          household_id: household.id, name: 'Five-Bucket Funding', budget_type: 'personal', expense_type: 'wealth',
+          household_id: household.id, name: 'Five-Bucket Funding', budget_type: 'personal', expense_type: 'non_monthly',
         }).select('id').single();
         if (error) throw error;
         savingsGroupId = data.id;
@@ -50,7 +50,7 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
         let categoryId = categories.find(c => c.name === name && c.group_id === savingsGroupId)?.id;
         if (!categoryId) {
           const { data, error } = await supabase.from('categories').insert({
-            household_id: household.id, group_id: savingsGroupId, name,
+            household_id: household.id, group_id: savingsGroupId, name, money_purpose: 'build_wealth',
           }).select('id').single();
           if (error) throw error;
           categoryId = data.id;
@@ -64,7 +64,7 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
       if (error) throw error;
       await Promise.all([qc.invalidateQueries({ queryKey: ['budgets'] }), qc.invalidateQueries({ queryKey: ['categories'] }), qc.invalidateQueries({ queryKey: ['category_groups'] })]);
       toast.success('Unallocated money assigned to your Five-Bucket plan');
-    } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save bucket funding'); }
+    } catch (error) { toast.error(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Could not save bucket funding'); }
     finally { setBusy(false); }
   };
 
