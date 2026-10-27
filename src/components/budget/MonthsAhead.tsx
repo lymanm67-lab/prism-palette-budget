@@ -99,9 +99,28 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       </div>
       {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {cols.map(c => (
+          {cols.map(c => {
+            const isOpen = !!openMonths[c.m];
+            const panelId = `months-ahead-${c.m}`;
+            return (
             <div key={c.m} className="rounded-lg border bg-card/60 p-3 text-sm backdrop-blur">
-              <p className="mb-2 font-semibold">{format(new Date(c.m + 'T00:00:00'), 'MMMM yyyy')}</p>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={panelId}
+                onClick={() => setOpenMonths(prev => ({ ...prev, [c.m]: !prev[c.m] }))}
+                className="flex w-full items-center justify-between gap-2 font-semibold"
+              >
+                <span className="flex items-center gap-1.5">
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`} />
+                  {format(new Date(c.m + 'T00:00:00'), 'MMMM yyyy')}
+                </span>
+                <span className={`text-xs font-medium tabular-nums ${c.left < 0 ? 'text-destructive' : 'text-primary'}`}>
+                  left over {formatCurrency(c.left)}
+                </span>
+              </button>
+              {isOpen && (
+                <div id={panelId} className="mt-2">
               <dl className="space-y-1 tabular-nums">
                 <div className="flex justify-between"><dt>Income</dt><dd>{formatCurrency(c.income)}</dd></div>
                 <div className="flex justify-between"><dt>Expenses</dt><dd>{formatCurrency(c.expenses)}</dd></div>
@@ -130,8 +149,11 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
                   {c.notes.map(n => <Badge key={n.name} variant="secondary" className="text-xs">{n.name}: {formatCurrency(n.amount)}</Badge>)}
                 </div>
               )}
+                </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>
