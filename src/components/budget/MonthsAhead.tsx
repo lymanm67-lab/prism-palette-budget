@@ -54,6 +54,16 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       <div>
         <h2 className="text-lg font-semibold">Months ahead</h2>
         <p className="text-sm text-muted-foreground">Your saved {budgetType === 'all' ? 'personal + business' : budgetType} budgets for the next {MONTHS} months, with one-time items like the sister loan, speaking fee and loan payoffs called out.</p>
+        <details className="mt-2 rounded-md border bg-muted/30 p-2 text-sm">
+          <summary className="cursor-pointer font-medium">Why debt payments change each month</summary>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+            <li><b>October–November:</b> $500 sister loan payments (Oct 30, Nov 30) for Mom's home repair.</li>
+            <li><b>November:</b> the $4,100 speaking fee pays off Vacation Loan 3006 and puts about $2,146 extra on Vacation Loan 3004 (35% APR).</li>
+            <li><b>December:</b> one last payment (about $496) clears Vacation Loan 3004. Check the exact payoff with the lender.</li>
+            <li><b>January–May 2027:</b> both vacation loans are gone, freeing about $384/month for the emergency fund. BetrLink rises from $375 to $583/month (63% personal, 37% business) and the student loan starts in January.</li>
+            <li><b>After May 2027:</b> BetrLink ends and debt payments level out to your regular minimums (student loan, SBA $296, small credit builders).</li>
+          </ul>
+        </details>
       </div>
       {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
