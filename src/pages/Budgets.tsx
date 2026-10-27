@@ -56,6 +56,8 @@ import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
 import AssignRemainingDialog from '@/components/budget/AssignRemainingDialog';
 import BudgetSummaryTiles from '@/components/budget/BudgetSummaryTiles';
 import { Coins } from 'lucide-react';
+import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
+import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -895,6 +897,7 @@ const Budgets = () => {
     for (const [type, items] of Object.entries(grouped)) {
       const t = type as ExpenseType;
       for (const b of items) {
+        if (t !== 'income' && t !== 'payroll_deduction' && excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false)) continue;
         if (t === 'payroll_deduction' && isEmployerMatchCategory(b.category_id)) continue;
         totals[t].budget += b.planned_amount;
         totals[t].actual += t === 'income' ? b.received : b.spent;
@@ -902,7 +905,7 @@ const Budgets = () => {
       }
     }
     return totals;
-  }, [isEmployerMatchCategory]);
+  }, [isEmployerMatchCategory, categoryNameById]);
 
   const sectionTotals = useMemo(() => calcSectionTotals(groupedBudgets), [calcSectionTotals, groupedBudgets]);
   const personalSectionTotals = useMemo(() => calcSectionTotals(personalGroupedBudgets), [calcSectionTotals, personalGroupedBudgets]);
@@ -981,6 +984,10 @@ const Budgets = () => {
   const totalIncomeBudget = sectionTotals.income.budget;
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
+  const paycheckIncome = splitBudgetIncome(budgetItems.filter(b => categoryExpenseType.get(b.category_id) === 'income').map(b => ({
+    name: categoryNameById.get(b.category_id) || '', planned: Number(b.planned_amount), received: b.received,
+  })));
+  const excludedExpensePlan = budgetItems.filter(b => categoryExpenseType.get(b.category_id) !== 'income' && categoryExpenseType.get(b.category_id) !== 'payroll_deduction' && excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false)).reduce((sum, b) => sum + Number(b.planned_amount), 0);
 
   // Exclude payroll deductions from expense totals — they're already deducted before net pay
   const totalExpenseBudget = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
@@ -2329,6 +2336,7 @@ const Budgets = () => {
 
       {/* Summary Cards */}
       <BudgetSummaryTiles
+        paycheckIncome={budgetType !== 'business' ? paycheckIncome : undefined}
         totalIncomeBudget={totalIncomeBudget}
         totalIncomeActual={totalIncomeActual}
         totalExpenseBudget={totalExpenseBudget}
@@ -2350,6 +2358,25 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
+      {budgetType === 'personal' && (
+        <section className="space-y-2 border-b py-3 text-sm" aria-label="Expense reconciliation">
+          <div className="flex flex-wrap justify-between gap-2">
+            <p className="font-medium">Expense reconciliation</p>
+            <p>Saved plan {formatCurrency(totalExpenseBudget)} · Confirmed baseline {formatCurrency(3055.57)}</p>
+          </div>
+          <p className="text-muted-foreground">{formatCurrency(excludedExpensePlan)} in reimbursed, HSA-covered or transfer lines is excluded. Payroll deductions are already withheld from net pay.</p>
+          {Math.abs(totalExpenseBudget - 3055.57) > 0.01 && (
+            <details>
+              <summary className="cursor-pointer font-medium text-prism-amber">Review {formatCurrency(Math.abs(totalExpenseBudget - 3055.57))} {totalExpenseBudget > 3055.57 ? 'above' : 'below'} your baseline</summary>
+              <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+                {budgetItems.filter(b => Number(b.planned_amount) > 0 && categoryExpenseType.get(b.category_id) !== 'income' && categoryExpenseType.get(b.category_id) !== 'payroll_deduction' && !excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false)).sort((a, b) => b.planned_amount - a.planned_amount).map(b => (
+                  <li key={b.id} className="flex justify-between gap-3"><span>{categoryNameById.get(b.category_id)}</span><span className="tabular-nums">{formatCurrency(b.planned_amount)}</span></li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </section>
+      )}
 
       {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
       {(viewTab === 'income' || isPrinting) && (
