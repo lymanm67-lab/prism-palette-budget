@@ -10,7 +10,7 @@ const HIGHLIGHT = /sister|speaking|vacation loan|five-bucket/i;
 
 interface Row { month: string; planned_amount: number; categories: { name: string; money_purpose: string | null; category_groups: { expense_type: string | null; budget_type: string | null } | null } | null }
 
-export function MonthsAhead({ householdId }: { householdId: string }) {
+export function MonthsAhead({ householdId, budgetType = 'personal' }: { householdId: string; budgetType?: 'personal' | 'business' | 'all' }) {
   const { formatCurrency } = useCurrency();
   const start = startOfMonth(new Date());
   const months = Array.from({ length: MONTHS }, (_, i) => format(addMonths(start, i), 'yyyy-MM-01'));
@@ -26,7 +26,7 @@ export function MonthsAhead({ householdId }: { householdId: string }) {
   });
 
   const cols = months.map(m => {
-    const rows = data.filter(r => r.month.slice(0, 10) === m && (r.categories?.category_groups?.budget_type || 'personal') === 'personal');
+    const rows = data.filter(r => r.month.slice(0, 10) === m && (budgetType === 'all' || (r.categories?.category_groups?.budget_type || 'personal') === budgetType));
     let income = 0, expenses = 0, debt = 0, savings = 0;
     const notes: { name: string; amount: number }[] = [];
     for (const r of rows) {
@@ -48,7 +48,7 @@ export function MonthsAhead({ householdId }: { householdId: string }) {
     <section className="space-y-3 border-b py-4" aria-label="Months ahead">
       <div>
         <h2 className="text-lg font-semibold">Months ahead</h2>
-        <p className="text-sm text-muted-foreground">Your saved personal budgets for the next {MONTHS} months, with one-time items like the sister loan, speaking fee and loan payoffs called out.</p>
+        <p className="text-sm text-muted-foreground">Your saved {budgetType === 'all' ? 'personal + business' : budgetType} budgets for the next {MONTHS} months, with one-time items like the sister loan, speaking fee and loan payoffs called out.</p>
       </div>
       {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
