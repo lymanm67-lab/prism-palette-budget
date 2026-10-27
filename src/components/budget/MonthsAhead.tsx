@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { addMonths, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
+import { budgetFunding } from '@/lib/fiveBucket/budgetFunding';
+import { BASELINE, BUCKETS } from '@/lib/fiveBucket/engine';
 import { Badge } from '@/components/ui/badge';
 
 const MONTHS = 6;
@@ -41,7 +43,9 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       else expenses += amt;
       if (HIGHLIGHT.test(name)) notes.push({ name, amount: amt });
     }
-    return { m, income, expenses, debt, savings, left: income - expenses - debt - savings, notes };
+    const left = income - expenses - debt - savings;
+    const split = budgetFunding(BASELINE, savings + Math.max(0, left), m).allocation;
+    return { m, income, expenses, debt, savings, left, notes, split };
   });
 
   return (
@@ -62,6 +66,14 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
                 <div className="flex justify-between"><dt>Five-Bucket savings</dt><dd>{formatCurrency(c.savings)}</dd></div>
                 <div className={`flex justify-between border-t pt-1 font-semibold ${c.left < 0 ? 'text-destructive' : 'text-primary'}`}><dt>Left over</dt><dd>{formatCurrency(c.left)}</dd></div>
               </dl>
+              {c.savings + Math.max(0, c.left) > 0 && (
+                <div className="mt-2 space-y-0.5 border-t pt-2 text-xs tabular-nums">
+                  <p className="font-medium">Five-Bucket split{c.left > 0.005 ? ' (incl. left over)' : ''}</p>
+                  {(['emergency', 'retire', 'vacation', 'housing', 'guilt'] as const).map(k => (
+                    <div key={k} className="flex justify-between text-muted-foreground"><span>{BUCKETS.find(b => b.key === k)?.label}</span><span>{formatCurrency(c.split[k] / 100)}</span></div>
+                  ))}
+                </div>
+              )}
               {c.notes.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {c.notes.map(n => <Badge key={n.name} variant="secondary" className="text-xs">{n.name}: {formatCurrency(n.amount)}</Badge>)}
