@@ -2046,8 +2046,8 @@ const Budgets = () => {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-6 pt-6 pb-4 space-y-4">
         {/* Row 1: Title + Month Nav + Actions */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div className="flex items-center gap-3 min-w-0">
             <h1 className="font-display text-2xl font-bold shrink-0">{formatMonth(month)}</h1>
             <div className="flex items-center gap-0.5">
               <Tooltip>
