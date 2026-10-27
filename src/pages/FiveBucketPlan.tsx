@@ -17,6 +17,9 @@ import {
   vacationSlice, toCents, type BucketKey, type PlanInputs,
 } from '@/lib/fiveBucket/engine';
 import { cn } from '@/lib/utils';
+import { useSearchParams } from 'react-router-dom';
+import { useBudgets } from '@/hooks/use-finance-data';
+import { FUNDING_PREFIX, withBudgetFunding } from '@/lib/fiveBucket/budgetFunding';
 
 const KEY = 'five-bucket-plan:v1';
 const SCEN_KEY = 'five-bucket-plan:scenarios:v1';
@@ -52,9 +55,16 @@ function NumField({ label, value, onChange, step = 0.01, suffix, hint }: {
 
 export default function FiveBucketPlan() {
   const reduce = useReducedMotion();
-  const [inp, setInp] = useState<PlanInputs>(() => {
+  const [savedInputs, setInp] = useState<PlanInputs>(() => {
     try { return { ...BASELINE, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return BASELINE; }
   });
+  const [params] = useSearchParams();
+  const sourceMonth = params.get('budgetMonth');
+  const validMonth = sourceMonth && /^\d{4}-(0[1-9]|1[0-2])-01$/.test(sourceMonth) ? sourceMonth : null;
+  const { data: fundedBudgets } = useBudgets(validMonth || `${savedInputs.startYear}-${String(savedInputs.startMonth).padStart(2, '0')}-01`);
+  const fundedRows = (fundedBudgets || []).filter(b => b.categories?.name.startsWith(FUNDING_PREFIX));
+  const fundedAmount = fundedRows.reduce((sum, b) => sum + Number(b.planned_amount), 0);
+  const inp = validMonth && fundedAmount > 0 ? withBudgetFunding(savedInputs, fundedAmount, validMonth) : savedInputs;
   const [horizon, setHorizon] = useState(12);
   const [selected, setSelected] = useState<BucketKey>('emergency');
   const [scenarios, setScenarios] = useState<{ name: string; inputs: PlanInputs }[]>(() => {
@@ -62,7 +72,7 @@ export default function FiveBucketPlan() {
   });
 
   useEffect(() => { document.title = 'Five-Bucket Wealth Plan | PrismMoney'; }, []);
-  useEffect(() => { localStorage.setItem(KEY, JSON.stringify(inp)); }, [inp]);
+  useEffect(() => { localStorage.setItem(KEY, JSON.stringify(savedInputs)); }, [savedInputs]);
 
   const set = <K extends keyof PlanInputs>(k: K) => (v: PlanInputs[K]) => setInp((p) => ({ ...p, [k]: v }));
 
@@ -124,6 +134,14 @@ export default function FiveBucketPlan() {
           <Button variant="ghost" size="sm" onClick={() => setInp(BASELINE)}><RotateCcw className="h-4 w-4 mr-1" />Reset to baseline</Button>
         </div>
       </header>
+      {validMonth && <section aria-label="Saved budget funding" className="space-y-2 border-b border-border pb-4">
+        <h2 className="font-semibold">Saved budget funding · {validMonth.slice(0, 7)}</h2>
+        <p className="text-sm text-muted-foreground">{usd(toCents(fundedAmount))} assigned in your budget. This replaces projected surplus; it is not additional income or a bank transfer.</p>
+        <div className="grid gap-2 sm:grid-cols-5">{fundedRows.map(b => <div key={b.id}>
+          <p className="text-xs text-muted-foreground">{b.categories?.name.replace(FUNDING_PREFIX, '')}</p>
+          <p className="font-semibold tabular-nums">{usd(toCents(b.planned_amount))}</p>
+        </div>)}</div>
+      </section>}
 
       {/* Headline numbers */}
       <div className="grid gap-3 sm:grid-cols-4">
