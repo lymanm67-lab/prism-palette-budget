@@ -5,16 +5,21 @@ export const fundingName = (key: string) => FUNDING_PREFIX + (BUCKETS.find(b => 
 
 /** User-confirmed fixed monthly amounts (cents), filled in this order; Guilt Free gets the remainder. */
 export const FIXED_BUCKETS: [BucketKey, number][] = [['emergency', 34631], ['retire', 19604], ['vacation', 30717], ['housing', 38376]];
+export const MONTHLY_WEIGHTS: [BucketKey, number][] = [['emergency', 40], ['retire', 20], ['vacation', 15], ['housing', 15], ['guilt', 10]];
 
 export function budgetFunding(inputs: PlanInputs, unallocated: number, month: string) {
   const available = Math.max(0, toCents(unallocated));
   let left = available;
   const allocation = { retire: 0, emergency: 0, vacation: 0, housing: 0, guilt: 0, shortfall: 0 } as Record<BucketKey | 'shortfall', number>;
-  for (const [key, cents] of FIXED_BUCKETS) { allocation[key] = Math.min(cents, left); left -= allocation[key]; }
-  allocation.guilt = left;
-  if (month === '2027-01-01' && allocation.guilt > 27065) {
-    allocation.emergency += allocation.guilt - 27065;
-    allocation.guilt = 27065;
+  if (month >= '2027-01-01') {
+    const shares = MONTHLY_WEIGHTS.map(([key, weight]) => ({ key, cents: Math.floor(available * weight / 100), remainder: available * weight % 100 }));
+    for (const share of shares) { allocation[share.key] = share.cents; left -= share.cents; }
+    // Largest remainder keeps the split cent-exact, with priority order breaking ties.
+    shares.sort((a, b) => b.remainder - a.remainder);
+    for (const share of shares.slice(0, left)) allocation[share.key] += 1;
+  } else {
+    for (const [key, cents] of FIXED_BUCKETS) { allocation[key] = Math.min(cents, left); left -= allocation[key]; }
+    allocation.guilt = left;
   }
   return { allocation, stage: stageFor(toCents(inputs.startEmergency), targets(inputs)), total: available, available };
 }
