@@ -103,7 +103,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
             const isOpen = !!openMonths[c.m];
             const panelId = `months-ahead-${c.m}`;
             return (
-            <div key={c.m} className="rounded-lg border bg-card/60 p-3 text-sm backdrop-blur">
+            <div key={c.m} className="self-start rounded-lg border bg-card/60 p-3 text-sm backdrop-blur">
               <button
                 type="button"
                 aria-expanded={isOpen}
