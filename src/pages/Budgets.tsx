@@ -2362,7 +2362,7 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
-      {budgetType === 'personal' && household?.id && <MonthsAhead householdId={household.id} />}
+      {household?.id && <MonthsAhead householdId={household.id} budgetType={budgetType} />}
       {budgetType === 'personal' && <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
