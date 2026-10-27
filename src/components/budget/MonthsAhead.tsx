@@ -7,7 +7,7 @@ import { budgetFunding } from '@/lib/fiveBucket/budgetFunding';
 import { BASELINE, BUCKETS } from '@/lib/fiveBucket/engine';
 import { Badge } from '@/components/ui/badge';
 
-const MONTHS = 6;
+const MONTHS = 7;
 const HIGHLIGHT = /sister|speaking|vacation loan|five-bucket/i;
 
 interface Row { month: string; planned_amount: number; categories: { name: string; money_purpose: string | null; category_groups: { expense_type: string | null; budget_type: string | null } | null } | null }
@@ -59,8 +59,8 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
           <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
             <li><b>October–November:</b> $500 sister loan payments (Oct 30, Nov 30) for Mom's home repair.</li>
             <li><b>November:</b> the $4,100 speaking fee covers the final $500 sister payment, pays off Vacation Loan 2306 and puts $1,000 extra on Vacation Loan 3004 (35% APR). Including its regular $228.47 payment, Loan 3004 receives $1,228.47. The freed $1,146.25 remains available for your Five-Bucket plan.</li>
-            <li><b>December:</b> about $496 is budgeted toward Vacation Loan 3004, but this no longer clears the loan after the reduced November payment. Check the remaining balance with the lender.</li>
-            <li><b>January–May 2027:</b> Vacation Loan 3004 still needs repayment; its remaining payments have not yet been spread across these budgets. The full $384/month is not freed until both vacation loans are paid off. BetrLink rises from $375 to $583/month (63% personal, 37% business) and the student loan starts in January.</li>
+            <li><b>December–April:</b> Vacation Loan 3004 payments are spread across five monthly budgets. Estimated payments include monthly interest at the saved 35.99% APR, assuming October's $228.47 and November's $1,228.47 payments occur. See each month's Vacation Loan Payment 1 below; April is the estimated final payoff. Confirm the exact payoff with the lender.</li>
+            <li><b>January–May 2027:</b> the full vacation-loan payment savings are not available until Loan 3004 is paid off in April. BetrLink rises from $375 to $583/month (63% personal, 37% business) and the student loan starts in January.</li>
             <li><b>After May 2027:</b> BetrLink ends and debt payments level out to your regular minimums (student loan, SBA $296, small credit builders).</li>
           </ul>
         </details>
