@@ -60,6 +60,7 @@ import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
 import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
+import CollapsibleSection from '@/components/CollapsibleSection';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -2362,11 +2363,11 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
-      {household?.id && <MonthsAhead householdId={household.id} budgetType={budgetType} />}
-      {budgetType === 'personal' && <FiveBucketFunding
+      {budgetType === 'personal' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets">
+      <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
-      />}
+      /></CollapsibleSection></div>}
       {budgetType === 'personal' && (() => {
         const totalExpenseBudgetAll = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
         const baselineKey = `budget-baseline:${month}`;
@@ -2374,11 +2375,8 @@ const Budgets = () => {
         const fiveBucketPlan = budgetItems.filter(b => (categoryNameById.get(b.category_id) || '').startsWith('Five-Bucket · ')).reduce((s, b) => s + Number(b.planned_amount || 0), 0);
         const totalExpenseBudget = totalExpenseBudgetAll - fiveBucketPlan;
         return (
-        <section className="space-y-2 border-b py-3 text-sm" aria-label="Expense reconciliation">
-          <div className="flex flex-wrap justify-between gap-2">
-            <p className="font-medium">Expense reconciliation</p>
-            <p>Saved plan {formatCurrency(totalExpenseBudget)} · Baseline {formatCurrency(baseline)}</p>
-          </div>
+        <div className="py-2"><CollapsibleSection title="Expense reconciliation" subtitle={`Saved plan ${formatCurrency(totalExpenseBudget)} · Baseline ${formatCurrency(baseline)}`}>
+        <section className="space-y-2 py-1 text-sm" aria-label="Expense reconciliation">
           <p className="text-muted-foreground">{formatCurrency(excludedExpensePlan)} in reimbursed, HSA-covered or transfer lines is excluded{fiveBucketPlan > 0 ? `, plus ${formatCurrency(fiveBucketPlan)} sent to your Five-Bucket savings (savings, not spending)` : ''}. Payroll deductions are already withheld from net pay.</p>
           {Math.abs(totalExpenseBudget - baseline) > 0.01 && (
             <div className="flex flex-wrap gap-2">
@@ -2399,8 +2397,12 @@ const Budgets = () => {
             </details>
           )}
         </section>
+        </CollapsibleSection></div>
         );
       })()}
+      {household?.id && <div className="py-2"><CollapsibleSection title="Months ahead" subtitle="Income, expenses, debt and savings for the coming months">
+        <MonthsAhead householdId={household.id} budgetType={budgetType} />
+      </CollapsibleSection></div>}
 
       {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
       {(viewTab === 'income' || isPrinting) && (
