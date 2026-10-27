@@ -32,7 +32,7 @@ interface Props {
   ownerContribution: number;
   budgetType: 'personal' | 'business' | 'all';
   totalExpenseRemaining: number;
-  nextIncome: { amount: number; next_due_date: string } | null;
+  nextIncome: { amount: number; next_due_date: string; merchant?: string | null } | null;
   daysToNextIncome: number | null;
   payrollDeductionBudget: number;
   grossIncomeBudget: number;
@@ -177,6 +177,7 @@ export default function BudgetSummaryTiles({
       </p>
       {nextIncome && (
         <p className="text-muted-foreground">
+          {nextIncome.merchant && <span className="block">{nextIncome.merchant}</span>}
           Due {new Date(nextIncome.next_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           {daysToNextIncome !== null && (
             <span> — {daysToNextIncome === 0 ? 'today' : `${daysToNextIncome} day${daysToNextIncome === 1 ? '' : 's'} away`}</span>
@@ -253,7 +254,7 @@ export default function BudgetSummaryTiles({
       tone: 'violet' as Tone,
       value: nextIncome ? nextIncome.amount : totalIncomeBudget,
       sub: nextIncome
-        ? `due ${new Date(nextIncome.next_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+        ? `${nextIncome.merchant || 'Income'} · ${new Date(`${nextIncome.next_due_date}T12:00:00`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
         : 'budgeted income',
       tooltip: expectedIncomeTooltip,
     },
@@ -298,7 +299,7 @@ export default function BudgetSummaryTiles({
                   </p>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 truncate">
+              <p className="text-[10px] text-muted-foreground mt-1 break-words">
                 {tile.sub}
               </p>
               {tile.extra && <div className="mt-1">{tile.extra}</div>}
