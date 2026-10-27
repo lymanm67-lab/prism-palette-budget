@@ -17,6 +17,8 @@ import './akron-application.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
+const sessionMemory: { answers: AkronAnswers; saved: string } = { answers: {}, saved: '{}' };
+
 export default function AkronDreamsApplication() {
   const [bytes, setBytes] = useState<Uint8Array>();
   const [pdf, setPdf] = useState<pdfjs.PDFDocumentProxy>();
@@ -25,14 +27,14 @@ export default function AkronDreamsApplication() {
   const [mode, setMode] = useState<'document' | 'fields'>('document');
   const [zoom, setZoom] = useState(1);
   const [available, setAvailable] = useState(612);
-  const [answers, setAnswers] = useState<AkronAnswers>({});
+  const [answers, setAnswers] = useState<AkronAnswers>(() => sessionMemory.answers);
   const [signature, setSignature] = useState<AkronField>();
   const [busy, setBusy] = useState(false);
   const [rendering, setRendering] = useState(false);
   const container = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const draftInput = useRef<HTMLInputElement>(null);
-  const [savedAnswers, setSavedAnswers] = useState('{}');
+  const [savedAnswers, setSavedAnswers] = useState(() => sessionMemory.saved);
   const dirty = JSON.stringify(answers) !== savedAnswers;
   const current = AKRON_FIELDS.filter((f) => f.page === page);
   const scale = Math.min(available, 816) / 612 * zoom;
@@ -86,6 +88,9 @@ export default function AkronDreamsApplication() {
     })();
     return () => { active = false; task?.cancel(); };
   }, [pdf, page, scale, mode]);
+
+  // Keep answers in this tab's memory only (never storage) so tab/page switches don't erase them.
+  useEffect(() => { sessionMemory.answers = answers; sessionMemory.saved = savedAnswers; }, [answers, savedAnswers]);
 
   useEffect(() => {
     if (!dirty) return;
