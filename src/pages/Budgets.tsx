@@ -2376,7 +2376,7 @@ const Budgets = () => {
           <p className="text-muted-foreground">{formatCurrency(excludedExpensePlan)} in reimbursed, HSA-covered or transfer lines is excluded. Payroll deductions are already withheld from net pay.</p>
           {Math.abs(totalExpenseBudget - baseline) > 0.01 && (
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => { localStorage.setItem(baselineKey, String(totalExpenseBudget)); setMonthOffset(o => o); toast.success('Baseline updated for this month'); window.dispatchEvent(new Event('storage')); setBaselineTick(t => t + 1); }}>Use saved plan as this month's baseline</Button>
+              <Button size="sm" variant="outline" onClick={() => { localStorage.setItem(baselineKey, String(totalExpenseBudget)); toast.success('Baseline updated for this month'); setBaselineTick(t => t + 1); }}>Use saved plan as this month's baseline</Button>
             </div>
           )}
           {baseline !== 3055.57 && (
@@ -2393,7 +2393,8 @@ const Budgets = () => {
             </details>
           )}
         </section>
-      )}
+        );
+      })()}
 
       {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
       {(viewTab === 'income' || isPrinting) && (
