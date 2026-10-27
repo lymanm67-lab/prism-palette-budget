@@ -31,18 +31,26 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
     .reduce((sum, b) => sum + Number(b.planned_amount), 0);
   const valid = funding.total === funding.available && funding.allocation.shortfall === 0;
   const save = async () => {
-    if (busy || !household || !groupId || !valid || funding.available <= 0) return;
+    if (busy || !household || !valid || funding.available <= 0) return;
     setBusy(true);
     try {
+      let savingsGroupId = groupId;
+      if (!savingsGroupId) {
+        const { data, error } = await supabase.from('category_groups').insert({
+          household_id: household.id, name: 'Five-Bucket Funding', budget_type: 'personal', expense_type: 'wealth',
+        }).select('id').single();
+        if (error) throw error;
+        savingsGroupId = data.id;
+      }
       const rows = [];
       for (const bucket of BUCKETS) {
         const cents = funding.allocation[bucket.key];
         if (!cents) continue;
         const name = fundingName(bucket.key);
-        let categoryId = categories.find(c => c.name === name && c.group_id === groupId)?.id;
+        let categoryId = categories.find(c => c.name === name && c.group_id === savingsGroupId)?.id;
         if (!categoryId) {
           const { data, error } = await supabase.from('categories').insert({
-            household_id: household.id, group_id: groupId, name,
+            household_id: household.id, group_id: savingsGroupId, name,
           }).select('id').single();
           if (error) throw error;
           categoryId = data.id;
@@ -54,7 +62,7 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
       // One write: retries replace the same totals rather than appending a second allocation.
       const { error } = await supabase.from('budgets').upsert(rows, { onConflict: 'household_id,category_id,month' });
       if (error) throw error;
-      await Promise.all([qc.invalidateQueries({ queryKey: ['budgets'] }), qc.invalidateQueries({ queryKey: ['categories'] })]);
+      await Promise.all([qc.invalidateQueries({ queryKey: ['budgets'] }), qc.invalidateQueries({ queryKey: ['categories'] }), qc.invalidateQueries({ queryKey: ['category_groups'] })]);
       toast.success('Unallocated money assigned to your Five-Bucket plan');
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save bucket funding'); }
     finally { setBusy(false); }
@@ -72,7 +80,7 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
         <p className="font-semibold tabular-nums">{formatCurrency(funding.allocation[b.key] / 100)}</p>
       </div>)}</div>
       {!valid && <p role="alert" className="text-sm text-destructive">Your saved splits exceed the available money. Adjust them in Five-Bucket before assigning.</p>}
-      <Button onClick={save} disabled={busy || !valid || !groupId} size="sm">
+      <Button onClick={save} disabled={busy || !valid} size="sm">
         {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PiggyBank className="mr-2 h-4 w-4" />}
         Assign {formatCurrency(funding.available / 100)} to Five-Bucket
       </Button>
