@@ -2365,15 +2365,18 @@ const Budgets = () => {
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
       />}
       {budgetType === 'personal' && (() => {
+        const totalExpenseBudgetAll = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
         const baselineKey = `budget-baseline:${month}`;
         const baseline = Number(localStorage.getItem(baselineKey)) || 3055.57;
+        const fiveBucketPlan = budgetItems.filter(b => (categoryNameById.get(b.category_id) || '').startsWith('Five-Bucket · ')).reduce((s, b) => s + Number(b.planned_amount || 0), 0);
+        const totalExpenseBudget = totalExpenseBudgetAll - fiveBucketPlan;
         return (
         <section className="space-y-2 border-b py-3 text-sm" aria-label="Expense reconciliation">
           <div className="flex flex-wrap justify-between gap-2">
             <p className="font-medium">Expense reconciliation</p>
             <p>Saved plan {formatCurrency(totalExpenseBudget)} · Baseline {formatCurrency(baseline)}</p>
           </div>
-          <p className="text-muted-foreground">{formatCurrency(excludedExpensePlan)} in reimbursed, HSA-covered or transfer lines is excluded. Payroll deductions are already withheld from net pay.</p>
+          <p className="text-muted-foreground">{formatCurrency(excludedExpensePlan)} in reimbursed, HSA-covered or transfer lines is excluded{fiveBucketPlan > 0 ? `, plus ${formatCurrency(fiveBucketPlan)} sent to your Five-Bucket savings (savings, not spending)` : ''}. Payroll deductions are already withheld from net pay.</p>
           {Math.abs(totalExpenseBudget - baseline) > 0.01 && (
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={() => { localStorage.setItem(baselineKey, String(totalExpenseBudget)); toast.success('Baseline updated for this month'); setBaselineTick(t => t + 1); }}>Use saved plan as this month's baseline</Button>
@@ -2386,7 +2389,7 @@ const Budgets = () => {
             <details>
               <summary className="cursor-pointer font-medium text-prism-amber">Review {formatCurrency(Math.abs(totalExpenseBudget - baseline))} {totalExpenseBudget > baseline ? 'above' : 'below'} your baseline</summary>
               <ul className="mt-2 grid gap-1 sm:grid-cols-2">
-                {budgetItems.filter(b => Number(b.planned_amount) > 0 && categoryExpenseType.get(b.category_id) !== 'income' && categoryExpenseType.get(b.category_id) !== 'payroll_deduction' && !excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false)).sort((a, b) => b.planned_amount - a.planned_amount).map(b => (
+                {budgetItems.filter(b => Number(b.planned_amount) > 0 && categoryExpenseType.get(b.category_id) !== 'income' && categoryExpenseType.get(b.category_id) !== 'payroll_deduction' && !excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false) && !(categoryNameById.get(b.category_id) || '').startsWith('Five-Bucket · ')).sort((a, b) => b.planned_amount - a.planned_amount).map(b => (
                   <li key={b.id} className="flex justify-between gap-3"><span>{categoryNameById.get(b.category_id)}</span><span className="tabular-nums">{formatCurrency(b.planned_amount)}</span></li>
                 ))}
               </ul>
