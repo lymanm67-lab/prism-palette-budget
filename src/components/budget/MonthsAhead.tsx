@@ -1,3 +1,4 @@
+import { useCurrency } from '@/hooks/use-currency';
 import { useQuery } from '@tanstack/react-query';
 import { addMonths, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
