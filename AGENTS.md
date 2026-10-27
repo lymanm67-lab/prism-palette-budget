@@ -4,6 +4,7 @@
 - Five-Bucket budget funding is saved as prefixed personal wealth budget rows using one bulk upsert; linked projections replace surplus with those saved totals and disable extra payroll reductions/consulting, so allocations are not counted twice.
 
 - Net-pay allocation excludes withheld payroll, internal transfer categories, reimbursed groceries and HSA-covered medical costs before purpose overrides, preventing false cash-shortfall warnings.
+- Business investment transfers stay in allocated wealth totals but are separated from operating funding labels; matching Owner Draw rows move business surplus into Personal without creating combined income.
 
 - Monthly Budget vs Actual classification lives in `src/lib/budgeting/budgetActual.ts`; reuse it across reports so the six paycheck-tree areas remain consistent.
 - Akron application fields use one PDF-point coordinate registry for browser entry and pdf-lib exports over the original template, preventing layout drift.
