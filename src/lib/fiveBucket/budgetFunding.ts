@@ -9,7 +9,7 @@ export const FIXED_BUCKETS: [BucketKey, number][] = [['emergency', 34631], ['ret
 export function budgetFunding(inputs: PlanInputs, unallocated: number, month: string) {
   const available = Math.max(0, toCents(unallocated));
   let left = available;
-  const allocation = { retire: 0, emergency: 0, vacation: 0, housing: 0, guilt: 0 } as Record<BucketKey, number>;
+  const allocation = { retire: 0, emergency: 0, vacation: 0, housing: 0, guilt: 0, shortfall: 0 } as Record<BucketKey | 'shortfall', number>;
   for (const [key, cents] of FIXED_BUCKETS) { allocation[key] = Math.min(cents, left); left -= allocation[key]; }
   allocation.guilt = left;
   return { allocation, stage: stageFor(toCents(inputs.startEmergency), targets(inputs)), total: available, available };
