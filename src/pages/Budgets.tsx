@@ -2425,9 +2425,9 @@ const Budgets = () => {
 
 
       {(viewTab === 'budget' || isPrinting) && (
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+      <div className="grid min-w-0 grid-cols-1 gap-6">
         {/* Main budget table */}
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           {/* Column headers + Expand/Collapse All */}
           <div className="hidden sm:flex items-center gap-3 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
             <div className="flex items-center gap-1">
