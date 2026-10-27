@@ -31,6 +31,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
     const rows = data.filter(r => r.month.slice(0, 10) === m && (budgetType === 'all' || (r.categories?.category_groups?.budget_type || 'personal') === budgetType));
     let income = 0, expenses = 0, debt = 0, savings = 0;
     const notes: { name: string; amount: number }[] = [];
+    const debtLines: { name: string; amount: number }[] = [];
     for (const r of rows) {
       const name = r.categories?.name || '';
       const type = r.categories?.category_groups?.expense_type;
@@ -39,13 +40,13 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       if (type === 'income') { income += amt; if (/speaking/i.test(name)) notes.push({ name, amount: amt }); continue; }
       if (excludesTakeHomeAllocation(name, false)) continue;
       if (name.startsWith('Five-Bucket · ')) savings += amt;
-      else if (r.categories?.money_purpose === 'eliminate_debt' || /loan|debt|betrlink/i.test(name)) debt += amt;
+      else if (r.categories?.money_purpose === 'eliminate_debt' || /loan|debt|betrlink/i.test(name)) { debt += amt; debtLines.push({ name, amount: amt }); }
       else expenses += amt;
       if (HIGHLIGHT.test(name)) notes.push({ name, amount: amt });
     }
     const left = income - expenses - debt - savings;
     const split = budgetFunding(BASELINE, savings + Math.max(0, left), m).allocation;
-    return { m, income, expenses, debt, savings, left, notes, split };
+    return { m, income, expenses, debt, savings, left, notes, split, debtLines: debtLines.sort((a, b) => b.amount - a.amount) };
   });
 
   return (
@@ -66,6 +67,12 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
                 <div className="flex justify-between"><dt>Five-Bucket savings</dt><dd>{formatCurrency(c.savings)}</dd></div>
                 <div className={`flex justify-between border-t pt-1 font-semibold ${c.left < 0 ? 'text-destructive' : 'text-primary'}`}><dt>Left over</dt><dd>{formatCurrency(c.left)}</dd></div>
               </dl>
+              {c.debtLines.length > 0 && (
+                <div className="mt-2 space-y-0.5 border-t pt-2 text-xs tabular-nums">
+                  <p className="font-medium">Debt payments</p>
+                  {c.debtLines.map(d => <div key={d.name} className="flex justify-between gap-2 text-muted-foreground"><span className="truncate">{d.name}</span><span>{formatCurrency(d.amount)}</span></div>)}
+                </div>
+              )}
               {c.savings + Math.max(0, c.left) > 0 && (
                 <div className="mt-2 space-y-0.5 border-t pt-2 text-xs tabular-nums">
                   <p className="font-medium">Five-Bucket split{c.left > 0.005 ? ' (incl. left over)' : ''}</p>
