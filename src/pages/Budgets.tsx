@@ -145,6 +145,7 @@ const Budgets = () => {
   const { leftOver: typicalLeftOver } = useMonthlyCommitments();
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
+  const [, setBaselineTick] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
   const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
@@ -2363,16 +2364,27 @@ const Budgets = () => {
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
       />}
-      {budgetType === 'personal' && (
+      {budgetType === 'personal' && (() => {
+        const baselineKey = `budget-baseline:${month}`;
+        const baseline = Number(localStorage.getItem(baselineKey)) || 3055.57;
+        return (
         <section className="space-y-2 border-b py-3 text-sm" aria-label="Expense reconciliation">
           <div className="flex flex-wrap justify-between gap-2">
             <p className="font-medium">Expense reconciliation</p>
-            <p>Saved plan {formatCurrency(totalExpenseBudget)} · Confirmed baseline {formatCurrency(3055.57)}</p>
+            <p>Saved plan {formatCurrency(totalExpenseBudget)} · Baseline {formatCurrency(baseline)}</p>
           </div>
           <p className="text-muted-foreground">{formatCurrency(excludedExpensePlan)} in reimbursed, HSA-covered or transfer lines is excluded. Payroll deductions are already withheld from net pay.</p>
-          {Math.abs(totalExpenseBudget - 3055.57) > 0.01 && (
+          {Math.abs(totalExpenseBudget - baseline) > 0.01 && (
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => { localStorage.setItem(baselineKey, String(totalExpenseBudget)); setMonthOffset(o => o); toast.success('Baseline updated for this month'); window.dispatchEvent(new Event('storage')); setBaselineTick(t => t + 1); }}>Use saved plan as this month's baseline</Button>
+            </div>
+          )}
+          {baseline !== 3055.57 && (
+            <button type="button" className="text-xs text-muted-foreground underline" onClick={() => { localStorage.removeItem(baselineKey); setBaselineTick(t => t + 1); }}>Reset to standard $3,055.57 baseline</button>
+          )}
+          {Math.abs(totalExpenseBudget - baseline) > 0.01 && (
             <details>
-              <summary className="cursor-pointer font-medium text-prism-amber">Review {formatCurrency(Math.abs(totalExpenseBudget - 3055.57))} {totalExpenseBudget > 3055.57 ? 'above' : 'below'} your baseline</summary>
+              <summary className="cursor-pointer font-medium text-prism-amber">Review {formatCurrency(Math.abs(totalExpenseBudget - baseline))} {totalExpenseBudget > baseline ? 'above' : 'below'} your baseline</summary>
               <ul className="mt-2 grid gap-1 sm:grid-cols-2">
                 {budgetItems.filter(b => Number(b.planned_amount) > 0 && categoryExpenseType.get(b.category_id) !== 'income' && categoryExpenseType.get(b.category_id) !== 'payroll_deduction' && !excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false)).sort((a, b) => b.planned_amount - a.planned_amount).map(b => (
                   <li key={b.id} className="flex justify-between gap-3"><span>{categoryNameById.get(b.category_id)}</span><span className="tabular-nums">{formatCurrency(b.planned_amount)}</span></li>
