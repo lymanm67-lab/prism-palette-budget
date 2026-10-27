@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from '@/components/ui/switch';
 import { useCurrency } from '@/hooks/use-currency';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import { useHouseholdProfile } from '@/hooks/use-household-profile';
 import { electionsForMonth, usePayrollElections, type PayrollElection } from '@/hooks/use-money-purpose';
 import { cn } from '@/lib/utils';
 import { CalendarClock, Lock, Plus, Trash2 } from 'lucide-react';
@@ -35,6 +36,7 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
   const { household } = useHousehold();
   const qc = useQueryClient();
   const { data: elections } = usePayrollElections();
+  const { data: profile } = useHouseholdProfile();
   const [open, setOpen] = useState(false);
   /** `month` may arrive as `YYYY-MM` or `YYYY-MM-01`; normalise both forms. */
   const ym = month.slice(0, 7);
@@ -242,6 +244,24 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
         </div>
       </CardHeader>
       <CardContent className="space-y-3 text-xs">
+        {profile?.lyman_gross_monthly != null && (
+          <div className="space-y-2 border-b pb-3">
+            <p className="font-medium">Lyman · IU monthly paycheck</p>
+            <dl className="grid grid-cols-2 gap-3">
+              <div>
+                <dt className="text-muted-foreground">Gross pay</dt>
+                <dd className="text-lg font-semibold tabular-nums">{formatCurrency(Number(profile.lyman_gross_monthly))}</dd>
+              </div>
+              {profile.lyman_net_monthly != null && (
+                <div>
+                  <dt className="text-muted-foreground">Net take-home</dt>
+                  <dd className="text-lg font-semibold tabular-nums">{formatCurrency(Number(profile.lyman_net_monthly))}</dd>
+                </div>
+              )}
+            </dl>
+            <p className="text-muted-foreground">HSA and employee deductions are already withheld from net pay. Employer contributions are additional, not take-home pay.</p>
+          </div>
+        )}
         <div className="space-y-1.5">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Employee wealth contributions · {formatCurrency(sum(employeeWealth))}
