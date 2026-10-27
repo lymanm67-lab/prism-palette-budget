@@ -19,6 +19,7 @@ import AssignRemainingDialog, {
 } from './AssignRemainingDialog';
 
 interface Props {
+  paycheckIncome?: { paycheck: number; paycheckReceived: number; other: number };
   totalIncomeBudget: number;
   totalIncomeActual: number;
   totalExpenseBudget: number;
@@ -52,6 +53,7 @@ const toneClasses: Record<Tone, { text: string; bg: string; border: string }> = 
 };
 
 export default function BudgetSummaryTiles({
+  paycheckIncome,
   totalIncomeBudget,
   totalIncomeActual,
   totalExpenseBudget,
@@ -83,7 +85,8 @@ export default function BudgetSummaryTiles({
 
   const incomeTooltip = (
     <div className="space-y-1">
-      <p className="font-semibold">Net income: {formatCurrency(totalIncomeBudget)}</p>
+      <p className="font-semibold">Total budget income: {formatCurrency(totalIncomeBudget)}</p>
+      {paycheckIncome && <p>Paychecks: {formatCurrency(paycheckIncome.paycheck)} · Other deposits: {formatCurrency(paycheckIncome.other)}</p>}
       {payrollDeductionBudget > 0 && (
         <p className="text-muted-foreground">
           {formatCurrency(grossIncomeBudget)} gross − {formatCurrency(payrollDeductionBudget)} deductions
@@ -189,11 +192,11 @@ export default function BudgetSummaryTiles({
   const tiles = [
     {
       key: 'income',
-      label: 'Income',
+      label: paycheckIncome ? 'Net paycheck' : 'Income',
       icon: Wallet,
       tone: 'teal' as Tone,
-      value: totalIncomeBudget,
-      sub: `${formatCurrency(totalIncomeActual)} received`,
+      value: paycheckIncome ? paycheckIncome.paycheck : totalIncomeBudget,
+      sub: paycheckIncome ? `${formatCurrency(paycheckIncome.other)} other deposits` : `${formatCurrency(totalIncomeActual)} received`,
       tooltip: incomeTooltip,
     },
     {
