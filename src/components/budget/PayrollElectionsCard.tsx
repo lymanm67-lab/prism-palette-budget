@@ -12,10 +12,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from '@/components/ui/switch';
 import { useCurrency } from '@/hooks/use-currency';
 import { useHousehold } from '@/contexts/HouseholdContext';
-import { useHouseholdProfile } from '@/hooks/use-household-profile';
+import { useHouseholdProfile, useSaveHouseholdProfile } from '@/hooks/use-household-profile';
 import { electionsForMonth, usePayrollElections, type PayrollElection } from '@/hooks/use-money-purpose';
 import { cn } from '@/lib/utils';
-import { CalendarClock, Lock, Plus, Trash2 } from 'lucide-react';
+import { CalendarClock, Lock, Pencil, Plus, Trash2 } from 'lucide-react';
 
 const TREATMENTS = [
   { value: 'pre_tax', label: 'Pre-Tax' },
@@ -37,6 +37,10 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
   const qc = useQueryClient();
   const { data: elections } = usePayrollElections();
   const { data: profile } = useHouseholdProfile();
+  const saveProfile = useSaveHouseholdProfile();
+  const [payOpen, setPayOpen] = useState(false);
+  const [payForm, setPayForm] = useState({ gross: '', net: '' });
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   /** `month` may arrive as `YYYY-MM` or `YYYY-MM-01`; normalise both forms. */
   const ym = month.slice(0, 7);
@@ -60,23 +64,30 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
 
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('payroll_elections' as any).insert({
-        household_id: household!.id,
+      if (!household) throw new Error('No household selected');
+      const amount = Number(form.amount);
+      if (!form.amount.trim() || !Number.isFinite(amount) || amount < 0) throw new Error('Enter a valid amount');
+      if (!form.effective_start || (form.effective_end && form.effective_end < form.effective_start)) throw new Error('Check the effective dates');
+      const values = {
         label: form.label.trim(),
-        owner: 'lyman',
-        amount: Number(form.amount) || 0,
+        amount,
         tax_treatment: form.tax_treatment,
         counts_as_wealth: form.is_employer ? true : form.counts_as_wealth,
         is_employer: form.is_employer,
         effective_start: form.effective_start,
         effective_end: form.effective_end || null,
-      } as any);
+      };
+      const table = supabase.from('payroll_elections' as any);
+      const { error } = editingId
+        ? await table.update(values as any).eq('id', editingId).eq('household_id', household.id)
+        : await table.insert({ ...values, household_id: household.id, owner: 'lyman' } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['payroll-elections'] });
-      toast.success('Election saved');
+      toast.success('Payroll amount saved');
       setOpen(false);
+      setEditingId(null);
       setForm((f) => ({ ...f, label: '', amount: '' }));
     },
     onError: (e: any) => toast.error(e.message),
@@ -115,6 +126,13 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
       </div>
       <div className="flex items-center gap-1">
         <span className="font-medium tabular-nums">{formatCurrency(Number(e.amount))}</span>
+        <Button size="icon" variant="ghost" className="h-7 w-7" aria-label={`Edit ${e.label}`} title={`Edit ${e.label}`} onClick={() => {
+          setEditingId(e.id);
+          setForm({ label: e.label, amount: String(e.amount), tax_treatment: e.tax_treatment, counts_as_wealth: e.counts_as_wealth, is_employer: e.is_employer, effective_start: e.effective_start, effective_end: e.effective_end || '' });
+          setOpen(true);
+        }}>
+          <Pencil className="h-3 w-3" />
+        </Button>
         {!e.effective_end && (
           <Button
             size="icon"
@@ -151,18 +169,22 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
             )}
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="h-7 text-[11px]">
+                <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => {
+                  setEditingId(null);
+                  setForm({ label: '', amount: '', tax_treatment: 'pre_tax', counts_as_wealth: true, is_employer: false, effective_start: monthStart, effective_end: '' });
+                }}>
                   <Plus className="mr-1 h-3 w-3" /> Add
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Add payroll election</DialogTitle>
+                  <DialogTitle>{editingId ? 'Edit payroll election' : 'Add payroll election'}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs">Label</Label>
                     <Input
+                        aria-label="Payroll label"
                       value={form.label}
                       onChange={(e) => setForm({ ...form, label: e.target.value })}
                       placeholder="Roth - 457(b)"
@@ -173,6 +195,8 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
                       <Label className="text-xs">Amount / month</Label>
                       <Input
                         type="number"
+                        aria-label="Payroll amount per month"
+                        min="0"
                         step="0.01"
                         value={form.amount}
                         onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -246,7 +270,13 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
       <CardContent className="space-y-3 text-xs">
         {profile?.lyman_gross_monthly != null && (
           <div className="space-y-2 border-b pb-3">
-            <p className="font-medium">Lyman · IU monthly paycheck</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-medium">Lyman · IU monthly paycheck</p>
+              <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Edit gross and net pay" title="Edit gross and net pay" onClick={() => {
+                setPayForm({ gross: String(profile.lyman_gross_monthly ?? ''), net: String(profile.lyman_net_monthly ?? '') });
+                setPayOpen(true);
+              }}><Pencil className="h-3 w-3" /></Button>
+            </div>
             <dl className="grid grid-cols-2 gap-3">
               <div>
                 <dt className="text-muted-foreground">Gross pay</dt>
@@ -313,6 +343,40 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
             : 'Forecast assumptions apply to this open month until a paystub is imported.'}
         </p>
       </CardContent>
+      <Dialog open={payOpen} onOpenChange={setPayOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Edit monthly paycheck</DialogTitle></DialogHeader>
+          <form className="space-y-4" onSubmit={async (event) => {
+            event.preventDefault();
+            const gross = Number(payForm.gross);
+            const net = Number(payForm.net);
+            if (!payForm.gross.trim() || !payForm.net.trim() || !Number.isFinite(gross) || !Number.isFinite(net) || gross < 0 || net < 0 || net > gross) {
+              toast.error('Enter valid amounts with net pay no higher than gross pay');
+              return;
+            }
+            try {
+              await saveProfile.mutateAsync({ lyman_gross_monthly: gross, lyman_net_monthly: net });
+              toast.success('Monthly paycheck saved');
+              setPayOpen(false);
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not save paycheck');
+            }
+          }}>
+            <div className="space-y-2">
+              <Label htmlFor="payroll-gross">Gross pay / month</Label>
+              <Input id="payroll-gross" type="number" min="0" step="0.01" required value={payForm.gross} onChange={(event) => setPayForm({ ...payForm, gross: event.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="payroll-net">Net take-home / month</Label>
+              <Input id="payroll-net" type="number" min="0" step="0.01" required value={payForm.net} onChange={(event) => setPayForm({ ...payForm, net: event.target.value })} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setPayOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={saveProfile.isPending}>{saveProfile.isPending ? 'Saving…' : 'Save paycheck'}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
