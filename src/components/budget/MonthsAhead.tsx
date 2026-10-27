@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useCurrency } from '@/hooks/use-currency';
 import { useQuery } from '@tanstack/react-query';
+import { ChevronDown } from 'lucide-react';
 import { addMonths, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding } from '@/lib/budgeting/takeHomeAllocation';
