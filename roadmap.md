@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Add five-bucket monthly growth charts, contributions table and target progress using saved funding
 - [x] Apply monthly priority weights to January–April and future Five-Bucket funding; verify totals
 - [x] Add January consulting income, exclude investment transfer from business funding, and preserve zero-based Five-Bucket allocation
 - [x] Complete January–April budgets with confirmed debt changes and assign genuine surplus to Five-Bucket
