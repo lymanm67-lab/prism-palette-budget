@@ -12,6 +12,14 @@ describe('net-pay allocation exclusions', () => {
   it('excludes internal Transfers even without a transfer flag', () => {
     expect(excludesTakeHomeAllocation('Transfers', false)).toBe(true);
   });
+  it('keeps the $66 Business Checking investment transfer out of operating funding', () => {
+    const spending = [
+      { name: 'SBA Loan', amount: 296 },
+      { name: 'Investment Transfer — Business Checking', amount: 66 },
+    ].filter(row => !excludesTakeHomeAllocation(row.name, false))
+      .reduce((sum, row) => sum + row.amount, 0);
+    expect(spending).toBe(296);
+  });
   it('excludes groceries reimbursed by wife', () => {
     expect(excludesTakeHomeAllocation('Groceries', false)).toBe(true);
   });
