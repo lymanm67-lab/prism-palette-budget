@@ -11,7 +11,7 @@ export function budgetFunding(inputs: PlanInputs, unallocated: number, month: st
   const available = Math.max(0, toCents(unallocated));
   let left = available;
   const allocation = { retire: 0, emergency: 0, vacation: 0, housing: 0, guilt: 0, shortfall: 0 } as Record<BucketKey | 'shortfall', number>;
-  if (month >= '2027-01-01') {
+  if (month >= '2026-11-01') {
     const shares = MONTHLY_WEIGHTS.map(([key, weight]) => ({ key, cents: Math.floor(available * weight / 100), remainder: available * weight % 100 }));
     for (const share of shares) { allocation[share.key] = share.cents; left -= share.cents; }
     // Largest remainder keeps the split cent-exact, with priority order breaking ties.
