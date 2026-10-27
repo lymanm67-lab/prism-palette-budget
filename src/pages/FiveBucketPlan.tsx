@@ -56,7 +56,10 @@ function NumField({ label, value, onChange, step = 0.01, suffix, hint }: {
 export default function FiveBucketPlan() {
   const reduce = useReducedMotion();
   const [savedInputs, setInp] = useState<PlanInputs>(() => {
-    try { return { ...BASELINE, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return BASELINE; }
+    try {
+      const stored = JSON.parse(localStorage.getItem(KEY) || '{}');
+      return { ...BASELINE, ...stored, startEmergency: stored.startEmergency === 900 ? BASELINE.startEmergency : (stored.startEmergency ?? BASELINE.startEmergency) };
+    } catch { return BASELINE; }
   });
   const [params] = useSearchParams();
   const sourceMonth = params.get('budgetMonth');

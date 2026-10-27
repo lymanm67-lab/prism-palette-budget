@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { BASELINE, surplusCents, exampleSplit, targets, project, vacationSlice, milestoneDates } from './engine';
 
 describe('five-bucket engine acceptance', () => {
+  it('starts with the confirmed $1,200 emergency balance', () => expect(BASELINE.startEmergency).toBe(1200));
   const ex = exampleSplit(BASELINE);
   it('surplus = $1,773', () => expect(surplusCents(BASELINE)).toBe(177300));
   it('investing $886.50', () => expect(ex.retire).toBe(88650));
@@ -19,7 +20,7 @@ describe('five-bucket engine acceptance', () => {
   it('starter counted once: before 3mo all surplus goes to emergency', () => {
     const r = project(BASELINE, 1)[0];
     expect(r.alloc.emergency).toBe(177300);
-    expect(r.closing.emergency).toBe(90000 + 177300);
+    expect(r.closing.emergency).toBe(120000 + 177300);
   });
   it('vacation year sums to exactly $5,000', () => {
     let s = 0;
