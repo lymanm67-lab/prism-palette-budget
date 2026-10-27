@@ -72,8 +72,12 @@ export function usePurposeLedger(month: string): PurposeLedger {
       const categoryName = t.categories?.name || 'Uncategorized';
       const description = t.merchant || t.normalized_merchant || t.notes || 'Transaction';
 
-      if (t.is_transfer) {
+      if (t.is_transfer || /^(internal\s+)?transfers?$/i.test(categoryName.trim())) {
         addExcluded('Transfers', 'Internal movement — never counted as spending', Math.abs(amount));
+        continue;
+      }
+      if (/grocer|medical|pharmacy|prescription|doctor/i.test(categoryName)) {
+        addExcluded('Reimbursed / HSA-covered', 'Not paid from net take-home', Math.abs(amount));
         continue;
       }
       if (catId && resolution.incomeCategoryIds.has(catId)) {
