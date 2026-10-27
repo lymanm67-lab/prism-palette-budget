@@ -23,6 +23,7 @@ interface Props {
   totalIncomeBudget: number;
   totalIncomeActual: number;
   totalExpenseBudget: number;
+  sinkingFunds?: number;
   totalExpenseActual: number;
   plannedSurplus: number;
   actualSurplus: number;
@@ -57,6 +58,7 @@ export default function BudgetSummaryTiles({
   totalIncomeBudget,
   totalIncomeActual,
   totalExpenseBudget,
+  sinkingFunds = 0,
   totalExpenseActual,
   plannedSurplus,
   actualSurplus,
@@ -205,8 +207,8 @@ export default function BudgetSummaryTiles({
       label: 'Expenses',
       icon: Receipt,
       tone: 'sky' as Tone,
-      value: totalExpenseBudget,
-      sub: `${formatCurrency(totalExpenseActual)} spent`,
+      value: totalExpenseBudget - sinkingFunds,
+      sub: sinkingFunds > 0 ? `${formatCurrency(totalExpenseActual)} spent · ${formatCurrency(sinkingFunds)} to sinking funds` : `${formatCurrency(totalExpenseActual)} spent`,
       tooltip: expenseTooltip,
     },
     {
