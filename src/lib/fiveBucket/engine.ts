@@ -55,7 +55,7 @@ export const BASELINE: PlanInputs = {
   guiltPct: 5,
   vacationAnnual: 5000,
   starterTarget: 2000,
-  startEmergency: 900,
+  startEmergency: 1200,
   startVacation: 0,
   startHousing: 0,
   startGuilt: 0,
