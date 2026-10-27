@@ -2,7 +2,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { useQuery } from '@tanstack/react-query';
 import { addMonths, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
+import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding } from '@/lib/budgeting/takeHomeAllocation';
 import { budgetFunding } from '@/lib/fiveBucket/budgetFunding';
 import { BASELINE, BUCKETS } from '@/lib/fiveBucket/engine';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +42,12 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       return sum - Number(r.planned_amount || 0);
     }, 0);
     const ownerContribution = Math.max(0, -businessBalance);
+    const investmentAllocation = businessRows.reduce((sum, r) => {
+      const name = r.categories?.name || '';
+      return excludesBusinessOperatingFunding(name) && !excludesTakeHomeAllocation(name, false)
+        ? sum + Number(r.planned_amount || 0) : sum;
+    }, 0);
+    const operatingContribution = Math.max(0, ownerContribution - investmentAllocation);
     let income = 0, expenses = 0, debt = 0, savings = 0;
     const notes: { name: string; amount: number }[] = [];
     const debtLines: { name: string; amount: number }[] = [];
@@ -62,7 +68,10 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
     if (revisedDebtMonth && budgetType === 'business') income += ownerContribution;
     const left = income - expenses - debt - savings;
     const split = budgetFunding(BASELINE, savings + Math.max(0, left), m).allocation;
-    return { m, income, expenses, debt, savings, left, notes, split, ownerContribution: revisedDebtMonth ? ownerContribution : 0, debtLines: debtLines.sort((a, b) => b.amount - a.amount) };
+    return { m, income, expenses, debt, savings, left, notes, split,
+      ownerContribution: revisedDebtMonth ? operatingContribution : 0,
+      investmentContribution: revisedDebtMonth ? ownerContribution - operatingContribution : 0,
+      debtLines: debtLines.sort((a, b) => b.amount - a.amount) };
   });
 
   return (
@@ -90,6 +99,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
                 <div className="flex justify-between"><dt>Income</dt><dd>{formatCurrency(c.income)}</dd></div>
                 <div className="flex justify-between"><dt>Expenses</dt><dd>{formatCurrency(c.expenses)}</dd></div>
                 {budgetType === 'personal' && c.ownerContribution > 0 && <div className="flex justify-between text-xs text-muted-foreground"><dt>Includes business funding</dt><dd>{formatCurrency(c.ownerContribution)}</dd></div>}
+                {budgetType === 'personal' && c.investmentContribution > 0 && <div className="flex justify-between text-xs text-muted-foreground"><dt>Includes business investment allocation</dt><dd>{formatCurrency(c.investmentContribution)}</dd></div>}
                 <div className="flex justify-between"><dt>Debt payments</dt><dd>{formatCurrency(c.debt)}</dd></div>
                 <div className="flex justify-between"><dt>Five-Bucket savings</dt><dd>{formatCurrency(c.savings)}</dd></div>
                 <div className={`flex justify-between border-t pt-1 font-semibold ${c.left < 0 ? 'text-destructive' : 'text-primary'}`}><dt>Left over</dt><dd>{formatCurrency(c.left)}</dd></div>

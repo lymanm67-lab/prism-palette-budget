@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { excludesTakeHomeAllocation } from './takeHomeAllocation';
+import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding } from './takeHomeAllocation';
 
 describe('net-pay allocation exclusions', () => {
   it('excludes HSA already withheld before net pay', () => {
@@ -16,9 +16,10 @@ describe('net-pay allocation exclusions', () => {
     const spending = [
       { name: 'SBA Loan', amount: 296 },
       { name: 'Investment Transfer — Business Checking', amount: 66 },
-    ].filter(row => !excludesTakeHomeAllocation(row.name, false))
+    ].filter(row => !excludesBusinessOperatingFunding(row.name))
       .reduce((sum, row) => sum + row.amount, 0);
     expect(spending).toBe(296);
+    expect(excludesTakeHomeAllocation('Investment Transfer — Business Checking', false)).toBe(false);
   });
   it('excludes groceries reimbursed by wife', () => {
     expect(excludesTakeHomeAllocation('Groceries', false)).toBe(true);
