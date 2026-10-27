@@ -2343,6 +2343,7 @@ const Budgets = () => {
         totalIncomeBudget={totalIncomeBudget}
         totalIncomeActual={totalIncomeActual}
         totalExpenseBudget={totalExpenseBudget}
+        sinkingFunds={budgetItems.filter(b => (categoryNameById.get(b.category_id) || '').startsWith('Five-Bucket · ')).reduce((s, b) => s + Number(b.planned_amount || 0), 0)}
         totalExpenseActual={totalExpenseActual}
         plannedSurplus={totalIncomeBudget - totalExpenseBudget}
         actualSurplus={totalIncomeActual - totalExpenseActual}
