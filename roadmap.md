@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Add January consulting income, exclude investment transfer from business funding, and preserve zero-based Five-Bucket allocation
 - [x] Complete January–April budgets with confirmed debt changes and assign genuine surplus to Five-Bucket
 - [x] Resolve January–April shortfalls by removing confirmed canceled/nonrecurring costs and fund Five-Bucket surplus; preserve investment transfer
 - [x] Save Loan 3004 December–April payments and verify the budget notes and monthly amounts
