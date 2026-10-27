@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { addMonths, format, startOfMonth } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { formatCurrency } from '@/lib/utils';
 import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 import { Badge } from '@/components/ui/badge';
 
@@ -11,6 +10,7 @@ const HIGHLIGHT = /sister|speaking|vacation loan|five-bucket/i;
 interface Row { month: string; planned_amount: number; categories: { name: string; money_purpose: string | null; category_groups: { expense_type: string | null; budget_type: string | null } | null } | null }
 
 export function MonthsAhead({ householdId }: { householdId: string }) {
+  const { formatCurrency } = useCurrency();
   const start = startOfMonth(new Date());
   const months = Array.from({ length: MONTHS }, (_, i) => format(addMonths(start, i), 'yyyy-MM-01'));
   const { data = [], isLoading } = useQuery({

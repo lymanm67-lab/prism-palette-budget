@@ -59,6 +59,7 @@ import { Coins } from 'lucide-react';
 import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
 import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
+import { MonthsAhead } from '@/components/budget/MonthsAhead';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -2360,6 +2361,7 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
+      {budgetType === 'personal' && household?.id && <MonthsAhead householdId={household.id} />}
       {budgetType === 'personal' && <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
