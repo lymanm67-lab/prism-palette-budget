@@ -216,8 +216,10 @@ export default function BudgetSummaryTiles({
       label: 'Planned surplus',
       icon: PiggyBank,
       tone: surplusTone,
-      value: plannedSurplus,
-      sub: `safe to spend ${formatCurrency(safeToSpendMonthly)}`,
+      value: plannedSurplus + sinkingFunds,
+      sub: sinkingFunds > 0
+        ? `${formatCurrency(sinkingFunds)} sent to sinking funds · safe to spend ${formatCurrency(safeToSpendMonthly)}`
+        : `safe to spend ${formatCurrency(safeToSpendMonthly)}`,
       tooltip: surplusTooltip,
     },
     {
