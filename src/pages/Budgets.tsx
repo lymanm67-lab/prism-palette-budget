@@ -2361,7 +2361,7 @@ const Budgets = () => {
       />
       {budgetType === 'personal' && <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
-        groupId={(categoryGroups || []).find(g => g.budget_type === 'personal' && g.expense_type === 'wealth')?.id}
+        groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
       />}
       {budgetType === 'personal' && (
         <section className="space-y-2 border-b py-3 text-sm" aria-label="Expense reconciliation">
