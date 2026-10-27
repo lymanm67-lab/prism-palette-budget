@@ -9,6 +9,7 @@ import { projectPhase, type PhaseProjection } from '@/lib/budgeting/phaseProject
 import { SETTLEMENT_FEES } from '@/lib/budgeting/settlementStepDown';
 import { useTravelSettings } from '@/hooks/use-travel-fund';
 import { useLayerAAssignments } from '@/hooks/use-layer-a-assignments';
+import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 
 
 export interface PurposeResolution {
@@ -210,6 +211,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       }
       const p = resolution.byCategory.get(b.category_id);
       if (!p) continue;
+      if (excludesTakeHomeAllocation(catNameById.get(b.category_id) || '', resolution.payrollCategoryIds.has(b.category_id))) continue;
       // Payroll-withheld lines (HSA, TDA, Roth, 457b, taxes, benefits) are
       // already outside net pay — never charge them against take-home again.
       const key = resolution.payrollCategoryIds.has(b.category_id)
@@ -225,6 +227,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       if (t.deleted_at || t.is_transfer) continue;
       const amount = Number(t.amount) || 0;
       const catId = t.category_id as string | null;
+      if (excludesTakeHomeAllocation(catId ? catNameById.get(catId) || '' : '', !!catId && resolution.payrollCategoryIds.has(catId), t.is_transfer)) continue;
 
       const purposeOfCat = (t.money_purpose as MoneyPurpose | null) ||
         (catId ? resolution.byCategory.get(catId) : null);
