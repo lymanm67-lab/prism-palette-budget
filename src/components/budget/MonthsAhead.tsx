@@ -83,8 +83,11 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       <div>
         <h2 className="text-lg font-semibold">Months ahead</h2>
         <p className="text-sm text-muted-foreground">Your saved {budgetType === 'all' ? 'personal + business' : budgetType} budgets for the next {MONTHS} months, with one-time items like the sister loan, speaking fee and loan payoffs called out.</p>
-        <details className="mt-2 rounded-md border bg-muted/30 p-2 text-sm">
-          <summary className="cursor-pointer font-medium">Why debt payments change each month</summary>
+        <details className="group mt-2 rounded-md border bg-muted/30 p-2 text-sm">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden">
+            <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted-foreground transition-transform duration-200 group-open:rotate-0" />
+            Why debt payments change each month
+          </summary>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
             <li><b>October–November:</b> $500 sister loan payments (Oct 30, Nov 30) for Mom's home repair.</li>
             <li><b>November:</b> the $4,100 speaking fee covers the final $500 sister payment, pays off Vacation Loan 2306 and puts $1,000 extra on Vacation Loan 3004 (35% APR). Including its regular $228.47 payment, Loan 3004 receives $1,228.47. The freed $1,146.25 remains available for your Five-Bucket plan.</li>
