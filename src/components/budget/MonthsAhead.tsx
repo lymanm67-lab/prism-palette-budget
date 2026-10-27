@@ -19,6 +19,7 @@ interface Row { month: string; planned_amount: number; categories: { name: strin
 
 export function MonthsAhead({ householdId, budgetType = 'personal' }: { householdId: string; budgetType?: 'personal' | 'business' | 'all' }) {
   const { formatCurrency } = useCurrency();
+  const [openMonths, setOpenMonths] = useState<Record<string, boolean>>({});
   const start = startOfMonth(new Date());
   const months = Array.from({ length: MONTHS }, (_, i) => format(addMonths(start, i), 'yyyy-MM-01'));
   const { data = [], isLoading } = useQuery({
