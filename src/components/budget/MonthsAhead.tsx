@@ -99,7 +99,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
                 <div className="flex justify-between"><dt>Income</dt><dd>{formatCurrency(c.income)}</dd></div>
                 <div className="flex justify-between"><dt>Expenses</dt><dd>{formatCurrency(c.expenses)}</dd></div>
                 {budgetType === 'personal' && c.ownerContribution > 0 && <div className="flex justify-between text-xs text-muted-foreground"><dt>Includes business funding</dt><dd>{formatCurrency(c.ownerContribution)}</dd></div>}
-                {budgetType === 'personal' && c.investmentContribution > 0 && <div className="flex justify-between text-xs text-muted-foreground"><dt>Includes business investment allocation</dt><dd>{formatCurrency(c.investmentContribution)}</dd></div>}
+                {budgetType === 'personal' && c.investmentContribution > 0.005 && <div className="flex justify-between text-xs text-muted-foreground"><dt>Includes business investment allocation</dt><dd>{formatCurrency(c.investmentContribution)}</dd></div>}
                 <div className="flex justify-between"><dt>Debt payments</dt><dd>{formatCurrency(c.debt)}</dd></div>
                 <div className="flex justify-between"><dt>Five-Bucket savings</dt><dd>{formatCurrency(c.savings)}</dd></div>
                 <div className={`flex justify-between border-t pt-1 font-semibold ${c.left < 0 ? 'text-destructive' : 'text-primary'}`}><dt>Left over</dt><dd>{formatCurrency(c.left)}</dd></div>
