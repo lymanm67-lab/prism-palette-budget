@@ -6,9 +6,11 @@ import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 import { budgetFunding } from '@/lib/fiveBucket/budgetFunding';
 import { BASELINE, BUCKETS } from '@/lib/fiveBucket/engine';
 import { Badge } from '@/components/ui/badge';
+import { futureDebtPayments } from '@/lib/budgeting/futureDebtPayments';
 
 const MONTHS = 7;
 const HIGHLIGHT = /sister|speaking|vacation loan|five-bucket/i;
+const januaryPayments = futureDebtPayments('2027-01-01');
 
 interface Row { month: string; planned_amount: number; categories: { name: string; money_purpose: string | null; category_groups: { expense_type: string | null; budget_type: string | null } | null } | null }
 
@@ -28,7 +30,18 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
   });
 
   const cols = months.map(m => {
+    const revisedDebtMonth = futureDebtPayments(m) !== null;
     const rows = data.filter(r => r.month.slice(0, 10) === m && (budgetType === 'all' || (r.categories?.category_groups?.budget_type || 'personal') === budgetType));
+    const businessRows = data.filter(r => r.month.slice(0, 10) === m && r.categories?.category_groups?.budget_type === 'business');
+    const businessBalance = businessRows.reduce((sum, r) => {
+      const category = r.categories;
+      const type = category?.category_groups?.expense_type;
+      if (type === 'payroll_deduction') return sum;
+      if (type === 'income') return sum + Number(r.planned_amount || 0);
+      if (excludesTakeHomeAllocation(category?.name || '', false)) return sum;
+      return sum - Number(r.planned_amount || 0);
+    }, 0);
+    const ownerContribution = Math.max(0, -businessBalance);
     let income = 0, expenses = 0, debt = 0, savings = 0;
     const notes: { name: string; amount: number }[] = [];
     const debtLines: { name: string; amount: number }[] = [];
@@ -37,6 +50,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       const type = r.categories?.category_groups?.expense_type;
       const amt = Number(r.planned_amount || 0);
       if (!amt || type === 'payroll_deduction') continue;
+      if (revisedDebtMonth && r.categories?.money_purpose === 'business' && r.categories.category_groups?.budget_type === 'personal') continue;
       if (type === 'income') { income += amt; if (/speaking/i.test(name)) notes.push({ name, amount: amt }); continue; }
       if (excludesTakeHomeAllocation(name, false)) continue;
       if (name.startsWith('Five-Bucket · ')) savings += amt;
@@ -44,9 +58,11 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       else expenses += amt;
       if (HIGHLIGHT.test(name)) notes.push({ name, amount: amt });
     }
+    if (revisedDebtMonth && budgetType === 'personal') expenses += ownerContribution;
+    if (revisedDebtMonth && budgetType === 'business') income += ownerContribution;
     const left = income - expenses - debt - savings;
     const split = budgetFunding(BASELINE, savings + Math.max(0, left), m).allocation;
-    return { m, income, expenses, debt, savings, left, notes, split, debtLines: debtLines.sort((a, b) => b.amount - a.amount) };
+    return { m, income, expenses, debt, savings, left, notes, split, ownerContribution: revisedDebtMonth ? ownerContribution : 0, debtLines: debtLines.sort((a, b) => b.amount - a.amount) };
   });
 
   return (
@@ -60,8 +76,8 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
             <li><b>October–November:</b> $500 sister loan payments (Oct 30, Nov 30) for Mom's home repair.</li>
             <li><b>November:</b> the $4,100 speaking fee covers the final $500 sister payment, pays off Vacation Loan 2306 and puts $1,000 extra on Vacation Loan 3004 (35% APR). Including its regular $228.47 payment, Loan 3004 receives $1,228.47. The freed $1,146.25 remains available for your Five-Bucket plan.</li>
             <li><b>December–April:</b> Vacation Loan 3004 payments are spread across five monthly budgets. Estimated payments include monthly interest at the saved 35.99% APR, assuming October's $228.47 and November's $1,228.47 payments occur. See each month's Vacation Loan Payment 1 below; April is the estimated final payoff. Confirm the exact payoff with the lender.</li>
-            <li><b>January–May 2027:</b> the full vacation-loan payment savings are not available until Loan 3004 is paid off in April. BetrLink rises from $375 to $583/month (63% personal, 37% business) and the student loan starts in January.</li>
-            <li><b>After May 2027:</b> BetrLink ends and debt payments level out to your regular minimums (student loan, SBA $296, small credit builders).</li>
+            <li><b>January–April 2027:</b> Vacation Loan 2306 and the $1,000 sister loan are fully repaid. The student loan starts at {formatCurrency(januaryPayments?.student || 0)}/month. BetrLink is $583/month through April ({formatCurrency(januaryPayments?.betrLinkPersonal || 0)} personal + {formatCurrency(januaryPayments?.betrLinkBusiness || 0)} business). Loan 3004 keeps its estimated payments through April.</li>
+            <li><b>From May 2027:</b> BetrLink ends; Loan 3004 is expected to be cleared after April, subject to lender confirmation. Student loan payments and other regular minimums continue.</li>
           </ul>
         </details>
       </div>
@@ -73,6 +89,7 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
               <dl className="space-y-1 tabular-nums">
                 <div className="flex justify-between"><dt>Income</dt><dd>{formatCurrency(c.income)}</dd></div>
                 <div className="flex justify-between"><dt>Expenses</dt><dd>{formatCurrency(c.expenses)}</dd></div>
+                {budgetType === 'personal' && c.ownerContribution > 0 && <div className="flex justify-between text-xs text-muted-foreground"><dt>Includes business funding</dt><dd>{formatCurrency(c.ownerContribution)}</dd></div>}
                 <div className="flex justify-between"><dt>Debt payments</dt><dd>{formatCurrency(c.debt)}</dd></div>
                 <div className="flex justify-between"><dt>Five-Bucket savings</dt><dd>{formatCurrency(c.savings)}</dd></div>
                 <div className={`flex justify-between border-t pt-1 font-semibold ${c.left < 0 ? 'text-destructive' : 'text-primary'}`}><dt>Left over</dt><dd>{formatCurrency(c.left)}</dd></div>
