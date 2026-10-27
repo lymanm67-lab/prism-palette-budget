@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { useCurrency } from '@/hooks/use-currency';
 import { useQuery } from '@tanstack/react-query';
+import { ChevronDown } from 'lucide-react';
 import { addMonths, format, startOfMonth } from 'date-fns';
+
 import { supabase } from '@/integrations/supabase/client';
 import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding } from '@/lib/budgeting/takeHomeAllocation';
 import { budgetFunding } from '@/lib/fiveBucket/budgetFunding';
@@ -16,6 +19,7 @@ interface Row { month: string; planned_amount: number; categories: { name: strin
 
 export function MonthsAhead({ householdId, budgetType = 'personal' }: { householdId: string; budgetType?: 'personal' | 'business' | 'all' }) {
   const { formatCurrency } = useCurrency();
+  const [openMonths, setOpenMonths] = useState<Record<string, boolean>>({});
   const start = startOfMonth(new Date());
   const months = Array.from({ length: MONTHS }, (_, i) => format(addMonths(start, i), 'yyyy-MM-01'));
   const { data = [], isLoading } = useQuery({
@@ -79,8 +83,11 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       <div>
         <h2 className="text-lg font-semibold">Months ahead</h2>
         <p className="text-sm text-muted-foreground">Your saved {budgetType === 'all' ? 'personal + business' : budgetType} budgets for the next {MONTHS} months, with one-time items like the sister loan, speaking fee and loan payoffs called out.</p>
-        <details className="mt-2 rounded-md border bg-muted/30 p-2 text-sm">
-          <summary className="cursor-pointer font-medium">Why debt payments change each month</summary>
+        <details className="group mt-2 rounded-md border bg-muted/30 p-2 text-sm">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 font-medium [&::-webkit-details-marker]:hidden">
+            <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted-foreground transition-transform duration-200 group-open:rotate-0" />
+            Why debt payments change each month
+          </summary>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
             <li><b>October–November:</b> $500 sister loan payments (Oct 30, Nov 30) for Mom's home repair.</li>
             <li><b>November:</b> the $4,100 speaking fee covers the final $500 sister payment, pays off Vacation Loan 2306 and puts $1,000 extra on Vacation Loan 3004 (35% APR). Including its regular $228.47 payment, Loan 3004 receives $1,228.47. The freed $1,146.25 remains available for your Five-Bucket plan.</li>
@@ -92,9 +99,28 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
       </div>
       {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {cols.map(c => (
-            <div key={c.m} className="rounded-lg border bg-card/60 p-3 text-sm backdrop-blur">
-              <p className="mb-2 font-semibold">{format(new Date(c.m + 'T00:00:00'), 'MMMM yyyy')}</p>
+          {cols.map(c => {
+            const isOpen = !!openMonths[c.m];
+            const panelId = `months-ahead-${c.m}`;
+            return (
+            <div key={c.m} className="self-start rounded-lg border bg-card/60 p-3 text-sm backdrop-blur">
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={panelId}
+                onClick={() => setOpenMonths(prev => ({ ...prev, [c.m]: !prev[c.m] }))}
+                className="flex w-full items-center justify-between gap-2 font-semibold"
+              >
+                <span className="flex items-center gap-1.5">
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`} />
+                  {format(new Date(c.m + 'T00:00:00'), 'MMMM yyyy')}
+                </span>
+                <span className={`text-xs font-medium tabular-nums ${c.left < 0 ? 'text-destructive' : 'text-primary'}`}>
+                  left over {formatCurrency(c.left)}
+                </span>
+              </button>
+              {isOpen && (
+                <div id={panelId} className="mt-2">
               <dl className="space-y-1 tabular-nums">
                 <div className="flex justify-between"><dt>Income</dt><dd>{formatCurrency(c.income)}</dd></div>
                 <div className="flex justify-between"><dt>Expenses</dt><dd>{formatCurrency(c.expenses)}</dd></div>
@@ -123,8 +149,11 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
                   {c.notes.map(n => <Badge key={n.name} variant="secondary" className="text-xs">{n.name}: {formatCurrency(n.amount)}</Badge>)}
                 </div>
               )}
+                </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>
