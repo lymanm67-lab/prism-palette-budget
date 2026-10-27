@@ -29,6 +29,18 @@ export interface PayoffResult {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** Estimated monthly-interest schedule after planned payments, not recorded lender payments. */
+export function remainingPayoffSchedule(balance: number, apr: number, priorPayments: number[], start: Date, months: number): ScheduleRow[] {
+  if (!Number.isInteger(months) || months <= 0) return [];
+  const rate = Math.max(0, apr) / 1200;
+  let remaining = Math.max(0, balance);
+  for (const payment of priorPayments) {
+    remaining = Math.max(0, round2(remaining + round2(remaining * rate) - payment));
+  }
+  const payment = Math.ceil((rate === 0 ? remaining / months : remaining * rate / (1 - Math.pow(1 + rate, -months))) * 100) / 100;
+  return amortizationSchedule(remaining, apr, payment, start, months);
+}
+
 export function addMonths(d: Date, n: number) {
   const out = new Date(d.getFullYear(), d.getMonth() + n, 1);
   return out;

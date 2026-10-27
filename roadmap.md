@@ -1,4 +1,5 @@
 # Roadmap
+- [x] Save Loan 3004 December–April payments and verify the budget notes and monthly amounts
 - [x] Allocate unassigned budget money through existing Five-Bucket priorities and show the same saved funding in the plan
 - [x] Add identical nine-page Akron Dreams online application and guide under Home-Buying Readiness
 - [x] Build Budget vs Actual page with paycheck-tree pillar reconciliation
