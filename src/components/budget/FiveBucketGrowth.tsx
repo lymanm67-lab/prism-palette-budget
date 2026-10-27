@@ -17,6 +17,15 @@ export default function FiveBucketGrowth({ householdId }: { householdId: string 
   const { formatCurrency } = useCurrency();
   const [selected, setSelected] = useState<BucketKey>('emergency');
   const [repeat, setRepeat] = useState(true);
+  const [startBalance, setStartBalance] = useState<number>(() => {
+    const v = Number(localStorage.getItem(`five-bucket-start:${householdId}`));
+    return Number.isFinite(v) && v >= 0 && localStorage.getItem(`five-bucket-start:${householdId}`) !== null ? v : 1200;
+  });
+  const updateStart = (v: number) => {
+    const n = Number.isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
+    setStartBalance(n);
+    localStorage.setItem(`five-bucket-start:${householdId}`, String(n));
+  };
   const start = format(addMonths(startOfMonth(new Date()), 1), 'yyyy-MM-01');
   const { data = [], isLoading, error } = useQuery({
     queryKey: ['budgets', 'five-bucket-growth', householdId, start],
@@ -39,14 +48,16 @@ export default function FiveBucketGrowth({ householdId }: { householdId: string 
       return [...months.values()];
     },
   });
-  const rows = useMemo(() => bucketGrowth(data, { emergency: 1200 }, start, 36, repeat), [data, start, repeat]);
+  const rows = useMemo(() => bucketGrowth(data, { emergency: startBalance }, start, 36, repeat), [data, start, repeat, startBalance]);
   const target = selected === 'emergency' ? 700000 : selected === 'vacation' ? 500000 : null;
   const reached = target ? rows.find(r => r.balances[selected] >= target) : undefined;
   const end = rows.at(-1);
   const config = Object.fromEntries(BUCKETS.map(b => [b.key, { label: b.label, color: b.color }]));
   const chart = rows.map(r => ({ month: format(new Date(r.month + 'T00:00:00'), 'MMM yy'), ...Object.fromEntries(BUCKETS.map(b => [b.key, r.balances[b.key] / 100])) }));
   return <section aria-label="Five-Bucket growth" className="min-w-0 space-y-4 border-b py-6">
-    <div><h2 className="text-xl font-semibold">Five-Bucket growth</h2><p className="text-sm text-muted-foreground">Starting Emergency balance: {formatCurrency(1200)} as of October 26, 2026. October’s unconfirmed contribution is excluded.</p></div>
+    <div><h2 className="text-xl font-semibold">Five-Bucket growth</h2><p className="text-sm text-muted-foreground">Starting Emergency balance: {formatCurrency(startBalance)}. October’s unconfirmed contribution is excluded.</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2"><Label htmlFor="five-bucket-start">Starting Emergency balance ($)</Label>
+        <input id="five-bucket-start" type="number" min={0} step="0.01" defaultValue={startBalance} key={startBalance} onBlur={e => updateStart(Number(e.target.value))} onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} className="h-9 w-36 rounded-md border border-input bg-background px-2 text-sm tabular-nums" /></div></div>
     <Tabs value={selected} onValueChange={v => { const b = BUCKETS.find(b => b.key === v); if (b) setSelected(b.key); }}>
       <TabsList className="h-auto flex-wrap justify-start">{BUCKETS.map(b => <TabsTrigger key={b.key} value={b.key}>{b.label}</TabsTrigger>)}</TabsList>
     </Tabs>
