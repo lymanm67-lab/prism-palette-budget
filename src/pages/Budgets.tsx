@@ -58,6 +58,7 @@ import BudgetSummaryTiles from '@/components/budget/BudgetSummaryTiles';
 import { Coins } from 'lucide-react';
 import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
 import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
+import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -2358,6 +2359,10 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
+      {budgetType === 'personal' && <FiveBucketFunding
+        amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
+        groupId={(categoryGroups || []).find(g => g.budget_type === 'personal' && g.expense_type === 'wealth')?.id}
+      />}
       {budgetType === 'personal' && (
         <section className="space-y-2 border-b py-3 text-sm" aria-label="Expense reconciliation">
           <div className="flex flex-wrap justify-between gap-2">

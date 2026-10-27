@@ -1,4 +1,5 @@
 # Project Architecture Rules
+- Five-Bucket budget funding is saved as prefixed personal wealth budget rows using one bulk upsert; linked projections replace surplus with those saved totals and disable extra payroll reductions/consulting, so allocations are not counted twice.
 
 - Net-pay allocation excludes withheld payroll, internal transfer categories, reimbursed groceries and HSA-covered medical costs before purpose overrides, preventing false cash-shortfall warnings.
 
