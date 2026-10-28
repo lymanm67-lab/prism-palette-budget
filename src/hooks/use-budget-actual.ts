@@ -42,14 +42,17 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         expenseType: row.categories?.category_groups?.expense_type,
         moneyPurpose: row.categories?.money_purpose,
       });
+      const entriesByKey = new Map<string, BudgetActualEntry[]>();
       const add = (category: BudgetActualCategory, budgeted: number, actual: number) => {
-        const pillar = classifyBudgetActualPillar(category);
-        if (pillar === 'income' || !modeIncludes(mode, category)) return;
-        const key = category.id || 'uncategorized';
-        const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar, budgeted: 0, actual: 0 };
+        if (classifyBudgetActualPillar(category) === 'income' || !modeIncludes(mode, category)) return;
+        const key = budgetActualLineKey(mode, category);
+        const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar: 'uncategorized' as BudgetActualLine['pillar'], budgeted: 0, actual: 0 };
         current.budgeted += budgeted;
         current.actual += actual;
         map.set(key, current);
+        const entries = entriesByKey.get(key) || [];
+        entries.push({ category, budgeted, actual });
+        entriesByKey.set(key, entries);
       };
       for (const row of budgetsRes.data || []) add(readCat(row), Number(row.planned_amount) || 0, 0);
       const splitIds = new Set((splitsRes.data || []).map((row: any) => row.transaction_id));
