@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ChevronRight } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/hooks/use-currency';
 import { useBudgetActual } from '@/hooks/use-budget-actual';
@@ -22,6 +22,8 @@ interface Props {
 
 export default function OverBudgetGlance({ month, budgetType }: Props) {
   const { formatCurrency } = useCurrency();
+  const [open, setOpen] = useState(false);
+  const panelId = `over-budget-glance-${month}`;
   // Split expenses (e.g. rent personal/business) must be judged on the combined total.
   void budgetType;
   const mode: BudgetActualMode = 'combined';
@@ -54,8 +56,17 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle className="h-4 w-4 text-prism-rose" />
-            Over budget at a glance
+            <button
+              type="button"
+              onClick={() => setOpen(o => !o)}
+              aria-expanded={open}
+              aria-controls={panelId}
+              className="flex items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+              <AlertTriangle className="h-4 w-4 text-prism-rose" />
+              Over budget at a glance
+            </button>
           </CardTitle>
           {!isLoading && (
             <Badge variant={over.length > 0 ? 'destructive' : 'secondary'} className="shrink-0">
@@ -64,7 +75,7 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent id={panelId} hidden={!open}>
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Checking spending against planned amounts…</p>
         ) : over.length === 0 ? (
