@@ -51,7 +51,7 @@ export default function OwnerLoanCard({ throughMonth }: { throughMonth: string }
       <CardContent className="space-y-1 text-sm">
         <p className="text-2xl font-semibold tabular-nums">{formatCurrency(last.balance)}</p>
         <p className="text-muted-foreground">
-          The business owes you this. Lent {formatCurrency(lent)} · repaid by consulting fees {formatCurrency(repaid)}
+          Treated as a transfer, not spending. Lent {formatCurrency(lent)} · repaid from quarterly consulting fees {formatCurrency(repaid)}
           {last.balance <= 0 ? ' · fully repaid ✓' : ''}
         </p>
       </CardContent>
