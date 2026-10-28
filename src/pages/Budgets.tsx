@@ -2363,6 +2363,9 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
+      <div className="py-2">
+        <OverBudgetGlance month={month.slice(0, 7)} budgetType={budgetType} />
+      </div>
       {budgetType === 'personal' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets">
       <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
