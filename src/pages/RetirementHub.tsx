@@ -16,6 +16,7 @@ const CrossoverTracker = lazy(() => import('@/pages/CrossoverTracker'));
 const RetirementTracker = lazy(() => import('@/pages/RetirementTracker'));
 const InvestmentPortfolio = lazy(() => import('@/pages/InvestmentPortfolio'));
 const RetirementStressTest = lazy(() => import('@/pages/RetirementStressTest'));
+const RetirementWhatIf = lazy(() => import('@/pages/RetirementWhatIf'));
 
 type TabDef = {
   key: string;
@@ -95,6 +96,13 @@ const TABS: TabDef[] = [
     blurb: 'Thousands of market, inflation, healthcare and longevity scenarios — probability of success, not one average return.',
     icon: Gauge,
     Component: RetirementStressTest as TabDef['Component'],
+  },
+  {
+    key: 'what-if',
+    label: 'What-If Lab',
+    blurb: 'Retirement-age sliders, Go-Go/Slow-Go/No-Go spending phases and state relocation tax comparison.',
+    icon: TrendingUp,
+    Component: RetirementWhatIf as TabDef['Component'],
   },
 ];
 
