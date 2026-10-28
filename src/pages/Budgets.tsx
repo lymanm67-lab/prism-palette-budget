@@ -150,7 +150,14 @@ const Budgets = () => {
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [, setBaselineTick] = useState(0);
-  const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
+  const [budgetType, setBudgetTypeState] = useState<'personal' | 'business' | 'all'>(() => {
+    const saved = localStorage.getItem('budget-view-type');
+    return saved === 'business' || saved === 'all' ? saved : 'personal';
+  });
+  const setBudgetType = (v: 'personal' | 'business' | 'all') => {
+    localStorage.setItem('budget-view-type', v);
+    setBudgetTypeState(v);
+  };
   const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
