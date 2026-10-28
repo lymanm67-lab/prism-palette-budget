@@ -1,6 +1,6 @@
 export const BUDGET_ACTUAL_PILLARS = [
   { key: 'bills', label: 'Bills & Essentials', color: 'var(--prism-sky)' },
-  { key: 'debt', label: 'Debt Freedom', color: 'var(--prism-rose)' },
+  { key: 'debt', label: 'Debt Freedom', color: 'var(--prism-indigo)' },
   { key: 'savings', label: 'Savings & Buffer', color: 'var(--prism-teal)' },
   { key: 'wealth', label: 'Wealth & Investing', color: 'var(--prism-lime)' },
   { key: 'business', label: 'Business Expenses', color: 'var(--prism-orange)' },

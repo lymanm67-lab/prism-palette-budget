@@ -60,7 +60,7 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
         ) : (
           <div className="space-y-1.5">
             {over.map(line => {
-              const color = line.pillar === 'uncategorized' ? 'var(--muted-foreground)' : PILLAR_COLOR[line.pillar];
+              const color = `hsl(${line.pillar === 'uncategorized' ? 'var(--muted-foreground)' : PILLAR_COLOR[line.pillar]})`;
               const pct = line.budgeted > 0 ? Math.round((line.actual / line.budgeted) * 100) : null;
               return (
                 <Link

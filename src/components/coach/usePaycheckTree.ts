@@ -222,7 +222,7 @@ function billBranch(d: PaycheckDeployment, ctx: { all?: boolean; inactive?: Set<
 
 const PILLAR_DEFS: { label: string; color: string; }[] = [
   { label: 'Bills & Essentials', color: 'var(--prism-sky)' },
-  { label: 'Debt Freedom', color: 'var(--prism-rose)' },
+  { label: 'Debt Freedom', color: 'var(--prism-indigo)' },
   { label: 'Savings & Buffer', color: 'var(--prism-teal)' },
   { label: 'Wealth & Investing', color: 'var(--prism-lime)' },
   { label: 'Business Expenses', color: 'var(--prism-orange)' },

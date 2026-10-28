@@ -97,7 +97,7 @@ export default function PaycheckDeploymentCard({ deployment, onUpdate, historica
   const paidBills = billItems.filter(b => coverage.bills.includes(b.id)).reduce((sum, b) => sum + b.value, 0);
   const progress = [
     { label: 'Bills', icon: Receipt, value: paidBills, total: bills, color: 'bg-prism-sky' },
-    { label: 'Debt', icon: Flame, value: coverage.debt ? debt : 0, total: debt, color: 'bg-prism-rose', toggle: 'debt' as const },
+    { label: 'Debt', icon: Flame, value: coverage.debt ? debt : 0, total: debt, color: 'bg-prism-indigo', toggle: 'debt' as const },
     { label: 'Guilt-free', icon: Wallet, value: coverage.spend ? guiltFree : 0, total: guiltFree, color: 'bg-prism-amber', toggle: 'spend' as const },
   ];
 
