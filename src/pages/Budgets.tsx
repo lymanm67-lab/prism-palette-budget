@@ -1510,11 +1510,11 @@ const Budgets = () => {
               <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
             </div>
           </div>
-          <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
-          <span className={cn('w-[90px] text-right text-sm tabular-nums', isWealth && actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
+          <span className="w-[80px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
+          <span className={cn('w-[80px] text-right text-sm tabular-nums', isWealth && actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
             {isWealth && actual > 0 ? '+' : ''}{formatCurrency(actual)}
           </span>
-          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', remainingClass)}>
+          <span className={cn('w-[80px] text-right text-sm font-medium tabular-nums', remainingClass)}>
             {overBudget || savedExtra ? '+' : ''}{formatCurrency(Math.abs(remaining))}
             <span className="text-[10px] ml-0.5 opacity-80">{remainingLabel}</span>
 
