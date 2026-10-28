@@ -86,6 +86,10 @@ export default function RetirementWhatIf() {
           Try different retirement ages, spending phases and states. Nothing here is saved or changes your real plan.
           Ages from birthdays: Lyman {LYMAN_AGE}, Kateri {KATERI_AGE}.
         </p>
+        <p className="text-sm mt-1">
+          Goal: live on Social Security + Kateri's pension and leave retirement accounts untouched. Each scenario shows whether that income covers spending
+          {otherIncome === 0 && <span className="text-prism-amber"> — enter Kateri's yearly pension below to test it</span>}.
+        </p>
       </div>
 
       <Card>
@@ -95,7 +99,7 @@ export default function RetirementWhatIf() {
           <Num label="Yearly contributions until retirement" value={contrib} onChange={setContrib} />
           <Num label="Base retirement spending / yr (today's $)" value={spending} onChange={setSpending} />
           <Num label="Medical costs / yr (today's $)" value={medical} onChange={setMedical} />
-          <Num label="Kateri + pension income / yr" value={otherIncome} onChange={setOtherIncome} />
+          <Num label="Kateri's pension / yr (today's $)" value={otherIncome} onChange={setOtherIncome} />
           <Num label="Expected return %" value={ret} onChange={setRet} />
           <Num label="Home value (property tax)" value={homeValue} onChange={setHomeValue} />
         </CardContent>
@@ -121,6 +125,12 @@ export default function RetirementWhatIf() {
               <div key={k} className="rounded-lg border bg-card/60 p-3 text-sm">
                 <p className="font-semibold">Scenario {String.fromCharCode(65 + k)} · retire at {s.age}</p>
                 <p className="mt-1">Money lasts: {s.r.depletionAge ? <Badge variant="destructive">runs out at {s.r.depletionAge}</Badge> : <Badge>through age {life}</Badge>}</p>
+                {(() => {
+                  const gaps = s.r.rows.filter((x) => x.withdrawal > 0.5);
+                  return gaps.length === 0
+                    ? <p className="mt-1"><Badge variant="secondary">No retirement withdrawals needed</Badge></p>
+                    : <p className="mt-1 text-xs text-muted-foreground">Social Security + pension fall short from age {gaps[0].age} by {usd(gaps[0].withdrawal)}/yr — that gap would be pulled from savings.</p>;
+                })()}
                 <p className="text-muted-foreground mt-1">Left at {life}: {usd(s.r.endingBalance)}</p>
               </div>
             ))}
