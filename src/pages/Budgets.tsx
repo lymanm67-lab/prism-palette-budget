@@ -1411,16 +1411,12 @@ const Budgets = () => {
     ) : null;
 
     return (
-      <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
+      <div key={b.id} className={cn("group relative py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
         {/* Mobile: stacked layout */}
         <div className="flex items-center gap-2 sm:hidden">
           <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} disabled={b.isUnbudgeted} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
-          <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
-          {personalSplitBadge}
-          {personalSharePctBadge}
-          {bizSplitBadge}
-          {bizSharePctBadge}
+          <span className="flex-1 min-w-0 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
           {b.planned_amount === 0 && (
             <Tooltip>
@@ -1452,6 +1448,14 @@ const Budgets = () => {
           )}
         </div>
         <div className="sm:hidden mt-1.5 ml-5">
+          {(personalSplitBadge || personalSharePctBadge || bizSplitBadge || bizSharePctBadge) && (
+            <div className="flex flex-wrap items-center gap-1 mb-1">
+              {personalSplitBadge}
+              {personalSharePctBadge}
+              {bizSplitBadge}
+              {bizSharePctBadge}
+            </div>
+          )}
           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
             <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
           </div>
@@ -1473,46 +1477,50 @@ const Budgets = () => {
 
 
         {/* Desktop: table row layout */}
-        <div className="hidden sm:flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-2">
           <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} disabled={b.isUnbudgeted} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
-          <div className="flex-1 min-w-0 flex items-center gap-1.5">
-            <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
-            {personalSplitBadge}
-            {personalSharePctBadge}
-            {bizSplitBadge}
-            {bizSharePctBadge}
-            {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
-            {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
-            {isWealth && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium shrink-0 cursor-default whitespace-nowrap">
-                    {formatCurrency(savedYtd)} YTD
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Total moved into this pot since January — it carries forward instead of resetting each month.</p>
-                </TooltipContent>
-              </Tooltip>
+          <div className="flex-1 min-w-0">
+            <span className="block text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+            {(personalSplitBadge || personalSharePctBadge || bizSplitBadge || bizSharePctBadge || b.rollover || rolloverAmt > 0 || isWealth) && (
+              <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                {personalSplitBadge}
+                {personalSharePctBadge}
+                {bizSplitBadge}
+                {bizSharePctBadge}
+                {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
+                {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
+                {isWealth && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium shrink-0 cursor-default whitespace-nowrap">
+                        {formatCurrency(savedYtd)} YTD
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Total moved into this pot since January — it carries forward instead of resetting each month.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             )}
           </div>
-          <div className="w-[200px]">
+          <div className="w-[160px] shrink-0">
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
               <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
             </div>
           </div>
-          <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
-          <span className={cn('w-[90px] text-right text-sm tabular-nums', isWealth && actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
+          <span className="w-[80px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
+          <span className={cn('w-[80px] text-right text-sm tabular-nums', isWealth && actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
             {isWealth && actual > 0 ? '+' : ''}{formatCurrency(actual)}
           </span>
-          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', remainingClass)}>
+          <span className={cn('w-[80px] text-right text-sm font-medium tabular-nums', remainingClass)}>
             {overBudget || savedExtra ? '+' : ''}{formatCurrency(Math.abs(remaining))}
             <span className="text-[10px] ml-0.5 opacity-80">{remainingLabel}</span>
 
           </span>
 
-          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-0.5 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity bg-background/80 rounded-lg backdrop-blur-sm">
             {b.planned_amount === 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1588,7 +1596,7 @@ const Budgets = () => {
     return (
       <Collapsible key={key} open={isOpen} onOpenChange={() => toggleSection(key)}>
         <CollapsibleTrigger asChild>
-          <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
+          <button className="w-full flex items-center gap-2 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
             <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base flex items-center gap-2', EXPENSE_TYPE_COLORS[type])}>
               {labelOverride || EXPENSE_TYPE_LABELS[type]}
@@ -1641,18 +1649,16 @@ const Budgets = () => {
                 </span>
               )}
             </span>
-            <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]">{formatCurrency(totals.budget)}</span>
-            <span className={cn('hidden sm:inline-block w-[90px] text-right text-sm tabular-nums', isWealthSection && totals.actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
+            <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[80px]">{formatCurrency(totals.budget)}</span>
+            <span className={cn('hidden sm:inline-block w-[80px] text-right text-sm tabular-nums', isWealthSection && totals.actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
               {isWealthSection && totals.actual > 0 ? '+' : ''}{formatCurrency(totals.actual)}
             </span>
-            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]',
+            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[80px]',
               isWealthSection
                 ? (totals.remaining < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')
                 : totals.remaining < 0 ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
               {formatCurrency(Math.abs(totals.remaining))}
             </span>
-
-            <div className="hidden sm:block w-[62px]" />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
