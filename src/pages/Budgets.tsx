@@ -2274,16 +2274,26 @@ const Budgets = () => {
               })}
             </TabsList>
           </Tabs>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" role="group" aria-label="Budget view">
             <span className="text-xs text-muted-foreground">Showing</span>
-            <Select value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business' | 'all')}>
-              <SelectTrigger className="h-8 w-[150px] text-sm"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="personal">Personal</SelectItem>
-                <SelectItem value="business">Business</SelectItem>
-                <SelectItem value="all">Personal + Business</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="inline-flex rounded-lg border border-border/60 bg-muted/30 p-0.5">
+              {([['personal', 'Personal'], ['business', 'Business'], ['all', 'Combined']] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={budgetType === key}
+                  onClick={() => setBudgetType(key)}
+                  className={cn(
+                    'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                    budgetType === key
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
           {budgetType === 'business' && businessList.length > 0 && (
             <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
