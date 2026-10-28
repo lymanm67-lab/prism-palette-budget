@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { budgetActualLineKey, classifyBudgetActualPillar, modeIncludes, primaryBudgetActualEntry } from './budgetActual';
+import { budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, modeIncludes, primaryBudgetActualEntry } from './budgetActual';
 
 const cat = (overrides: Record<string, unknown> = {}) => ({ id: '1', name: 'Rent', groupName: 'Housing', budgetType: 'personal', expenseType: 'fixed', moneyPurpose: null, ...overrides });
 describe('budget actual classification', () => {
@@ -25,6 +25,14 @@ describe('budget actual classification', () => {
     expect(budgetActualLineKey('combined', personal)).toBe(budgetActualLineKey('combined', business));
     expect(budgetActualLineKey('personal', personal)).not.toBe(budgetActualLineKey('personal', business));
     expect(budgetActualLineKey('combined', cat({ id: null }))).toBe('uncategorized');
+  });
+  it('merges "— Personal/Business NN%" share categories in combined mode', () => {
+    const personal = cat({ id: 'a', name: 'Utilities — Personal 69%' });
+    const business = cat({ id: 'b', name: 'Utilities — Business 31%', budgetType: 'business' });
+    expect(budgetActualLineKey('combined', personal)).toBe(budgetActualLineKey('combined', business));
+    expect(combinedCategoryName('Phone & Internet (Verizon) — Business 60%')).toBe('Phone & Internet (Verizon)');
+    expect(combinedCategoryName('Auto Insurance — Personal 53%')).toBe('Auto Insurance');
+    expect(combinedCategoryName('Rent')).toBe('Rent');
   });
   it('classifies a merged split line by the side with the larger plan', () => {
     const entries = [

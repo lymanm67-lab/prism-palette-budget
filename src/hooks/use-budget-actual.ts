@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
-import { BUDGET_ACTUAL_PILLARS, budgetActualLineKey, classifyBudgetActualPillar, modeIncludes, primaryBudgetActualEntry, type BudgetActualCategory, type BudgetActualEntry, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
+import { BUDGET_ACTUAL_PILLARS, budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, modeIncludes, primaryBudgetActualEntry, type BudgetActualCategory, type BudgetActualEntry, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 
 export interface BudgetActualLine {
@@ -75,7 +75,7 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         const primary = primaryBudgetActualEntry(entries);
         const pillar = classifyBudgetActualPillar(primary.category);
         const mixed = entries.some(e => (e.category.budgetType === 'business') !== (primary.category.budgetType === 'business'));
-        return { ...line, pillar: pillar === 'income' ? 'uncategorized' as const : pillar, groupName: mixed ? `${primary.category.groupName} (personal + business)` : primary.category.groupName };
+        return { ...line, name: mixed ? combinedCategoryName(primary.category.name) : line.name, pillar: pillar === 'income' ? 'uncategorized' as const : pillar, groupName: mixed ? `${primary.category.groupName} (personal + business)` : primary.category.groupName };
       }).sort((a, b) => b.actual - a.actual || b.budgeted - a.budgeted);
       const pillars = BUDGET_ACTUAL_PILLARS.map(def => {
         const children = lines.filter(line => line.pillar === def.key);

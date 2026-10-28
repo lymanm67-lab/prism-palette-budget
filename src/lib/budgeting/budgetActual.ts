@@ -50,12 +50,19 @@ export interface BudgetActualEntry {
   actual: number;
 }
 
+// Split expenses are named e.g. "Utilities — Personal 69%" / "Utilities — Business 31%".
+const SPLIT_SHARE_SUFFIX = /\s*[—–-]\s*(personal|business)\s*\d+\s*%\s*$/i;
+
+export function combinedCategoryName(name: string): string {
+  return name.trim().replace(SPLIT_SHARE_SUFFIX, '').trim();
+}
+
 // In combined mode, the same expense split across personal and business
 // budget rows (e.g. Rent $946 personal + $154 business) must read as one
 // line, so the key is the normalized category name rather than the id.
 export function budgetActualLineKey(mode: BudgetActualMode, category: BudgetActualCategory): string {
   if (!category.id) return 'uncategorized';
-  return mode === 'combined' ? `merged:${category.name.trim().toLowerCase()}` : category.id;
+  return mode === 'combined' ? `merged:${combinedCategoryName(category.name).toLowerCase()}` : category.id;
 }
 
 // The merged line takes the pillar of the side carrying the larger plan
