@@ -1834,7 +1834,7 @@ const Budgets = () => {
                   <Pie
                     data={[
                       { name: 'LIVE', value: sectionTotals.fixed.budget, color: '#3b82f6' },
-                    { name: 'ELIMINATE DEBT', value: sectionTotals.debt.budget, color: '#f43f5e' },
+                    { name: 'ELIMINATE DEBT', value: sectionTotals.debt.budget, color: '#4760e1' },
                       { name: 'ENJOY', value: sectionTotals.flexible.budget, color: '#f59e0b' },
                       { name: 'ENJOY (non-monthly)', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
                     ].filter(d => d.value > 0)}
@@ -1848,7 +1848,7 @@ const Budgets = () => {
                   >
                     {[
                       { color: '#3b82f6' },
-                      { color: '#f43f5e' },
+                      { color: '#4760e1' },
                       { color: '#f59e0b' },
                       { color: '#a855f7' },
                     ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.debt.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)
@@ -3028,7 +3028,7 @@ const Budgets = () => {
                 <Pie
                   data={[
                     { name: 'LIVE', value: sectionTotals.fixed.budget, color: '#3b82f6' },
-                    { name: 'ELIMINATE DEBT', value: sectionTotals.debt.budget, color: '#f43f5e' },
+                    { name: 'ELIMINATE DEBT', value: sectionTotals.debt.budget, color: '#4760e1' },
                     { name: 'ENJOY', value: sectionTotals.flexible.budget, color: '#f59e0b' },
                     { name: 'ENJOY (non-monthly)', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
                   ].filter(d => d.value > 0)}
@@ -3042,7 +3042,7 @@ const Budgets = () => {
                 >
                   {[
                     { color: '#3b82f6' },
-                    { color: '#f43f5e' },
+                    { color: '#4760e1' },
                     { color: '#f59e0b' },
                     { color: '#a855f7' },
                   ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.debt.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)

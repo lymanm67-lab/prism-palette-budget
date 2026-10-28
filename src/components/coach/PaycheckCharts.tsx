@@ -59,7 +59,7 @@ export default function PaycheckCharts({ deployment }: { deployment: PaycheckDep
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">Where this paycheck goes</div>
           <p className="text-[11px] leading-snug text-muted-foreground mb-2">
             Of your {fmt$(net)} take-home, <span style={{ color: 'hsl(var(--prism-sky))' }} className="font-semibold">{billsShare}%</span> covers your bills
-            {debtShare > 0 && <> and <span style={{ color: 'hsl(var(--prism-rose))' }} className="font-semibold">{debtShare}%</span> attacks debt</>}
+            {debtShare > 0 && <> and <span style={{ color: 'hsl(var(--prism-indigo))' }} className="font-semibold">{debtShare}%</span> attacks debt</>}
             , <span style={{ color: 'hsl(var(--prism-lime))' }} className="font-semibold">{futureShare}%</span> builds your future
             {bizShare > 0 && <> ({bizShare}% runs the business)</>}
             , leaving <span style={{ color: 'hsl(var(--prism-amber))' }} className="font-semibold">{fmt$(spend)} ({spendShare}%)</span> to spend guilt-free.
