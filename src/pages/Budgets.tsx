@@ -1505,7 +1505,7 @@ const Budgets = () => {
               </div>
             )}
           </div>
-          <div className="w-[200px]">
+          <div className="w-[160px] shrink-0">
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
               <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
             </div>
