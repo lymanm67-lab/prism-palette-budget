@@ -13,7 +13,7 @@ import { STATE_TAX } from '@/lib/retirement/stateTax';
 const usd = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const LYMAN_AGE = ageFromDob('1967-06-25');
 const KATERI_AGE = ageFromDob('1970-08-25');
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--prism-amber, 38 92% 50%))', 'hsl(var(--chart-2, 160 70% 40%))'];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--prism-amber, 38 92% 50%))', 'hsl(var(--chart-2, 160 70% 40%))', 'hsl(var(--prism-violet, 262 83% 65%))'];
 const tooltipStyle = { backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', color: 'hsl(var(--popover-foreground))' };
 
 function SliderRow({ label, value, min, max, step = 1, onChange, fmt = String }: {
@@ -37,7 +37,7 @@ function Num({ label, value, onChange }: { label: string; value: number; onChang
 }
 
 export default function RetirementWhatIf() {
-  const [retireAges, setRetireAges] = useState([62, 65, 67]);
+  const [retireAges, setRetireAges] = useState([70, 75, 80, 85]);
   const [kateriRetire, setKateriRetire] = useState(65);
   const [life, setLife] = useState(100);
   const [ssAge, setSsAge] = useState(67);
@@ -107,7 +107,7 @@ export default function RetirementWhatIf() {
         <CardContent className="space-y-6">
           <div className="grid gap-5 md:grid-cols-2">
             {retireAges.map((a, k) => (
-              <SliderRow key={k} label={`Scenario ${String.fromCharCode(65 + k)}: Lyman retires at`} value={a} min={55} max={70}
+              <SliderRow key={k} label={`Scenario ${String.fromCharCode(65 + k)}: Lyman retires at`} value={a} min={55} max={85}
                 onChange={(v) => setRetireAges((p) => p.map((x, j) => (j === k ? v : x)))} />
             ))}
             <SliderRow label="Kateri retires at (reference)" value={kateriRetire} min={55} max={70} onChange={setKateriRetire} />
@@ -116,7 +116,7 @@ export default function RetirementWhatIf() {
               fmt={(v) => `${v} · ${usd(ssMonthly(v))}/mo`} />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {scenarios.map((s, k) => (
               <div key={k} className="rounded-lg border bg-card/60 p-3 text-sm">
                 <p className="font-semibold">Scenario {String.fromCharCode(65 + k)} · retire at {s.age}</p>
