@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classifyBudgetActualPillar, modeIncludes } from './budgetActual';
+import { budgetActualLineKey, classifyBudgetActualPillar, modeIncludes, primaryBudgetActualEntry } from './budgetActual';
 
 const cat = (overrides: Record<string, unknown> = {}) => ({ id: '1', name: 'Rent', groupName: 'Housing', budgetType: 'personal', expenseType: 'fixed', moneyPurpose: null, ...overrides });
 describe('budget actual classification', () => {
@@ -18,5 +18,21 @@ describe('budget actual classification', () => {
     expect(modeIncludes('personal', cat())).toBe(true);
     expect(modeIncludes('business', cat())).toBe(false);
     expect(modeIncludes('business', cat({ budgetType: 'business' }))).toBe(true);
+  });
+  it('merges split categories into one line in combined mode only', () => {
+    const personal = cat({ id: 'a', name: 'Rent', groupName: 'Housing' });
+    const business = cat({ id: 'b', name: 'Rent', groupName: 'Business Fixed Expenses', budgetType: 'business' });
+    expect(budgetActualLineKey('combined', personal)).toBe(budgetActualLineKey('combined', business));
+    expect(budgetActualLineKey('personal', personal)).not.toBe(budgetActualLineKey('personal', business));
+    expect(budgetActualLineKey('combined', cat({ id: null }))).toBe('uncategorized');
+  });
+  it('classifies a merged split line by the side with the larger plan', () => {
+    const entries = [
+      { category: cat({ id: 'a', name: 'Rent', groupName: 'Housing' }), budgeted: 946, actual: 1100 },
+      { category: cat({ id: 'b', name: 'Rent', groupName: 'Business Fixed Expenses', budgetType: 'business' }), budgeted: 154, actual: 0 },
+    ];
+    const primary = primaryBudgetActualEntry(entries);
+    expect(primary.category.groupName).toBe('Housing');
+    expect(classifyBudgetActualPillar(primary.category)).toBe('bills');
   });
 });
