@@ -83,7 +83,7 @@ export default function MoneyRedirectsPanel() {
       <div className="grid gap-4 md:grid-cols-4">
         {[
           { label: 'Total cash freed', value: totals.totalFreed, tone: 'text-prism-teal' },
-          { label: 'To Eliminate Debt', value: totals.toDebt, tone: 'text-prism-rose' },
+          { label: 'To Eliminate Debt', value: totals.toDebt, tone: 'text-prism-indigo' },
           { label: 'To Build Wealth', value: totals.toWealth, tone: 'text-prism-lime' },
           { label: 'To Enjoy / Travel', value: totals.toEnjoy, tone: 'text-prism-sky' },
         ].map((k) => (
