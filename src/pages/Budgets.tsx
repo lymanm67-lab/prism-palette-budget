@@ -144,13 +144,27 @@ const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint:
   { key: 'capital', label: 'Capital Events', icon: Coins, hint: 'One-time funding events and the Business Capital Reserve — kept out of recurring income and the 45/10/25/20 percentages.' },
 ];
 
+/** One-line orientation per view, shown at the top so each view reads like its own story. */
+const VIEW_INTRO: Record<'personal' | 'business' | 'all', string> = {
+  personal: 'Your household money: paycheck in, every dollar assigned, savings buckets funded.',
+  business: 'Your business money: consulting income in, costs covered, and what the business owes you tracked as a loan.',
+  all: 'Both sides together: the full household picture, personal and business, in one flow.',
+};
+
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
   const { leftOver: typicalLeftOver } = useMonthlyCommitments();
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [, setBaselineTick] = useState(0);
-  const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
+  const [budgetType, setBudgetTypeState] = useState<'personal' | 'business' | 'all'>(() => {
+    const saved = localStorage.getItem('budget-view-type');
+    return saved === 'business' || saved === 'all' ? saved : 'personal';
+  });
+  const setBudgetType = (v: 'personal' | 'business' | 'all') => {
+    localStorage.setItem('budget-view-type', v);
+    setBudgetTypeState(v);
+  };
   const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
@@ -2260,16 +2274,26 @@ const Budgets = () => {
               })}
             </TabsList>
           </Tabs>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" role="group" aria-label="Budget view">
             <span className="text-xs text-muted-foreground">Showing</span>
-            <Select value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business' | 'all')}>
-              <SelectTrigger className="h-8 w-[150px] text-sm"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="personal">Personal</SelectItem>
-                <SelectItem value="business">Business</SelectItem>
-                <SelectItem value="all">Personal + Business</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="inline-flex rounded-lg border border-border/60 bg-muted/30 p-0.5">
+              {([['personal', 'Personal'], ['business', 'Business'], ['all', 'Combined']] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  aria-pressed={budgetType === key}
+                  onClick={() => setBudgetType(key)}
+                  className={cn(
+                    'rounded-md px-3 py-1 text-sm font-medium transition-colors',
+                    budgetType === key
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
           {budgetType === 'business' && businessList.length > 0 && (
             <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
@@ -2317,6 +2341,9 @@ const Budgets = () => {
           ['Subscriptions', '$50', '$50', '$0'],
         ]}
       />
+
+      {/* Per-view orientation line */}
+      <p className="text-sm text-muted-foreground print:hidden">{VIEW_INTRO[budgetType]}</p>
 
       {/* Step guidance — one sentence per step so the flow reads top to bottom */}
       <Card className="border-l-4 border-l-primary/60 print:hidden">
@@ -2369,7 +2396,7 @@ const Budgets = () => {
         <OverBudgetGlance month={month.slice(0, 7)} budgetType={budgetType} />
         {budgetType !== 'personal' && <OwnerLoanCard throughMonth={month.slice(0, 7)} />}
       </div>
-      {budgetType === 'personal' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets">
+      {budgetType === 'personal' && viewTab === 'assign' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets" defaultOpen>
       <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
