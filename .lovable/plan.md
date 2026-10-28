@@ -1,19 +1,25 @@
-## Are you on track for $100k gross in 2026? (Lyman only, all income)
+## All money received in 2026, Jan 1 – Oct 28 (from your bank records)
 
-| Source | 2026 |
+**Total deposits: $51,738.71**: $32,497.28 counted as income plus $19,241.43 marked as transfers.
+
+| Source | Amount |
 |---|---|
-| IU salary (annual) | $70,940.00 |
-| Consulting received (Mar $4,000 + Sep $1,925.29) | $5,925.29 |
-| Speaking, November (gross) | $6,500.00 |
-| Training fees | not found in bank records yet |
-| **Total so far** | **$83,365.29** |
+| Salary (take-home deposits) | $16,223.68 |
+| Salary deposits marked as transfers | $7,467.17 |
+| Consulting | $5,925.29 |
+| Grocery reimbursements from Kateri | $6,214.32 |
+| Unlabeled "Deposit" | $1,577.51 (+$453.47 marked transfer) |
+| Refunds | $920.70 |
+| Other Income | $731.66 |
+| Owner Draw (business to personal) | $1,012.17 |
+| Other transfers between accounts | $10,293.62 |
+| Small items (card credits, interest, misc) | $904.12 |
 
-Result: you're **$16,634.71 short** of $100k, before training fees. If your 2026 training fees add up to about $16,635, you'll reach $100k.
-
-Notes:
-- $70,940 is your pay rate after the July raise. Pay before July was about 3% lower, so the salary you actually earn in 2026 may come in around $1,000 under $70,940.
-- Your bank records don't have a "speaking" or "training" category. Some may be in October's "Deposit" rows ($1,291.72) or "Other Income" ($931.66 for the year). I didn't count those, so nothing is counted twice.
-- I left out grocery reimbursements from Kateri, refunds, transfers, interest and the $950 stock sale, because none of them is earned income.
+### What this means for the $100k question
+- These bank records are missing most of your paychecks. Salary deposits total only about $23,691 take-home, but 10 months of IU pay should be about $43,000 take-home. Some months show just $462–$1,062, which points to accounts that aren't linked or gaps in imports.
+- No speaking or training fees are labeled. Any you received may be in the $1,577.51 of unlabeled deposits or the $731.66 of Other Income.
+- So the bank records can't answer the $100k question yet. The pay-stub estimate is still the best guide: $83,365.29 before training fees, which leaves you $16,634.71 short.
 
 ## Next step (needs your input)
-Tell me the training fees you've received in 2026 (dates and amounts). I can also tag them and the November speaking fee as income categories, so the total updates by itself.
+1. Tell me your 2026 training fees (dates and amounts).
+2. Optionally, I can add "Speaking" and "Training" income categories and relabel those deposits, so year-to-date income adds itself up.
