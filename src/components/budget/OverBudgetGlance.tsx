@@ -22,13 +22,25 @@ interface Props {
 
 export default function OverBudgetGlance({ month, budgetType }: Props) {
   const { formatCurrency } = useCurrency();
-  const mode: BudgetActualMode = budgetType === 'all' ? 'combined' : budgetType;
+  // Split expenses (e.g. rent personal/business) must be judged on the combined total.
+  void budgetType;
+  const mode: BudgetActualMode = 'combined';
   const { data, isLoading } = useBudgetActual(month, mode);
 
   const over = useMemo(() => {
     if (!data) return [];
-    const lines = [...data.pillars.flatMap(p => p.lines), ...data.uncategorized];
-    return lines
+    const lines = [...data.pillars.flatMap(p => p.lines), ...data.uncategorized]
+      .filter(l => !/transfer/i.test(`${l.name} ${(l as { groupName?: string }).groupName ?? ''}`));
+    const baseName = (n: string) =>
+      n.replace(/\s*[—–-]\s*(personal|business).*$/i, '').replace(/\s*\((personal|business)[^)]*\)\s*$/i, '').trim();
+    const merged = new Map<string, typeof lines[number]>();
+    for (const l of lines) {
+      const k = baseName(l.name).toLowerCase();
+      const cur = merged.get(k);
+      if (cur) merged.set(k, { ...cur, budgeted: cur.budgeted + l.budgeted, actual: cur.actual + l.actual });
+      else merged.set(k, { ...l, name: baseName(l.name) });
+    }
+    return Array.from(merged.values())
       .map(l => ({ ...l, over: l.actual - l.budgeted }))
       .filter(l => l.over > 0.005)
       .sort((a, b) => b.over - a.over);
