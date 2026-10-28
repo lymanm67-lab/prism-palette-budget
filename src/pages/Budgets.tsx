@@ -60,6 +60,7 @@ import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
 import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
+import OverBudgetGlance from '@/components/budget/OverBudgetGlance';
 import CollapsibleSection from '@/components/CollapsibleSection';
 
 const getMonth = (offset: number) => {
@@ -2363,6 +2364,9 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
+      <div className="py-2">
+        <OverBudgetGlance month={month.slice(0, 7)} budgetType={budgetType} />
+      </div>
       {budgetType === 'personal' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets">
       <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
