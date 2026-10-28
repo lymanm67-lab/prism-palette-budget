@@ -56,8 +56,17 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle className="h-4 w-4 text-prism-rose" />
-            Over budget at a glance
+            <button
+              type="button"
+              onClick={() => setOpen(o => !o)}
+              aria-expanded={open}
+              aria-controls={panelId}
+              className="flex items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+              <AlertTriangle className="h-4 w-4 text-prism-rose" />
+              Over budget at a glance
+            </button>
           </CardTitle>
           {!isLoading && (
             <Badge variant={over.length > 0 ? 'destructive' : 'secondary'} className="shrink-0">
@@ -66,7 +75,7 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent id={panelId} hidden={!open}>
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Checking spending against planned amounts…</p>
         ) : over.length === 0 ? (
