@@ -1448,6 +1448,14 @@ const Budgets = () => {
           )}
         </div>
         <div className="sm:hidden mt-1.5 ml-5">
+          {(personalSplitBadge || personalSharePctBadge || bizSplitBadge || bizSharePctBadge) && (
+            <div className="flex flex-wrap items-center gap-1 mb-1">
+              {personalSplitBadge}
+              {personalSharePctBadge}
+              {bizSplitBadge}
+              {bizSharePctBadge}
+            </div>
+          )}
           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
             <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
           </div>
