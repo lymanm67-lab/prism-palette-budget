@@ -2342,6 +2342,9 @@ const Budgets = () => {
         ]}
       />
 
+      {/* Per-view orientation line */}
+      <p className="text-sm text-muted-foreground print:hidden">{VIEW_INTRO[budgetType]}</p>
+
       {/* Step guidance — one sentence per step so the flow reads top to bottom */}
       <Card className="border-l-4 border-l-primary/60 print:hidden">
         <CardContent className="flex flex-wrap items-center gap-3 p-4">
@@ -2393,7 +2396,7 @@ const Budgets = () => {
         <OverBudgetGlance month={month.slice(0, 7)} budgetType={budgetType} />
         {budgetType !== 'personal' && <OwnerLoanCard throughMonth={month.slice(0, 7)} />}
       </div>
-      {budgetType === 'personal' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets">
+      {budgetType === 'personal' && viewTab === 'assign' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets" defaultOpen>
       <FiveBucketFunding
         amount={unallocated} month={month} categories={categories || []} budgets={budgets || []}
         groupId={(categoryGroups || []).find(g => (g.budget_type || 'personal') === 'personal' && g.name === 'Five-Bucket Funding')?.id}
