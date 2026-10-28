@@ -22,6 +22,8 @@ interface Props {
 
 export default function OverBudgetGlance({ month, budgetType }: Props) {
   const { formatCurrency } = useCurrency();
+  const [open, setOpen] = useState(false);
+  const panelId = `over-budget-glance-${month}`;
   // Split expenses (e.g. rent personal/business) must be judged on the combined total.
   void budgetType;
   const mode: BudgetActualMode = 'combined';
