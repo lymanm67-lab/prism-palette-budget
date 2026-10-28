@@ -1520,7 +1520,7 @@ const Budgets = () => {
 
           </span>
 
-          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-0.5 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity bg-background/80 rounded-lg backdrop-blur-sm">
             {b.planned_amount === 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
