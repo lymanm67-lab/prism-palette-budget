@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
-import { BUDGET_ACTUAL_PILLARS, classifyBudgetActualPillar, modeIncludes, type BudgetActualCategory, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
+import { BUDGET_ACTUAL_PILLARS, budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, modeIncludes, primaryBudgetActualEntry, type BudgetActualCategory, type BudgetActualEntry, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 
 export interface BudgetActualLine {
@@ -42,14 +42,17 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         expenseType: row.categories?.category_groups?.expense_type,
         moneyPurpose: row.categories?.money_purpose,
       });
+      const entriesByKey = new Map<string, BudgetActualEntry[]>();
       const add = (category: BudgetActualCategory, budgeted: number, actual: number) => {
-        const pillar = classifyBudgetActualPillar(category);
-        if (pillar === 'income' || !modeIncludes(mode, category)) return;
-        const key = category.id || 'uncategorized';
-        const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar, budgeted: 0, actual: 0 };
+        if (classifyBudgetActualPillar(category) === 'income' || !modeIncludes(mode, category)) return;
+        const key = budgetActualLineKey(mode, category);
+        const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar: 'uncategorized' as BudgetActualLine['pillar'], budgeted: 0, actual: 0 };
         current.budgeted += budgeted;
         current.actual += actual;
         map.set(key, current);
+        const entries = entriesByKey.get(key) || [];
+        entries.push({ category, budgeted, actual });
+        entriesByKey.set(key, entries);
       };
       for (const row of budgetsRes.data || []) add(readCat(row), Number(row.planned_amount) || 0, 0);
       const splitIds = new Set((splitsRes.data || []).map((row: any) => row.transaction_id));
@@ -66,7 +69,14 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         if (amount < 0) add(readCat(row), 0, Math.abs(amount));
       }
 
-      const lines = Array.from(map.values()).sort((a, b) => b.actual - a.actual || b.budgeted - a.budgeted);
+      const lines = Array.from(map.values()).map(line => {
+        const entries = entriesByKey.get(line.key) || [];
+        if (entries.length === 0) return line;
+        const primary = primaryBudgetActualEntry(entries);
+        const pillar = classifyBudgetActualPillar(primary.category);
+        const mixed = entries.some(e => (e.category.budgetType === 'business') !== (primary.category.budgetType === 'business'));
+        return { ...line, name: mixed ? combinedCategoryName(primary.category.name) : line.name, pillar: pillar === 'income' ? 'uncategorized' as const : pillar, groupName: mixed ? `${primary.category.groupName} (personal + business)` : primary.category.groupName };
+      }).sort((a, b) => b.actual - a.actual || b.budgeted - a.budgeted);
       const pillars = BUDGET_ACTUAL_PILLARS.map(def => {
         const children = lines.filter(line => line.pillar === def.key);
         return { ...def, budgeted: children.reduce((sum, line) => sum + line.budgeted, 0), actual: children.reduce((sum, line) => sum + line.actual, 0), lines: children };
