@@ -144,6 +144,13 @@ const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint:
   { key: 'capital', label: 'Capital Events', icon: Coins, hint: 'One-time funding events and the Business Capital Reserve — kept out of recurring income and the 45/10/25/20 percentages.' },
 ];
 
+/** One-line orientation per view, shown at the top so each view reads like its own story. */
+const VIEW_INTRO: Record<'personal' | 'business' | 'all', string> = {
+  personal: 'Your household money: paycheck in, every dollar assigned, savings buckets funded.',
+  business: 'Your business money: consulting income in, costs covered, and what the business owes you tracked as a loan.',
+  all: 'Both sides together: the full household picture, personal and business, in one flow.',
+};
+
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
   const { leftOver: typicalLeftOver } = useMonthlyCommitments();
