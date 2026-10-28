@@ -13,7 +13,7 @@ import { STATE_TAX } from '@/lib/retirement/stateTax';
 const usd = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const LYMAN_AGE = ageFromDob('1967-06-25');
 const KATERI_AGE = ageFromDob('1970-08-25');
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--prism-amber, 38 92% 50%))', 'hsl(var(--accent-foreground))'];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--prism-amber, 38 92% 50%))', 'hsl(var(--chart-2, 160 70% 40%))'];
 const tooltipStyle = { backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', color: 'hsl(var(--popover-foreground))' };
 
 function SliderRow({ label, value, min, max, step = 1, onChange, fmt = String }: {
