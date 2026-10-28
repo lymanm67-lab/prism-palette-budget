@@ -42,7 +42,7 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
     }
     return Array.from(merged.values())
       .map(l => ({ ...l, over: l.actual - l.budgeted }))
-      .filter(l => l.over > 0.005)
+      .filter(l => l.budgeted > 0 && l.over > 0.005)
       .sort((a, b) => b.over - a.over);
   }, [data]);
 

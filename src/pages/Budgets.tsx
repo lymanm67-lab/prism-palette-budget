@@ -57,6 +57,7 @@ import AssignRemainingDialog from '@/components/budget/AssignRemainingDialog';
 import BudgetSummaryTiles from '@/components/budget/BudgetSummaryTiles';
 import { Coins } from 'lucide-react';
 import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
+import OwnerLoanCard from '@/components/budget/OwnerLoanCard';
 import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
@@ -2366,6 +2367,7 @@ const Budgets = () => {
       />
       <div className="py-2">
         <OverBudgetGlance month={month.slice(0, 7)} budgetType={budgetType} />
+        {budgetType !== 'personal' && <OwnerLoanCard throughMonth={month.slice(0, 7)} />}
       </div>
       {budgetType === 'personal' && <div className="py-2"><CollapsibleSection title="Five-Bucket funding" subtitle="Send unallocated money into your savings buckets">
       <FiveBucketFunding

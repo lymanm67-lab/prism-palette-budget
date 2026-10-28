@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useHousehold } from '@/hooks/use-household';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { useCurrency } from '@/hooks/use-currency';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Landmark } from 'lucide-react';
