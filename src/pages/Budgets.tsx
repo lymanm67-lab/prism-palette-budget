@@ -1411,7 +1411,7 @@ const Budgets = () => {
     ) : null;
 
     return (
-      <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
+      <div key={b.id} className={cn("group relative py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
         {/* Mobile: stacked layout */}
         <div className="flex items-center gap-2 sm:hidden">
           <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} disabled={b.isUnbudgeted} className="shrink-0" />
