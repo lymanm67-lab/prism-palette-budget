@@ -20,9 +20,9 @@ const monthKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()
 const statusFor = (budgeted: number, actual: number) => {
   if (budgeted <= 0 && actual > 0) return { label: 'No Budget', cls: 'text-prism-rose border-prism-rose/30 bg-prism-rose/10' };
   if (budgeted <= 0) return { label: 'No Activity', cls: 'text-muted-foreground' };
-  const used = actual / budgeted;
-  if (used > 1) return { label: 'Over Budget', cls: 'text-prism-rose border-prism-rose/30 bg-prism-rose/10' };
-  if (used >= .8) return { label: 'Watch', cls: 'text-prism-amber border-prism-amber/30 bg-prism-amber/10' };
+  const pct = actual / budgeted * 100;
+  if (pct > 100.01) return { label: 'Over Budget', cls: 'text-prism-rose border-prism-rose/30 bg-prism-rose/10' };
+  if (pct >= 80 && pct < 99.95) return { label: 'Watch', cls: 'text-prism-amber border-prism-amber/30 bg-prism-amber/10' };
   return { label: 'On Track', cls: 'text-prism-teal border-prism-teal/30 bg-prism-teal/10' };
 };
 

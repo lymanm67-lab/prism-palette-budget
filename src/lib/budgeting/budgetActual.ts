@@ -50,6 +50,13 @@ export interface BudgetActualEntry {
   actual: number;
 }
 
+// Generic "Transfers" categories are money moves between accounts, not
+// spending — they are never planned, so they stay out of budget-vs-actual.
+// Named planned lines like "Investment Transfer — Business Checking" stay in.
+export function isTransferLikeCategory(category: BudgetActualCategory): boolean {
+  return /^transfers?$/i.test(category.name.trim());
+}
+
 // Split expenses are named e.g. "Utilities — Personal 69%" / "Utilities — Business 31%".
 const SPLIT_SHARE_SUFFIX = /\s*[—–-]\s*(personal|business)\s*\d+\s*%\s*$/i;
 

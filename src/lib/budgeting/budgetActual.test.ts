@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, modeIncludes, primaryBudgetActualEntry } from './budgetActual';
+import { budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, isTransferLikeCategory, modeIncludes, primaryBudgetActualEntry } from './budgetActual';
 
 const cat = (overrides: Record<string, unknown> = {}) => ({ id: '1', name: 'Rent', groupName: 'Housing', budgetType: 'personal', expenseType: 'fixed', moneyPurpose: null, ...overrides });
 describe('budget actual classification', () => {
@@ -42,5 +42,11 @@ describe('budget actual classification', () => {
     const primary = primaryBudgetActualEntry(entries);
     expect(primary.category.groupName).toBe('Housing');
     expect(classifyBudgetActualPillar(primary.category)).toBe('bills');
+  });
+  it('excludes generic transfer categories but keeps planned transfer lines', () => {
+    expect(isTransferLikeCategory(cat({ name: 'Transfers' }))).toBe(true);
+    expect(isTransferLikeCategory(cat({ name: 'Transfer' }))).toBe(true);
+    expect(isTransferLikeCategory(cat({ name: 'Investment Transfer — Business Checking' }))).toBe(false);
+    expect(isTransferLikeCategory(cat({ name: 'Rent' }))).toBe(false);
   });
 });
