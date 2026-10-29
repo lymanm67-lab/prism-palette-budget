@@ -112,27 +112,49 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
             {over.map(line => {
               const color = `hsl(${line.pillar === 'uncategorized' ? 'var(--muted-foreground)' : PILLAR_COLOR[line.pillar]})`;
               const pct = line.budgeted > 0 ? Math.round((line.actual / line.budgeted) * 100) : null;
+              const fixes = suggestFixes(line.name, line.over, line.budgeted, formatCurrency);
               return (
-                <Link
-                  key={line.key}
-                  to={`/budgets/actual?month=${month}&mode=${mode}`}
-                  className="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/50"
-                >
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} aria-hidden />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{line.name}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">
-                      {line.pillar !== 'uncategorized' ? PILLAR_LABEL[line.pillar] : 'Uncategorized'}
-                      {' · '}
-                      {formatCurrency(line.actual)} spent of {formatCurrency(line.budgeted)} planned
-                      {pct !== null && pct < 1000 && ` · ${pct}%`}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums text-prism-rose">
-                    +{formatCurrency(line.over)}
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5" />
-                </Link>
+                <div key={line.key} className="rounded-md px-2 py-1.5 hover:bg-muted/50">
+                  <Link
+                    to={`/budgets/actual?month=${month}&mode=${mode}`}
+                    className="group flex items-center gap-2"
+                  >
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} aria-hidden />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{line.name}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {line.pillar !== 'uncategorized' ? PILLAR_LABEL[line.pillar] : 'Uncategorized'}
+                        {' · '}
+                        {formatCurrency(line.actual)} spent of {formatCurrency(line.budgeted)} planned
+                        {pct !== null && pct < 1000 && ` · ${pct}%`}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-prism-rose">
+                      +{formatCurrency(line.over)}
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                  {fixes.length > 0 && (
+                    <ul className="ml-4 mt-1 space-y-0.5 border-l-2 border-prism-amber/40 pl-2">
+                      {fixes.map((fix, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                          <Lightbulb className="mt-0.5 h-3 w-3 shrink-0 text-prism-amber" aria-hidden />
+                          <span>
+                            {fix.text}
+                            {fix.link && (
+                              <>
+                                {' '}
+                                <Link to={fix.link.to} className="font-medium text-prism-amber underline-offset-2 hover:underline">
+                                  {fix.link.label}
+                                </Link>
+                              </>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               );
             })}
             {unbudgeted.length > 0 && (
