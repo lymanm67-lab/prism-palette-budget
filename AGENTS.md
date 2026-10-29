@@ -7,6 +7,6 @@
 - Net-pay allocation excludes withheld payroll, internal transfer categories, reimbursed groceries and HSA-covered medical costs before purpose overrides, preventing false cash-shortfall warnings.
 - Business investment transfers stay in allocated wealth totals but are separated from operating funding labels; matching Owner Draw rows move business surplus into Personal without creating combined income.
 
-- Monthly Budget vs Actual classification lives in `src/lib/budgeting/budgetActual.ts`; reuse it across reports so the six paycheck-tree areas remain consistent.
+- Monthly Budget vs Actual classification lives in `src/lib/budgeting/budgetActual.ts`; reuse it across reports so the seven paycheck-tree areas remain consistent.
 - Akron application fields use one PDF-point coordinate registry for browser entry and pdf-lib exports over the original template, preventing layout drift.
 - Akron application answers and signatures stay in component memory; only explicit device-file draft downloads/imports may save and restore them. Never store them in browser storage or transmit them online, because they include SSNs and financial declarations.- Retirement What-If Lab uses the pure engine in src/lib/retirement/whatIf.ts and stateTax.ts with in-memory inputs only, so experiments never change saved plans.
