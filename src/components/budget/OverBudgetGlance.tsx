@@ -1,11 +1,38 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight, Lightbulb } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/hooks/use-currency';
 import { useBudgetActual } from '@/hooks/use-budget-actual';
 import { BUDGET_ACTUAL_PILLARS, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
+
+interface FixSuggestion {
+  text: string;
+  link?: { to: string; label: string };
+}
+
+/** Tailored ways to fix an over-budget category, based on its name and how far over it is. */
+function suggestFixes(name: string, over: number, budgeted: number, fmt: (n: number) => string): FixSuggestion[] {
+  const n = name.toLowerCase();
+  const pctOver = budgeted > 0 ? over / budgeted : 1;
+  const fixes: FixSuggestion[] = [];
+
+  if (/subscri|netflix|sirius|spotify|hulu|stream|gym|member|audible|patreon|icloud|prime/.test(n)) {
+    fixes.push({ text: 'Cancel, downgrade, or negotiate this recurring charge.', link: { to: '/subscriptions', label: 'Open Subscriptions' } });
+  } else if (/dining|restaurant|fast food|coffee|takeout|grocer/.test(n)) {
+    fixes.push({ text: 'Trim this discretionary spend — check the leak list for ideas.', link: { to: '/coach', label: 'Open Money Coach' } });
+  } else if (/guilt|fun|entertain|hobby|shopping|cloth/.test(n)) {
+    fixes.push({ text: `Pause new spending here for the rest of the month, or move ${fmt(over)} from next month's guilt-free plan.` });
+  }
+
+  if (pctOver <= 0.1 || over < 25) {
+    fixes.push({ text: `Small overage — raise the planned amount by ${fmt(over)} so the budget matches reality.` });
+  } else {
+    fixes.push({ text: `Cover the ${fmt(over)} overage by redirecting from Guilt-Free spending or this month's Five-Bucket surplus.` });
+  }
+  return fixes.slice(0, 2);
+}
 
 const PILLAR_COLOR: Record<BudgetActualPillarKey, string> = Object.fromEntries(
   BUDGET_ACTUAL_PILLARS.map(def => [def.key, def.color])
