@@ -1189,7 +1189,7 @@ const Budgets = () => {
     
     // For each budget with rollover enabled, check previous month
     for (const b of (budgets as any[])) {
-      if (!b.rollover) continue;
+      if (!b.rollover || isFiveBucketFunding(categoryNameById.get(b.category_id) || '')) continue;
       // Payroll deduction categories auto-match spent to budget, so rollover is always zero
       const expType = categoryExpenseType.get(b.category_id) || 'flexible';
       if (expType === 'payroll_deduction') continue;
@@ -1335,7 +1335,7 @@ const Budgets = () => {
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
     // Build Wealth lines are money kept, so they are never "overspending".
-    const isWealth = type === 'wealth';
+    const isWealth = type === 'wealth' || isFiveBucketFunding(categoryNameById.get(b.category_id) || '');
     // b.spent already reflects business-offset adjustment (see effectiveSpentByCategory)
     const actual = isIncome ? b.received : b.spent;
     const bizOffset = businessOffsets.get(b.category_id);

@@ -78,16 +78,7 @@ export default function FiveBucketFunding({ amount, month, categories, groupId, 
       <Button asChild variant="outline" size="sm"><Link to={`/planning/savings-plans?tab=five-bucket&budgetMonth=${month}`}>View funded plan</Link></Button>
     </div>
     <p className="text-sm text-muted-foreground">{formatCurrency(existing)} assigned this month · {STAGE_LABEL[funding.stage]}</p>
-    {!fullyAssigned ? <>
-      <div className="grid gap-2 sm:grid-cols-5">{BUCKETS.map(b => <div key={b.key}>
-        <p className="text-xs text-muted-foreground">{b.label}</p>
-        <p className="font-semibold tabular-nums">{formatCurrency(funding.allocation[b.key] / 100)}</p>
-      </div>)}</div>
-      {!valid && <p role="alert" className="text-sm text-destructive">Your saved splits exceed the available money. Adjust them in Five-Bucket before assigning.</p>}
-      <Button onClick={save} disabled={busy || !valid} size="sm">
-        {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PiggyBank className="mr-2 h-4 w-4" />}
-        Assign {formatCurrency(funding.available / 100)} to Five-Bucket
-      </Button>
-    </> : existing > 0 && <p className="text-sm font-medium">All funds assigned for this month ({formatCurrency(existing)} assigned) ✓</p>}
+    <p className="text-sm text-muted-foreground">Savings are balanced automatically after expenses, with Deductibles & Emergency funded first. Retirement and HSA are funded through payroll.</p>
+
   </section>{household && <FiveBucketGrowth householdId={household.id} />}</>;
 }
