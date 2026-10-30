@@ -14,7 +14,7 @@ interface Props { monthStart: string; monthEnd: string; categories: { id: string
 /** Lists this month's bank transactions with no budget category so each can be matched; matching updates spending and surplus automatically. */
 export default function MatchTransactions({ monthStart, monthEnd, categories }: Props) {
   const { household } = useHousehold();
-  const { format } = useCurrency();
+  const { formatCurrency: format } = useCurrency();
   const qc = useQueryClient();
   const [rememberMerchant, setRememberMerchant] = useState(true);
   const key = ['unmatched-transactions', household?.id, monthStart];
