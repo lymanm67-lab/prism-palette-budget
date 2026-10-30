@@ -717,7 +717,7 @@ const DebtPayoff = () => {
                 </Card>
               </div>
 
-              <DebtPaidHistory items={dbItems || []} paidOffNames={paidOffNames} />
+              <DebtPaidHistory items={(rawDbItems as any[]) || []} paidOffNames={paidOffNames} />
 
               {/* Debt cards */}
               <div className="grid gap-3 sm:grid-cols-2">
