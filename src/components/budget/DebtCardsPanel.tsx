@@ -6,7 +6,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import {
   debtCardMetrics, snowballPlan, pslfStatus, type DebtInput,
 } from '@/lib/budgeting/debtAmortization';
-import { TrendingDown, CalendarClock, Landmark, Snowflake, ShieldCheck } from 'lucide-react';
+import { TrendingDown, CalendarClock, Landmark, Snowflake, ShieldCheck, Zap } from 'lucide-react';
 import { scheduledPayoffLabel, scheduledInterestSaved } from '@/lib/budgeting/futureDebtPayments';
 
 interface Props {
