@@ -62,6 +62,7 @@ import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
 import { DebtStatementScanner } from '@/components/DebtStatementScanner';
 import { Target, FileUp } from 'lucide-react';
 import DebtPaidHistory from '@/components/debt/DebtPaidHistory';
+import { useDebtPaymentsApplied } from '@/hooks/use-debt-payments-applied';
 
 // ─── Types ───
 interface Debt {
@@ -169,7 +170,14 @@ const DebtPayoff = () => {
   const deletePlan = useDeleteDebtPlan();
 
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
-  const { data: dbItems, isLoading: itemsLoading } = useDebtItems(activePlanId);
+  const { data: rawDbItems, isLoading: itemsLoading } = useDebtItems(activePlanId);
+  // Auto-decrease balances by matched checking-account payments made after balance_as_of.
+  const { liveBalances } = useDebtPaymentsApplied((rawDbItems as any[]) || []);
+  const dbItems = useMemo(
+    () => ((rawDbItems as any[]) || []).map((i: any) =>
+      liveBalances[i.id] !== undefined ? { ...i, balance: liveBalances[i.id] } : i),
+    [rawDbItems, liveBalances],
+  );
   const createItem = useCreateDebtItem();
   const updateItem = useUpdateDebtItem();
   const deleteItem = useDeleteDebtItem();
