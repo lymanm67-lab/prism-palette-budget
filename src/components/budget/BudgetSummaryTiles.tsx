@@ -24,6 +24,8 @@ interface Props {
   totalIncomeActual: number;
   totalExpenseBudget: number;
   sinkingFunds?: number;
+  expenseShortfall?: number;
+  unfundedBuckets?: number;
   totalExpenseActual: number;
   plannedSurplus: number;
   actualSurplus: number;
@@ -59,6 +61,8 @@ export default function BudgetSummaryTiles({
   totalIncomeActual,
   totalExpenseBudget,
   sinkingFunds = 0,
+  expenseShortfall = 0,
+  unfundedBuckets = 0,
   totalExpenseActual,
   plannedSurplus,
   actualSurplus,
@@ -154,7 +158,7 @@ export default function BudgetSummaryTiles({
         {unallocated > 0
           ? 'Money left to assign. Click the button to give it a job.'
           : unallocated < 0
-          ? 'Expenses exceed income. Trim a planned amount to land on zero.'
+          ? `${formatCurrency(expenseShortfall)} expense shortfall + ${formatCurrency(unfundedBuckets)} unfunded savings allocations. Savings are not spending; both still need funding.`
           : 'Every dollar of income is assigned to a category.'}
       </p>
     </div>
@@ -207,8 +211,8 @@ export default function BudgetSummaryTiles({
       label: 'Expenses',
       icon: Receipt,
       tone: 'sky' as Tone,
-      value: totalExpenseBudget - sinkingFunds,
-      sub: sinkingFunds > 0 ? `${formatCurrency(totalExpenseActual)} spent · ${formatCurrency(sinkingFunds)} to sinking funds` : `${formatCurrency(totalExpenseActual)} spent`,
+      value: totalExpenseBudget,
+      sub: `${formatCurrency(totalExpenseActual)} spent · excludes Five-Bucket savings`,
       tooltip: expenseTooltip,
     },
     {
@@ -216,19 +220,19 @@ export default function BudgetSummaryTiles({
       label: 'Planned surplus',
       icon: PiggyBank,
       tone: surplusTone,
-      value: plannedSurplus + sinkingFunds,
+      value: plannedSurplus,
       sub: sinkingFunds > 0
-        ? `${formatCurrency(sinkingFunds)} sent to sinking funds · safe to spend ${formatCurrency(safeToSpendMonthly)}`
+        ? `Before savings allocations · safe to spend ${formatCurrency(safeToSpendMonthly)}`
         : `safe to spend ${formatCurrency(safeToSpendMonthly)}`,
       tooltip: surplusTooltip,
     },
     {
       key: 'unallocated',
-      label: 'Unallocated',
+      label: unallocated < 0 ? 'Funding gap' : 'Unallocated',
       icon: ListChecks,
       tone: unallocatedTone,
       value: Math.abs(unallocated),
-      sub: unallocated < 0 ? 'over-allocated' : unallocated === 0 ? 'fully allocated' : 'to assign',
+      sub: unallocated < 0 ? 'Expenses + planned savings exceed income' : unallocated === 0 ? 'fully allocated' : 'to assign',
       tooltip: unallocatedTooltip,
       extra:
         Math.abs(unallocated) > 0.01 ? (
