@@ -190,7 +190,9 @@ export function DebtCardsPanel({ items }: Props) {
                     </p>
                     <p className="flex items-center gap-2 text-xs">
                       <CalendarClock className="h-3.5 w-3.5 text-primary" />
-                      {m.monthsAccelerated > 0
+                      {scheduledPayoffLabel(d.name)
+                        ? `Paid off ${scheduledPayoffLabel(d.name)} with planned extra payments`
+                        : m.monthsAccelerated > 0
                         ? `${m.monthsAccelerated} months earlier than minimums only`
                         : 'Add an extra payment to accelerate this debt'}
                     </p>
