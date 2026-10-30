@@ -7,7 +7,7 @@ import {
   debtCardMetrics, snowballPlan, pslfStatus, type DebtInput,
 } from '@/lib/budgeting/debtAmortization';
 import { TrendingDown, CalendarClock, Landmark, Snowflake, ShieldCheck, Zap } from 'lucide-react';
-import { scheduledPayoffLabel, scheduledInterestSaved } from '@/lib/budgeting/futureDebtPayments';
+import { scheduledPayoffLabel, scheduledInterestSaved, scheduledExtraNote } from '@/lib/budgeting/futureDebtPayments';
 
 interface Props {
   /** Raw debt_items rows. */
