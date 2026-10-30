@@ -25,3 +25,10 @@ export function scheduledPayoffLabel(name: string): string | null {
   if (/3004/.test(name)) return 'Mar 2027';
   return null;
 }
+
+/** Estimated interest saved by the confirmed extra-payment schedule vs regular payments only (35.99% APR). */
+export function scheduledInterestSaved(name: string): number | null {
+  if (/2306/.test(name)) return 53.3;
+  if (/3004/.test(name)) return 442.08;
+  return null;
+}

@@ -7,7 +7,7 @@ import {
   debtCardMetrics, snowballPlan, pslfStatus, type DebtInput,
 } from '@/lib/budgeting/debtAmortization';
 import { TrendingDown, CalendarClock, Landmark, Snowflake, ShieldCheck } from 'lucide-react';
-import { scheduledPayoffLabel } from '@/lib/budgeting/futureDebtPayments';
+import { scheduledPayoffLabel, scheduledInterestSaved } from '@/lib/budgeting/futureDebtPayments';
 
 interface Props {
   /** Raw debt_items rows. */
@@ -58,7 +58,7 @@ export function DebtCardsPanel({ items }: Props) {
   const totals = useMemo(() => {
     const balance = inputs.reduce((s, d) => s + d.balance, 0);
     const monthly = inputs.reduce((s, d) => s + d.minimumPayment + (d.extraPayment || 0) + (d.separatePayment || 0), 0);
-    const interestAvoided = inputs.reduce((s, d) => s + debtCardMetrics(d).interestAvoided, 0);
+    const interestAvoided = inputs.reduce((s, d) => s + (scheduledInterestSaved(d.name) ?? debtCardMetrics(d).interestAvoided), 0);
     return { balance, monthly, interestAvoided };
   }, [inputs]);
 
@@ -185,12 +185,14 @@ export function DebtCardsPanel({ items }: Props) {
                       <TrendingDown className="h-3.5 w-3.5 text-emerald-500" />
                       Interest avoided:{' '}
                       <span className="font-semibold text-emerald-500">
-                        {formatCurrency(m.interestAvoided)}
+                        {formatCurrency(scheduledInterestSaved(d.name) ?? m.interestAvoided)}
                       </span>
                     </p>
                     <p className="flex items-center gap-2 text-xs">
                       <CalendarClock className="h-3.5 w-3.5 text-primary" />
-                      {m.monthsAccelerated > 0
+                      {scheduledPayoffLabel(d.name)
+                        ? `Paid off ${scheduledPayoffLabel(d.name)} with planned extra payments`
+                        : m.monthsAccelerated > 0
                         ? `${m.monthsAccelerated} months earlier than minimums only`
                         : 'Add an extra payment to accelerate this debt'}
                     </p>
