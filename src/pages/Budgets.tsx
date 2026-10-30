@@ -1999,7 +1999,7 @@ const Budgets = () => {
               <p>
                 {unallocated > 0
                   ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories. Consider directing this toward savings goals, debt payoff, or building an emergency fund.`
-                  : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated. Review flexible spending categories for items to cut or reduce, or look for ways to increase income.`}
+                  : `Expenses and planned savings need ${formatCurrency(Math.abs(unallocated))} more funding: ${formatCurrency(fundingBreakdown.expenseShortfall)} expense shortfall and ${formatCurrency(fundingBreakdown.unfundedBuckets)} unfunded Five-Bucket savings. Savings are not overspending.`}
               </p>
             )}
             {unallocated === 0 && <p>✅ Every dollar of income is assigned to a budget category.</p>}
@@ -3163,7 +3163,7 @@ const Budgets = () => {
             <p className="mt-1">
               {unallocated > 0
                 ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories.`
-                : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated.`}
+                : `The funding gap is ${formatCurrency(Math.abs(unallocated))}: ${formatCurrency(fundingBreakdown.expenseShortfall)} for expenses plus ${formatCurrency(fundingBreakdown.unfundedBuckets)} for planned savings.`}
             </p>
           )}
           {unallocated === 0 && <p className="mt-1">✅ Every dollar of income is assigned to a budget category.</p>}
