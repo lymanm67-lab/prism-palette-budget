@@ -47,6 +47,32 @@ const MATCHERS: { test: RegExp; keys: RegExp[] }[] = [
   { test: /discover/i, keys: [/discover/i] },
 ];
 
+/**
+ * Both vacation loans are paid to Upgrade with identical bank descriptors, so
+ * assign each Upgrade payment to one loan: FlexPay is a separate product
+ * (ignored); ≈$155.43 → 2306, ≈$228.47 → 3004; other amounts follow the
+ * confirmed extra-payment plan (Nov–Dec 2026 → 2306, otherwise 3004).
+ */
+export function upgradeLoanFor(t: { date: string; amount: number; merchant?: string | null; description?: string | null }): '2306' | '3004' | null {
+  const hay = `${t.merchant || ''} ${t.description || ''}`;
+  if (!/upgrade/i.test(hay) || /flex\s*pay/i.test(hay)) return null;
+  if (/2306/.test(hay)) return '2306';
+  if (/3004/.test(hay)) return '3004';
+  const amt = Math.abs(Number(t.amount));
+  if (Math.abs(amt - 155.43) < 1) return '2306';
+  if (Math.abs(amt - 228.47) < 1) return '3004';
+  const m = (t.date || '').slice(0, 7);
+  return m === '2026-11' || m === '2026-12' ? '2306' : '3004';
+}
+
+/** True when a transaction is a payment for the named debt. */
+export function txnMatchesDebt(name: string, t: { date: string; amount: number; merchant?: string | null; description?: string | null }): boolean {
+  const loan = /2306/.test(name || '') ? '2306' : /3004/.test(name || '') ? '3004' : null;
+  if (loan) return upgradeLoanFor(t) === loan;
+  const hay = `${t.merchant || ''} ${t.description || ''}`;
+  return keysFor(name).some((k) => k.test(hay));
+}
+
 export function keysFor(name: string): RegExp[] {
   const hit = MATCHERS.filter((m) => m.test.test(name || ''));
   if (hit.length) return hit.flatMap((h) => h.keys);
