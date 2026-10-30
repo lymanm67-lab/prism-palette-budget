@@ -1,6 +1,7 @@
 # Roadmap
 - [ ] Add confirmed $387 October carryover and automatic affordable monthly bucket balancing (awaiting plan approval)
 - [ ] Remove supplemental Retirement & HSA bucket funding while preserving payroll contributions; confirm remaining split
+- [ ] Apply requested $607 Deductibles & Emergency amount after confirming contribution versus starting balance
 - [x] Separate Five-Bucket allocations from expenses and reconcile allocation balance and over-budget badges
 - [x] Add five-bucket monthly growth charts, contributions table and target progress using saved funding
 - [x] Apply monthly priority weights to January–April and future Five-Bucket funding; verify totals
