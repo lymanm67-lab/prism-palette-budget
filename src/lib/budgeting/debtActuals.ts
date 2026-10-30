@@ -48,14 +48,14 @@ const MATCHERS: { test: RegExp; keys: RegExp[] }[] = [
 ];
 
 /**
- * Both vacation loans are paid to Upgrade with identical bank descriptors, so
- * assign each Upgrade payment to one loan: FlexPay is a separate product
- * (ignored); ≈$155.43 → 2306, ≈$228.47 → 3004; other amounts follow the
- * confirmed extra-payment plan (Nov–Dec 2026 → 2306, otherwise 3004).
+ * Both vacation loans are paid to Upgrade/FlexPay with identical bank
+ * descriptors, so assign each payment to one loan by amount: ≈$155.43 → 2306,
+ * ≈$228.47 → 3004; other amounts follow the confirmed extra-payment plan
+ * (Nov–Dec 2026 → 2306, otherwise 3004). FlexPay counts the same as Upgrade.
  */
 export function upgradeLoanFor(t: { date: string; amount: number; merchant?: string | null; description?: string | null }): '2306' | '3004' | null {
   const hay = `${t.merchant || ''} ${t.description || ''}`;
-  if (!/upgrade/i.test(hay) || /flex\s*pay/i.test(hay)) return null;
+  if (!/upgrade|flex\s*pay/i.test(hay)) return null;
   if (/2306/.test(hay)) return '2306';
   if (/3004/.test(hay)) return '3004';
   const amt = Math.abs(Number(t.amount));
