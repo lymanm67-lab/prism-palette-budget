@@ -61,6 +61,7 @@ import DebtCardsPanel from '@/components/budget/DebtCardsPanel';
 import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
 import { DebtStatementScanner } from '@/components/DebtStatementScanner';
 import { Target, FileUp } from 'lucide-react';
+import DebtPaidHistory from '@/components/debt/DebtPaidHistory';
 
 // ─── Types ───
 interface Debt {
@@ -185,8 +186,9 @@ const DebtPayoff = () => {
   const extraPayment = activePlan?.extra_payment ?? 100;
 
   // Map DB items to local Debt shape
+  const paidOffNames = useMemo(() => (dbItems || []).filter((i: any) => Number(i.balance) <= 0.01).map((i: any) => i.name as string), [dbItems]);
   const debts: Debt[] = useMemo(() =>
-    (dbItems || []).map((item: any) => ({
+    (dbItems || []).filter((item: any) => Number(item.balance) > 0.01).map((item: any) => ({
       id: item.id,
       name: item.name,
       balance: Number(item.balance),
@@ -706,6 +708,8 @@ const DebtPayoff = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              <DebtPaidHistory items={dbItems || []} paidOffNames={paidOffNames} />
 
               {/* Debt cards */}
               <div className="grid gap-3 sm:grid-cols-2">
