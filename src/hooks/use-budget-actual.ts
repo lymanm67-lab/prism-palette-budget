@@ -45,7 +45,7 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
       });
       const entriesByKey = new Map<string, BudgetActualEntry[]>();
       const add = (category: BudgetActualCategory, budgeted: number, actual: number) => {
-        if (classifyBudgetActualPillar(category) === 'income' || isTransferLikeCategory(category) || category.expenseType === 'payroll_deduction' || isFiveBucketFunding(category.name) || !modeIncludes(mode, category)) return;
+        if (classifyBudgetActualPillar(category) === 'income' || isTransferLikeCategory(category) || category.expenseType === 'payroll_deduction' || (category.moneyPurpose === 'business' && category.budgetType !== 'business') || isFiveBucketFunding(category.name) || !modeIncludes(mode, category)) return;
         const key = budgetActualLineKey(mode, category);
         const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar: 'uncategorized' as BudgetActualLine['pillar'], budgeted: 0, actual: 0 };
         current.budgeted += budgeted;
@@ -64,10 +64,12 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         const cat = readCat(row);
         if (amount > 0 && classifyBudgetActualPillar(cat) === 'income' && modeIncludes(mode, cat)) incomeReceived += amount;
         if (amount < 0) add(cat, 0, Math.abs(amount));
+        else if (amount > 0 && classifyBudgetActualPillar(cat) !== 'income') add(cat, 0, -amount);
       }
       for (const row of splitsRes.data || []) {
         const amount = Number(row.amount) || 0;
         if (amount < 0) add(readCat(row), 0, Math.abs(amount));
+        else if (amount > 0) add(readCat(row), 0, -amount);
       }
 
       const lines = Array.from(map.values()).map(line => {
