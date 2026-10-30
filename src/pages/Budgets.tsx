@@ -62,6 +62,7 @@ import { excludesTakeHomeAllocation, isFiveBucketFunding, budgetFundingBreakdown
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
 import OverBudgetGlance from '@/components/budget/OverBudgetGlance';
+import MatchTransactions from '@/components/budget/MatchTransactions';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import MonthlyBudgetBalance from '@/components/budget/MonthlyBudgetBalance';
 import { CARRYOVER_NAME, monthlyIncome, EMERGENCY_OPENING } from '@/lib/fiveBucket/monthlyBalance';
@@ -2431,6 +2432,7 @@ const Budgets = () => {
         <p className="text-xs text-muted-foreground mt-2">Planned set-asides, not monthly spending or confirmed deposits.</p>
       </section>}
       <div className="py-2">
+        <MatchTransactions monthStart={monthStart} monthEnd={monthEnd} categories={(categories || []) as any} />
         <OverBudgetGlance month={month.slice(0, 7)} budgetType={budgetType} />
         {budgetType !== 'personal' && <OwnerLoanCard throughMonth={month.slice(0, 7)} />}
       </div>
