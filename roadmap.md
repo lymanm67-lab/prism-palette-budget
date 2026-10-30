@@ -1,4 +1,5 @@
 # Roadmap
+- [ ] Add confirmed $387 October carryover and automatic affordable monthly bucket balancing (awaiting plan approval)
 - [x] Separate Five-Bucket allocations from expenses and reconcile allocation balance and over-budget badges
 - [x] Add five-bucket monthly growth charts, contributions table and target progress using saved funding
 - [x] Apply monthly priority weights to January–April and future Five-Bucket funding; verify totals
