@@ -88,7 +88,9 @@ export function project(i: WhatIfInputs): WhatIfResult {
       ? stateTaxFor(st, { withdrawals: gap, pension: otherIncome, socialSecurity }, i.homeValue * infl)
       : 0;
     lifetimeStateTax += stateTax;
-    const withdrawal = retired ? gap + stateTax : 0;
+    // Surplus income (SS + pension above spending) pays taxes before any portfolio draw.
+    const surplus = Math.max(0, socialSecurity + otherIncome - spending - medical);
+    const withdrawal = retired ? gap + Math.max(0, stateTax - surplus) : 0;
     bal = bal * (1 + i.annualReturn) + (retired ? 0 : i.annualContribution) - withdrawal;
     if (bal < 0) {
       if (depletionAge === null) depletionAge = age;
