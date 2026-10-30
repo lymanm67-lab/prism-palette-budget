@@ -26,6 +26,17 @@ export function scheduledPayoffLabel(name: string): string | null {
   return null;
 }
 
+/** Human-readable summary of the confirmed extra payments that accelerate payoff. */
+export function scheduledExtraNote(name: string): string | null {
+  if (/2306/.test(name)) {
+    return '+$553.00 extra Nov 30 and +$102.15 extra Dec 30 on top of the regular $155.43 payment';
+  }
+  if (/3004/.test(name)) {
+    return '+$878.77 extra Jan 30 and +$750.00 extra Feb 28 on top of the regular $228.47 payment';
+  }
+  return null;
+}
+
 /** Estimated interest saved by the confirmed extra-payment schedule vs regular payments only (35.99% APR). */
 export function scheduledInterestSaved(name: string): number | null {
   if (/2306/.test(name)) return 53.3;
