@@ -72,7 +72,9 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         else if (amount > 0) add(readCat(row), 0, -amount);
       }
 
-      const lines = Array.from(map.values()).map(line => {
+      // Categories with no plan line for the month are dropped entirely so
+      // the totals match the Budget page, which only counts planned lines.
+      const lines = Array.from(map.values()).filter(line => line.budgeted > 0).map(line => {
         const entries = entriesByKey.get(line.key) || [];
         if (entries.length === 0) return line;
         const primary = primaryBudgetActualEntry(entries);
