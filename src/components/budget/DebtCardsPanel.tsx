@@ -7,6 +7,7 @@ import {
   debtCardMetrics, snowballPlan, pslfStatus, type DebtInput,
 } from '@/lib/budgeting/debtAmortization';
 import { TrendingDown, CalendarClock, Landmark, Snowflake, ShieldCheck } from 'lucide-react';
+import { scheduledPayoffLabel } from '@/lib/budgeting/futureDebtPayments';
 
 interface Props {
   /** Raw debt_items rows. */
@@ -156,7 +157,10 @@ export function DebtCardsPanel({ items }: Props) {
                       {pslf ? 'Forgiveness date' : 'Projected payoff'}
                     </p>
                     <p className="font-semibold">
-                      {pslf ? fmtDate(pslf.forgiveness) : fmtDate(m.current.payoffDate)}
+                      {pslf ? fmtDate(pslf.forgiveness) : (scheduledPayoffLabel(d.name) ?? fmtDate(m.current.payoffDate))}
+                      {!pslf && scheduledPayoffLabel(d.name) && (
+                        <span className="block text-xs font-normal text-muted-foreground">with planned extra payments</span>
+                      )}
                     </p>
                   </div>
                 </div>

@@ -18,3 +18,10 @@ export function futureDebtPayments(month: string) {
     vacation3004: LOAN_3004[month] ?? 0,
   };
 }
+
+/** Payoff month implied by the confirmed extra-payment schedule (see budget rows). */
+export function scheduledPayoffLabel(name: string): string | null {
+  if (/2306/.test(name)) return 'Dec 2026';
+  if (/3004/.test(name)) return 'Mar 2027';
+  return null;
+}
