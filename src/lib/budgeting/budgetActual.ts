@@ -1,3 +1,5 @@
+import { excludesTakeHomeAllocation, isFiveBucketFunding } from './takeHomeAllocation';
+
 export const BUDGET_ACTUAL_PILLARS = [
   { key: 'bills', label: 'Bills & Essentials', color: 'var(--prism-sky)' },
   { key: 'debt', label: 'Debt Freedom', color: 'var(--prism-indigo)' },
@@ -77,4 +79,15 @@ export function budgetActualLineKey(mode: BudgetActualMode, category: BudgetActu
 export function primaryBudgetActualEntry(entries: BudgetActualEntry[]): BudgetActualEntry {
   return entries.reduce((best, entry) =>
     entry.budgeted > best.budgeted || (entry.budgeted === best.budgeted && entry.actual > best.actual) ? entry : best);
+}
+
+/** One combined, expense-only warning list shared by the page and sidebar. */
+export function overBudgetExpenseLines<T extends { name: string; groupName: string; budgeted: number; actual: number }>(lines: T[]) {
+  return lines
+    .filter(line => !isFiveBucketFunding(line.name) &&
+      !excludesTakeHomeAllocation(line.name, /payroll|pre[ -]?tax/i.test(line.groupName)) &&
+      !/transfer|owner draw|owner contribution|owner capital/i.test(line.name))
+    .map(line => ({ ...line, over: Math.round((line.actual - line.budgeted) * 100) / 100 }))
+    .filter(line => line.budgeted > 0 && line.over > 0)
+    .sort((a, b) => b.over - a.over);
 }

@@ -58,7 +58,7 @@ import BudgetSummaryTiles from '@/components/budget/BudgetSummaryTiles';
 import { Coins } from 'lucide-react';
 import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
 import OwnerLoanCard from '@/components/budget/OwnerLoanCard';
-import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
+import { excludesTakeHomeAllocation, isFiveBucketFunding, budgetFundingBreakdown } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
 import OverBudgetGlance from '@/components/budget/OverBudgetGlance';
@@ -1009,16 +1009,20 @@ const Budgets = () => {
   })));
   const excludedExpensePlan = budgetItems.filter(b => categoryExpenseType.get(b.category_id) !== 'income' && categoryExpenseType.get(b.category_id) !== 'payroll_deduction' && excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false)).reduce((sum, b) => sum + Number(b.planned_amount), 0);
 
-  // Exclude payroll deductions from expense totals — they're already deducted before net pay
-  const totalExpenseBudget = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
-  const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.debt.actual + sectionTotals.wealth.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
+  // Five-Bucket rows remain assigned money, but are savings funding, not expenses.
+  const bucketRows = budgetItems.filter(b => isFiveBucketFunding(categoryNameById.get(b.category_id) || ''));
+  const sinkingFunds = bucketRows.reduce((sum, b) => sum + Number(b.planned_amount || 0), 0);
+  const bucketFundingActual = bucketRows.reduce((sum, b) => sum + Number(b.spent || 0), 0);
+  const totalAssignedBudget = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const totalExpenseBudget = totalAssignedBudget - sinkingFunds;
+  const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.debt.actual + sectionTotals.wealth.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual - bucketFundingActual;
   const totalExpenseRemaining = totalExpenseBudget - totalExpenseActual;
 
   // Gross income = net income + payroll deductions
   const grossIncomeBudget = totalIncomeBudget + sectionTotals.payroll_deduction.budget;
 
   // Net expenses exclude payroll deductions for unallocated calc
-  const netExpenseBudget = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const netExpenseBudget = totalAssignedBudget;
 
   // Income lines are recorded as NET pay (deductions are separate payroll_deduction
   // lines used to build the gross figure above), so net income is the income total
@@ -1036,12 +1040,10 @@ const Budgets = () => {
   const businessNetIncomeBudget = businessSectionTotals.income.budget;
 
 
-  const unallocated =
-    budgetType === 'business'
-      ? (businessNetIncomeBudget + ownerContribution) - netExpenseBudget
-      : budgetType === 'personal'
-      ? (netIncomeBudget - ownerContribution) - netExpenseBudget
-      : netIncomeBudget - netExpenseBudget;
+  const allocationIncome = budgetType === 'business' ? businessNetIncomeBudget + ownerContribution
+    : budgetType === 'personal' ? netIncomeBudget - ownerContribution : netIncomeBudget;
+  const fundingBreakdown = budgetFundingBreakdown(allocationIncome, totalExpenseBudget, sinkingFunds);
+  const unallocated = fundingBreakdown.unallocated;
 
   // Next expected income from active recurring deposits (paychecks, etc.),
   // scoped to the current Personal/Business view
@@ -1997,7 +1999,7 @@ const Budgets = () => {
               <p>
                 {unallocated > 0
                   ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories. Consider directing this toward savings goals, debt payoff, or building an emergency fund.`
-                  : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated. Review flexible spending categories for items to cut or reduce, or look for ways to increase income.`}
+                  : `Expenses and planned savings need ${formatCurrency(Math.abs(unallocated))} more funding: ${formatCurrency(fundingBreakdown.expenseShortfall)} expense shortfall and ${formatCurrency(fundingBreakdown.unfundedBuckets)} unfunded Five-Bucket savings. Savings are not overspending.`}
               </p>
             )}
             {unallocated === 0 && <p>✅ Every dollar of income is assigned to a budget category.</p>}
@@ -2379,7 +2381,9 @@ const Budgets = () => {
         totalIncomeBudget={totalIncomeBudget}
         totalIncomeActual={totalIncomeActual}
         totalExpenseBudget={totalExpenseBudget}
-        sinkingFunds={budgetItems.filter(b => (categoryNameById.get(b.category_id) || '').startsWith('Five-Bucket · ')).reduce((s, b) => s + Number(b.planned_amount || 0), 0)}
+        sinkingFunds={sinkingFunds}
+        expenseShortfall={fundingBreakdown.expenseShortfall}
+        unfundedBuckets={fundingBreakdown.unfundedBuckets}
         totalExpenseActual={totalExpenseActual}
         plannedSurplus={totalIncomeBudget - totalExpenseBudget}
         actualSurplus={totalIncomeActual - totalExpenseActual}
@@ -2398,6 +2402,19 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
+      {sinkingFunds > 0 && <section aria-label="Five-Bucket savings allocation" className="py-3 border-b border-border">
+        <div className="flex flex-wrap justify-between gap-2 text-sm">
+          <span className="font-semibold text-prism-teal">Five-Bucket savings — separate from expenses</span>
+          <span className="tabular-nums font-semibold">{formatCurrency(sinkingFunds)} planned</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-2 mt-2">
+          {bucketRows.map(b => <div key={b.id} className="flex flex-wrap justify-between gap-1 text-xs">
+            <span className="text-muted-foreground">{(categoryNameById.get(b.category_id) || '').replace('Five-Bucket · ', '')}</span>
+            <span className="tabular-nums">{formatCurrency(b.planned_amount)}</span>
+          </div>)}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Planned set-asides, not monthly spending or confirmed deposits.</p>
+      </section>}
       <div className="py-2">
         <OverBudgetGlance month={month.slice(0, 7)} budgetType={budgetType} />
         {budgetType !== 'personal' && <OwnerLoanCard throughMonth={month.slice(0, 7)} />}
@@ -2729,6 +2746,10 @@ const Budgets = () => {
                 </span>
                 <div className="hidden sm:block w-[62px]" />
               </div>
+              {sinkingFunds > 0 && <div className="flex flex-wrap justify-between gap-2 px-4 py-3 border-b text-sm text-prism-teal">
+                <span>Five-Bucket savings allocations (not expenses)</span>
+                <span className="tabular-nums font-semibold">{formatCurrency(sinkingFunds)}</span>
+              </div>}
             </>
           )}
 
@@ -2777,9 +2798,15 @@ const Budgets = () => {
                 {unallocated < 0 ? '-' : ''}{formatCurrency(Math.abs(unallocated))}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {unallocated === 0 ? '✅ Every dollar assigned' : unallocated > 0 ? 'Left to assign' : 'Over-allocated'}
+                {unallocated === 0 ? '✅ Every dollar assigned' : unallocated > 0 ? 'Left to assign' : 'Funding gap — expenses + savings plan'}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">{assignScopeLabel} scope</p>
+              <div className="mt-3 space-y-1 text-xs text-left text-muted-foreground">
+                <p className="flex justify-between gap-2"><span>Available income</span><span>{formatCurrency(allocationIncome)}</span></p>
+                <p className="flex justify-between gap-2"><span>Expense plan</span><span>{formatCurrency(totalExpenseBudget)}</span></p>
+                <p className="flex justify-between gap-2"><span>Five-Bucket savings plan</span><span>{formatCurrency(sinkingFunds)}</span></p>
+                {unallocated < 0 && <p className="pt-2">{formatCurrency(fundingBreakdown.expenseShortfall)} expense shortfall + {formatCurrency(fundingBreakdown.unfundedBuckets)} unfunded savings. Reduce planned expenses or savings, or add confirmed income.</p>}
+              </div>
               <div className="mt-3 flex justify-center">
                 <AssignRemainingDialog
                   amount={unallocated}
@@ -3136,7 +3163,7 @@ const Budgets = () => {
             <p className="mt-1">
               {unallocated > 0
                 ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories.`
-                : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated.`}
+                : `The funding gap is ${formatCurrency(Math.abs(unallocated))}: ${formatCurrency(fundingBreakdown.expenseShortfall)} for expenses plus ${formatCurrency(fundingBreakdown.unfundedBuckets)} for planned savings.`}
             </p>
           )}
           {unallocated === 0 && <p className="mt-1">✅ Every dollar of income is assigned to a budget category.</p>}

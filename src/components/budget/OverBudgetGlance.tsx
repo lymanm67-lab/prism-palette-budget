@@ -5,7 +5,8 @@ import { AlertTriangle, ChevronDown, ChevronRight, Lightbulb } from 'lucide-reac
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/hooks/use-currency';
 import { useBudgetActual } from '@/hooks/use-budget-actual';
-import { BUDGET_ACTUAL_PILLARS, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
+import { BUDGET_ACTUAL_PILLARS, overBudgetExpenseLines, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
+import { Button } from '@/components/ui/button';
 
 interface FixSuggestion {
   text: string;
@@ -49,7 +50,7 @@ interface Props {
 
 export default function OverBudgetGlance({ month, budgetType }: Props) {
   const { formatCurrency } = useCurrency();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const panelId = `over-budget-glance-${month}`;
   // Split expenses (e.g. rent personal/business) must be judged on the combined total.
   void budgetType;
@@ -58,21 +59,7 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
 
   const over = useMemo(() => {
     if (!data) return [];
-    const lines = [...data.pillars.flatMap(p => p.lines), ...data.uncategorized]
-      .filter(l => !/transfer/i.test(`${l.name} ${(l as { groupName?: string }).groupName ?? ''}`));
-    const baseName = (n: string) =>
-      n.replace(/\s*[—–-]\s*(personal|business).*$/i, '').replace(/\s*\((personal|business)[^)]*\)\s*$/i, '').trim();
-    const merged = new Map<string, typeof lines[number]>();
-    for (const l of lines) {
-      const k = baseName(l.name).toLowerCase();
-      const cur = merged.get(k);
-      if (cur) merged.set(k, { ...cur, budgeted: cur.budgeted + l.budgeted, actual: cur.actual + l.actual });
-      else merged.set(k, { ...l, name: baseName(l.name) });
-    }
-    return Array.from(merged.values())
-      .map(l => ({ ...l, over: l.actual - l.budgeted }))
-      .filter(l => l.budgeted > 0 && l.over > 0.005)
-      .sort((a, b) => b.over - a.over);
+    return overBudgetExpenseLines([...data.pillars.flatMap(p => p.lines), ...data.uncategorized]);
   }, [data]);
 
   const totalOver = over.reduce((s, l) => s + l.over, 0);
@@ -83,7 +70,8 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-base">
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => setOpen(o => !o)}
               aria-expanded={open}
@@ -93,7 +81,7 @@ export default function OverBudgetGlance({ month, budgetType }: Props) {
               <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
               <AlertTriangle className="h-4 w-4 text-prism-rose" />
               Over budget at a glance
-            </button>
+            </Button>
           </CardTitle>
           {!isLoading && (
             <Badge variant={over.length > 0 ? 'destructive' : 'secondary'} className="shrink-0">

@@ -9,3 +9,19 @@ export function excludesBusinessOperatingFunding(name: string): boolean {
   return excludesTakeHomeAllocation(name, false) ||
     /^Investment Transfer\s*[—–-]\s*Business Checking$/i.test(name.trim());
 }
+
+export function isFiveBucketFunding(name: string): boolean {
+  return name.trim().startsWith('Five-Bucket · ');
+}
+
+/** Savings still need funding, but never constitute expense overspending. */
+export function budgetFundingBreakdown(income: number, expenses: number, bucketFunding: number) {
+  const cents = (n: number) => Math.round(n * 100) / 100;
+  const beforeBuckets = cents(income - expenses);
+  return {
+    beforeBuckets,
+    unallocated: cents(beforeBuckets - bucketFunding),
+    expenseShortfall: cents(Math.max(0, -beforeBuckets)),
+    unfundedBuckets: cents(Math.max(0, bucketFunding - Math.max(0, beforeBuckets))),
+  };
+}
