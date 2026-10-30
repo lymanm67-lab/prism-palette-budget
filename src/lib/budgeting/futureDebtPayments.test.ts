@@ -22,7 +22,7 @@ describe('confirmed January–April debt payments', () => {
     }
     expect(futureDebtPayments('2027-05-01')).toBeNull();
   });
-  it('preserves Loan 3004 estimated payments through April payoff', () => {
-    expect(months.map(m => futureDebtPayments(m)?.vacation3004)).toEqual([394.77, 394.77, 394.77, 394.76]);
+  it('applies Loan 3004 extra payments ($878.77 Jan/Mar, $750 Feb) with March payoff', () => {
+    expect(months.map(m => futureDebtPayments(m)?.vacation3004)).toEqual([1107.24, 978.47, 551.73, 0]);
   });
 });
