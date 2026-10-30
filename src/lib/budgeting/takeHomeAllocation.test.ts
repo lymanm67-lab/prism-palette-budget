@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding } from './takeHomeAllocation';
+import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding, isFiveBucketFunding, budgetFundingBreakdown } from './takeHomeAllocation';
 
 describe('net-pay allocation exclusions', () => {
+  it('keeps all five bucket contributions separate from expenses', () => {
+    for (const name of ['Retirement & HSA', 'Deductibles & Emergency Fund', 'Vacation Fund', 'Housing Fund', 'Guilt Free Fund']) {
+      expect(isFiveBucketFunding(`Five-Bucket · ${name}`)).toBe(true);
+    }
+    expect(isFiveBucketFunding('Rent')).toBe(false);
+  });
+  it('explains October funding gap without calling saved bucket allocations expenses', () => {
+    expect(budgetFundingBreakdown(5233.52, 5400.70, 2345.25)).toEqual({
+      beforeBuckets: -167.18, unallocated: -2512.43, expenseShortfall: 167.18, unfundedBuckets: 2345.25,
+    });
+  });
+  it('keeps funded savings assigned without an allocation warning', () => {
+    expect(budgetFundingBreakdown(4363.52, 3055.57, 1307.95).unallocated).toBe(0);
+  });
   it('excludes HSA already withheld before net pay', () => {
     expect(excludesTakeHomeAllocation('Health Savings Account', true)).toBe(true);
   });
