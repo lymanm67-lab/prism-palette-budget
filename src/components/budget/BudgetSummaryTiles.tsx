@@ -199,11 +199,13 @@ export default function BudgetSummaryTiles({
   const tiles = [
     {
       key: 'income',
-      label: paycheckIncome ? 'Net paycheck' : 'Income',
+      label: 'Income received',
       icon: Wallet,
       tone: 'teal' as Tone,
-      value: paycheckIncome ? paycheckIncome.paycheck : totalIncomeBudget,
-      sub: paycheckIncome ? `${formatCurrency(paycheckIncome.other)} other deposits` : `${formatCurrency(totalIncomeActual)} received`,
+      value: totalIncomeActual,
+      sub: paycheckIncome
+        ? `${formatCurrency(paycheckIncome.paycheckReceived)} paycheck received · ${formatCurrency(totalIncomeActual - paycheckIncome.paycheckReceived)} other income · ${formatCurrency(totalIncomeBudget)} planned`
+        : `${formatCurrency(totalIncomeBudget)} planned`,
       tooltip: incomeTooltip,
     },
     {
