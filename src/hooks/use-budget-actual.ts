@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { BUDGET_ACTUAL_PILLARS, budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, isTransferLikeCategory, modeIncludes, primaryBudgetActualEntry, type BudgetActualCategory, type BudgetActualEntry, type BudgetActualMode, type BudgetActualPillarKey } from '@/lib/budgeting/budgetActual';
+import { excludesTakeHomeAllocation } from '@/lib/budgeting/takeHomeAllocation';
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 
 export interface BudgetActualLine {
@@ -44,7 +45,7 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
       });
       const entriesByKey = new Map<string, BudgetActualEntry[]>();
       const add = (category: BudgetActualCategory, budgeted: number, actual: number) => {
-        if (classifyBudgetActualPillar(category) === 'income' || isTransferLikeCategory(category) || !modeIncludes(mode, category)) return;
+        if (classifyBudgetActualPillar(category) === 'income' || isTransferLikeCategory(category) || excludesTakeHomeAllocation(category.name, category.moneyPurpose === 'payroll_deduction' || category.moneyPurpose === 'employer_contribution') || !modeIncludes(mode, category)) return;
         const key = budgetActualLineKey(mode, category);
         const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar: 'uncategorized' as BudgetActualLine['pillar'], budgeted: 0, actual: 0 };
         current.budgeted += budgeted;
