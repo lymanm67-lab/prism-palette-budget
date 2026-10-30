@@ -90,10 +90,10 @@ export function MonthsAhead({ householdId, budgetType = 'personal' }: { househol
           </summary>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
             <li><b>October–November:</b> $500 sister loan payments (Oct 30, Nov 30) for Mom's home repair.</li>
-            <li><b>November:</b> the $4,100 speaking fee covers the final $500 sister payment, pays off Vacation Loan 2306 and puts $1,000 extra on Vacation Loan 3004 (35% APR). Including its regular $228.47 payment, Loan 3004 receives $1,228.47. The freed $1,146.25 remains available for your Five-Bucket plan.</li>
-            <li><b>December–April:</b> Vacation Loan 3004 payments are spread across five monthly budgets. Estimated payments include monthly interest at the saved 35.99% APR, assuming October's $228.47 and November's $1,228.47 payments occur. See each month's Vacation Loan Payment 1 below; April is the estimated final payoff. Confirm the exact payoff with the lender.</li>
-            <li><b>January–April 2027:</b> Vacation Loan 2306 and the $1,000 sister loan are fully repaid. The student loan starts at {formatCurrency(januaryPayments?.student || 0)}/month. BetrLink is $583/month through April ({formatCurrency(januaryPayments?.betrLinkPersonal || 0)} personal + {formatCurrency(januaryPayments?.betrLinkBusiness || 0)} business). Loan 3004 keeps its estimated payments through April.</li>
-            <li><b>From May 2027:</b> BetrLink ends; Loan 3004 is expected to be cleared after April, subject to lender confirmation. Student loan payments and other regular minimums continue.</li>
+            <li><b>November–December:</b> Vacation Loan 2306 gets $155.43 + $553 extra on Nov 30 ($708.43), then the estimated final $105.88 on Dec 30 (planned $102.15 extra covers it). Loan 3004 stays at its regular $228.47.</li>
+            <li><b>January–March 2027:</b> Loan 3004 gets $228.47 + $878.77 extra each month ($1,107.24), with February at $228.47 + $750 ($978.47). Estimated final payoff of $551.73 in March, including 35.99% APR interest. Confirm the exact payoff with the lender.</li>
+            <li><b>January–April 2027:</b> Vacation Loan 2306 and the $1,000 sister loan are fully repaid. The student loan starts at {formatCurrency(januaryPayments?.student || 0)}/month. BetrLink is $583/month through April ({formatCurrency(januaryPayments?.betrLinkPersonal || 0)} personal + {formatCurrency(januaryPayments?.betrLinkBusiness || 0)} business).</li>
+            <li><b>From April 2027:</b> both vacation loans are expected to be cleared. BetrLink ends after April; student loan payments and other regular minimums continue.</li>
           </ul>
         </details>
       </div>
