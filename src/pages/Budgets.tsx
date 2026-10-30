@@ -63,6 +63,8 @@ import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
 import OverBudgetGlance from '@/components/budget/OverBudgetGlance';
 import CollapsibleSection from '@/components/CollapsibleSection';
+import MonthlyBudgetBalance from '@/components/budget/MonthlyBudgetBalance';
+import { CARRYOVER_NAME, monthlyIncome, EMERGENCY_OPENING } from '@/lib/fiveBucket/monthlyBalance';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -169,7 +171,7 @@ const Budgets = () => {
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
-  const { data: transactions } = useTransactions();
+  const { data: transactions, isLoading: transactionsLoading } = useTransactions();
   const hh = household;
   const monthStart = month;
   const monthEnd = useMemo(() => {
@@ -177,7 +179,7 @@ const Budgets = () => {
     const d = new Date(y, m, 0);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }, [month]);
-  const { data: monthSplits } = useQuery({
+  const { data: monthSplits, isLoading: splitsLoading } = useQuery({
     queryKey: ['budget-splits', hh?.id, monthStart, monthEnd],
     enabled: !!hh?.id,
     queryFn: async () => {
@@ -842,6 +844,8 @@ const Budgets = () => {
   }, [plannedBudgetItems, receivedByCategory, filteredCategoryIds, fundingTransferCategoryIds, categoryExpenseType, categories]);
 
   const budgetItems: BudgetRow[] = [...plannedBudgetItems, ...unbudgetedIncomeItems];
+  const emergencyStored = Number(localStorage.getItem(`five-bucket-start:v2:${household?.id}`));
+  const emergencyBalance = localStorage.getItem(`five-bucket-start:v2:${household?.id}`) === null ? EMERGENCY_OPENING : emergencyStored;
 
   // Group budgets by expense type
   const categoryNameById = useMemo(() => {
@@ -855,6 +859,7 @@ const Budgets = () => {
     for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0 && !b.isUnbudgeted) continue;
       if (hiddenBudgetIds.has(b.id)) continue;
+      if (month >= '2026-10-01' && categoryNameById.get(b.category_id) === 'Five-Bucket · Retirement & HSA') continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
@@ -864,7 +869,7 @@ const Budgets = () => {
       );
     }
     return groups;
-  }, [categoryExpenseType, hideZeroAmounts, hiddenBudgetIds, categoryNameById]);
+  }, [categoryExpenseType, hideZeroAmounts, hiddenBudgetIds, categoryNameById, month]);
 
   const groupedBudgets = useMemo(() => groupBudgetsByExpenseType(budgetItems), [groupBudgetsByExpenseType, budgetItems]);
 
@@ -1010,7 +1015,7 @@ const Budgets = () => {
   const excludedExpensePlan = budgetItems.filter(b => categoryExpenseType.get(b.category_id) !== 'income' && categoryExpenseType.get(b.category_id) !== 'payroll_deduction' && excludesTakeHomeAllocation(categoryNameById.get(b.category_id) || '', false)).reduce((sum, b) => sum + Number(b.planned_amount), 0);
 
   // Five-Bucket rows remain assigned money, but are savings funding, not expenses.
-  const bucketRows = budgetItems.filter(b => isFiveBucketFunding(categoryNameById.get(b.category_id) || ''));
+  const bucketRows = budgetItems.filter(b => isFiveBucketFunding(categoryNameById.get(b.category_id) || '') && (month < '2026-10-01' || categoryNameById.get(b.category_id) !== 'Five-Bucket · Retirement & HSA'));
   const sinkingFunds = bucketRows.reduce((sum, b) => sum + Number(b.planned_amount || 0), 0);
   const bucketFundingActual = bucketRows.reduce((sum, b) => sum + Number(b.spent || 0), 0);
   const totalAssignedBudget = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.wealth.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
@@ -1040,8 +1045,14 @@ const Budgets = () => {
   const businessNetIncomeBudget = businessSectionTotals.income.budget;
 
 
-  const allocationIncome = budgetType === 'business' ? businessNetIncomeBudget + ownerContribution
-    : budgetType === 'personal' ? netIncomeBudget - ownerContribution : netIncomeBudget;
+  const openingCarryover = budgetItems.filter(b => categoryNameById.get(b.category_id) === CARRYOVER_NAME).reduce((sum,b)=>sum+Number(b.planned_amount),0);
+  const availableMonthlyIncome = monthlyIncome(month, getMonth(0), budgetItems.filter(b => categoryExpenseType.get(b.category_id) === 'income').map(b => ({
+    planned: Number(b.planned_amount), received: b.received,
+    carryover: categoryNameById.get(b.category_id) === CARRYOVER_NAME,
+    expected: /salary|consulting/i.test(categoryNameById.get(b.category_id) || ''),
+  })));
+  const allocationIncome = budgetType === 'business' ? availableMonthlyIncome + ownerContribution
+    : budgetType === 'personal' ? availableMonthlyIncome - ownerContribution : availableMonthlyIncome;
   const fundingBreakdown = budgetFundingBreakdown(allocationIncome, totalExpenseBudget, sinkingFunds);
   const unallocated = fundingBreakdown.unallocated;
 
@@ -2380,12 +2391,13 @@ const Budgets = () => {
         paycheckIncome={budgetType !== 'business' ? paycheckIncome : undefined}
         totalIncomeBudget={totalIncomeBudget}
         totalIncomeActual={totalIncomeActual}
+        openingCarryover={openingCarryover}
         totalExpenseBudget={totalExpenseBudget}
         sinkingFunds={sinkingFunds}
         expenseShortfall={fundingBreakdown.expenseShortfall}
         unfundedBuckets={fundingBreakdown.unfundedBuckets}
         totalExpenseActual={totalExpenseActual}
-        plannedSurplus={totalIncomeBudget - totalExpenseBudget}
+        plannedSurplus={allocationIncome - totalExpenseBudget}
         actualSurplus={totalIncomeActual - totalExpenseActual}
         safeToSpendMonthly={safeToSpend.monthly}
         safeToSpendBuffer={safeToSpend.bufferPercent}
@@ -2402,6 +2414,9 @@ const Budgets = () => {
         assignCandidates={assignCandidates}
         onAssign={handleAssignRemaining}
       />
+      {budgetType === 'personal' && <MonthlyBudgetBalance month={month} income={allocationIncome} expenses={totalExpenseBudget}
+        carryover={openingCarryover} emergencyBalance={emergencyBalance} ready={!budgetsLoading && !transactionsLoading && !splitsLoading && !!categories && !!categoryGroups}
+        categories={categories || []} budgets={budgets || []} />}
       {sinkingFunds > 0 && <section aria-label="Five-Bucket savings allocation" className="py-3 border-b border-border">
         <div className="flex flex-wrap justify-between gap-2 text-sm">
           <span className="font-semibold text-prism-teal">Five-Bucket savings — separate from expenses</span>
