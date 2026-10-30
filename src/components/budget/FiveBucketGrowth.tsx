@@ -62,7 +62,7 @@ export default function FiveBucketGrowth({ householdId }: { householdId: string 
       <div className="mt-2 flex flex-wrap items-center gap-2"><Label htmlFor="five-bucket-start">Starting Emergency balance ($)</Label>
         <input id="five-bucket-start" type="number" min={0} step="0.01" defaultValue={startBalance} key={startBalance} onBlur={e => updateStart(Number(e.target.value))} onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} className="h-9 w-36 rounded-md border border-input bg-background px-2 text-sm tabular-nums" /></div></div>
     <Tabs value={selected} onValueChange={v => { const b = ACTIVE_BUCKETS.find(b => b.key === v); if (b) setSelected(b.key); }}>
-      <TabsList className="h-auto flex-wrap justify-start">{ACTIVE_ACTIVE_BUCKETS.map(b => <TabsTrigger key={b.key} value={b.key}>{b.label}</TabsTrigger>)}</TabsList>
+      <TabsList className="h-auto flex-wrap justify-start">{ACTIVE_BUCKETS.map(b => <TabsTrigger key={b.key} value={b.key}>{b.label}</TabsTrigger>)}</TabsList>
     </Tabs>
     <div className="flex flex-wrap items-center gap-2"><Switch id="repeat-bucket-funding" checked={repeat} onCheckedChange={setRepeat} /><Label htmlFor="repeat-bucket-funding">Repeat last saved month after saved budgets end</Label></div>
     <p className="text-sm text-muted-foreground">Saved budget amounts are planned, not confirmed deposits. Repeated months are estimates. No withdrawals, interest or payroll retirement contributions are included. Other starting balances are unconfirmed; their lines show added funding only.</p>
