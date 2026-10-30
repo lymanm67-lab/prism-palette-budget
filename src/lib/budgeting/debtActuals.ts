@@ -112,7 +112,7 @@ export function computeDebtActuals(
     const hay = (t: ActualTxn) => `${t.merchant || ''} ${t.description || ''}`;
     const matched = keys.length
       ? txns.filter(
-          (t) => monthOf(t.date) >= cutoff && Number(t.amount) < 0 && keys.some((k) => k.test(hay(t))),
+          (t) => monthOf(t.date) >= cutoff && Number(t.amount) < 0 && txnMatchesDebt(debt.name, t),
         )
       : [];
 

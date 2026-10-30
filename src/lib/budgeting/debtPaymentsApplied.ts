@@ -4,7 +4,7 @@
 // payment dated AFTER that date has not been reflected yet, so we accrue
 // interest day-by-day between payments and subtract the principal portion.
 
-import { keysFor } from './debtActuals';
+import { keysFor, txnMatchesDebt } from './debtActuals';
 
 export interface PaymentTxn {
   id: string;
@@ -63,7 +63,7 @@ export function applyPaymentsToDebt(
           (t) =>
             Number(t.amount) < 0 &&
             (!asOf || t.date > asOf) &&
-            keys.some((k) => k.test(hay(t))),
+            txnMatchesDebt(debt.name, t),
         )
         .sort((a, b) => a.date.localeCompare(b.date))
     : [];
