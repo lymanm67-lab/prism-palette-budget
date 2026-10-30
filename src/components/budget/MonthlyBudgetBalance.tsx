@@ -21,7 +21,7 @@ export default function MonthlyBudgetBalance({ month, income, expenses, ready, c
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   useEffect(() => setDraft(String(carryover)), [carryover, month]);
-  const { data: prior, isSuccess } = useQuery({
+  const { data: prior, isSuccess, isFetching } = useQuery({
     queryKey: ['budgets', 'prior-emergency', household?.id, month], enabled: !!household,
     queryFn: async () => {
       if (!household) return 0;
@@ -33,7 +33,7 @@ export default function MonthlyBudgetBalance({ month, income, expenses, ready, c
   const desired = monthlyBalance(income, expenses, emergencyBalance, prior || 0);
   const signature = JSON.stringify(BUCKETS.map(b => [b.key, desired[b.key]]));
   useEffect(() => {
-    if (!ready || !household || !isSuccess || month < '2026-10-01') return;
+    if (!ready || !household || !isSuccess || isFetching || month < '2026-10-01') return;
     const scope = `${household.id}:${month}`;
     if (locks.has(scope)) return;
     const rows = BUCKETS.flatMap(b => {
@@ -52,7 +52,7 @@ export default function MonthlyBudgetBalance({ month, income, expenses, ready, c
       if (mounted.current) setStatus(error ? `Could not balance: ${error.message}` : 'Balanced automatically');
       if (!error) await Promise.all([qc.invalidateQueries({ queryKey:['budgets'] }),qc.invalidateQueries({ queryKey:['budget-actual'] })]);
     })();
-  }, [ready, household?.id, month, isSuccess, signature, categories, budgets, qc]);
+  }, [ready, household?.id, month, isSuccess, isFetching, signature, categories, budgets, qc]);
   const saveCarryover = async () => {
     const category = categories.find(c => c.name === CARRYOVER_NAME);
     const amount = Number(draft);

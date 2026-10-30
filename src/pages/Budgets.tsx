@@ -170,8 +170,8 @@ const Budgets = () => {
   const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
-  const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
-  const { data: transactions, isLoading: transactionsLoading } = useTransactions();
+  const { data: budgets, isLoading: budgetsLoading, isFetching: budgetsFetching } = useBudgets(month);
+  const { data: transactions, isLoading: transactionsLoading, isFetching: transactionsFetching } = useTransactions();
   const hh = household;
   const monthStart = month;
   const monthEnd = useMemo(() => {
@@ -179,7 +179,7 @@ const Budgets = () => {
     const d = new Date(y, m, 0);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }, [month]);
-  const { data: monthSplits, isLoading: splitsLoading } = useQuery({
+  const { data: monthSplits, isLoading: splitsLoading, isFetching: splitsFetching } = useQuery({
     queryKey: ['budget-splits', hh?.id, monthStart, monthEnd],
     enabled: !!hh?.id,
     queryFn: async () => {
@@ -2415,7 +2415,7 @@ const Budgets = () => {
         onAssign={handleAssignRemaining}
       />
       {budgetType === 'personal' && <MonthlyBudgetBalance month={month} income={allocationIncome} expenses={totalExpenseBudget}
-        carryover={openingCarryover} emergencyBalance={emergencyBalance} ready={!budgetsLoading && !transactionsLoading && !splitsLoading && !!categories && !!categoryGroups}
+        carryover={openingCarryover} emergencyBalance={emergencyBalance} ready={!budgetsLoading && !transactionsLoading && !splitsLoading && !budgetsFetching && !transactionsFetching && !splitsFetching && !!categories && !!categoryGroups}
         categories={categories || []} budgets={budgets || []} />}
       {sinkingFunds > 0 && <section aria-label="Five-Bucket savings allocation" className="py-3 border-b border-border">
         <div className="flex flex-wrap justify-between gap-2 text-sm">
