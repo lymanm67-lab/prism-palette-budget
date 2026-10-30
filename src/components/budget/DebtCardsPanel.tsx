@@ -196,6 +196,12 @@ export function DebtCardsPanel({ items }: Props) {
                         ? `${m.monthsAccelerated} months earlier than minimums only`
                         : 'Add an extra payment to accelerate this debt'}
                     </p>
+                    {scheduledExtraNote(d.name) && (
+                      <p className="flex items-center gap-2 text-xs">
+                        <Zap className="h-3.5 w-3.5 text-amber-500" />
+                        {scheduledExtraNote(d.name)}
+                      </p>
+                    )}
                     {step && step.rolledInFrom.length > 0 && (
                       <p className="flex items-center gap-2 text-xs">
                         <Snowflake className="h-3.5 w-3.5 text-sky-500" />
