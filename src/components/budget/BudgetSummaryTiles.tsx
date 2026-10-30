@@ -22,6 +22,7 @@ interface Props {
   paycheckIncome?: { paycheck: number; paycheckReceived: number; other: number };
   totalIncomeBudget: number;
   totalIncomeActual: number;
+  openingCarryover?: number;
   totalExpenseBudget: number;
   sinkingFunds?: number;
   expenseShortfall?: number;
@@ -59,6 +60,7 @@ export default function BudgetSummaryTiles({
   paycheckIncome,
   totalIncomeBudget,
   totalIncomeActual,
+  openingCarryover = 0,
   totalExpenseBudget,
   sinkingFunds = 0,
   expenseShortfall = 0,
@@ -204,7 +206,7 @@ export default function BudgetSummaryTiles({
       tone: 'teal' as Tone,
       value: totalIncomeActual,
       sub: paycheckIncome
-        ? `${formatCurrency(paycheckIncome.paycheckReceived)} paycheck received · ${formatCurrency(totalIncomeActual - paycheckIncome.paycheckReceived)} other income · ${formatCurrency(totalIncomeBudget)} planned`
+        ? `${formatCurrency(paycheckIncome.paycheckReceived)} paycheck received · ${formatCurrency(totalIncomeActual - paycheckIncome.paycheckReceived)} other income · ${formatCurrency(openingCarryover)} opening surplus`
         : `${formatCurrency(totalIncomeBudget)} planned`,
       tooltip: incomeTooltip,
     },
@@ -219,7 +221,7 @@ export default function BudgetSummaryTiles({
     },
     {
       key: 'surplus',
-      label: 'Planned surplus',
+      label: 'Available for savings',
       icon: PiggyBank,
       tone: surplusTone,
       value: plannedSurplus,
