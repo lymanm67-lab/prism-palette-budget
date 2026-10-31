@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PaystubUploader } from '@/components/PaystubUploader';
+import { namedBudgetActualShares } from '@/lib/budgeting/budgetActual';
 
 import { BillScanner } from '@/components/BillScanner';
 import { toast } from 'sonner';
@@ -753,29 +754,8 @@ const Budgets = () => {
   // Transactions land entirely on one side, so scale that side's actual by its own percentage
   // and mirror the remainder onto the counterpart category when it has no direct activity.
   const nameSplitPlan = useMemo(() => {
-    const scale = new Map<string, number>();          // catId => fraction of raw actual it keeps
-    const mirror = new Map<string, number>();         // counterpart catId => $ to add
-    if (!categories) return { scale, mirror };
-    const re = /[—–-]\s*(Personal|Business)\s*(\d{1,3})\s*%/i;
-    const parse = (name: string) => {
-      const m = name.match(re);
-      return m ? { side: m[1].toLowerCase(), pct: Number(m[2]), base: name.slice(0, m.index).trim() } : null;
-    };
-    const parsed = (categories as any[])
-      .map(c => ({ c, p: parse(c.name || '') }))
-      .filter(x => x.p) as { c: any; p: { side: string; pct: number; base: string } }[];
-
-    for (const { c, p } of parsed) {
-      const raw = spentByCategory[c.id] || 0;
-      if (raw <= 0) continue;
-      scale.set(c.id, p.pct / 100);
-      const counterpart = parsed.find(o => o.c.id !== c.id && o.p.base === p.base && o.p.side !== p.side);
-      if (counterpart && (spentByCategory[counterpart.c.id] || 0) === 0) {
-        mirror.set(counterpart.c.id, (mirror.get(counterpart.c.id) || 0) + raw * (counterpart.p.pct / 100));
-      }
-    }
-    return { scale, mirror };
-  }, [categories, spentByCategory]);
+    return namedBudgetActualShares(categories || [], spentByCategory, splitActualCategoryIds);
+  }, [categories, spentByCategory, splitActualCategoryIds]);
 
   // Build effective per-category spent that accounts for offsets so totals and rows agree
   const effectiveSpentByCategory = useMemo(() => {

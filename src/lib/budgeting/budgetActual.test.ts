@@ -1,8 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, isTransferLikeCategory, modeIncludes, primaryBudgetActualEntry } from './budgetActual';
+import { budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, isTransferLikeCategory, modeIncludes, primaryBudgetActualEntry, namedBudgetActualShares } from './budgetActual';
 
 const cat = (overrides: Record<string, unknown> = {}) => ({ id: '1', name: 'Rent', groupName: 'Housing', budgetType: 'personal', expenseType: 'fixed', moneyPurpose: null, ...overrides });
 describe('budget actual classification', () => {
+  it('allocates restaurant outflows before netting the refund, removing the $117.21 discrepancy', () => {
+    const shares = namedBudgetActualShares([cat({ name: 'Restaurants — Personal 50%' })], { '1': 234.42 }, new Set());
+    expect(234.42 * (shares.scale.get('1') ?? 1) - 40).toBeCloseTo(77.21, 2);
+    expect(194.42 - 77.21).toBeCloseTo(117.21, 2);
+  });
+  it('does not allocate explicit personal/business bank splits twice', () => {
+    const shares = namedBudgetActualShares([
+      cat({ id: 'p', name: 'Utilities — Personal 69%' }),
+      cat({ id: 'b', name: 'Utilities — Business 31%' }),
+    ], { p: 330.01, b: 35.72 }, new Set(['p', 'b']));
+    expect(shares.scale.size).toBe(0);
+    expect(shares.mirror.size).toBe(0);
+  });
   it('maps core paycheck-tree areas', () => {
     expect(classifyBudgetActualPillar(cat())).toBe('bills');
     expect(classifyBudgetActualPillar(cat({ groupName: 'Personal Debt Repayment' }))).toBe('debt');

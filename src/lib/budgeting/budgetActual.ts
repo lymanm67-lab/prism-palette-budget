@@ -66,6 +66,31 @@ export function combinedCategoryName(name: string): string {
   return name.trim().replace(SPLIT_SHARE_SUFFIX, '').trim();
 }
 
+/** Allocate name-encoded shares before subtracting refunds; explicit bank splits are already allocated. */
+export function namedBudgetActualShares(
+  categories: Pick<BudgetActualCategory, 'id' | 'name'>[],
+  spent: Record<string, number>,
+  explicitSplitIds: Set<string>,
+) {
+  const scale = new Map<string, number>();
+  const mirror = new Map<string, number>();
+  const parsed = categories.flatMap(category => {
+    const match = category.name.match(/[—–-]\s*(Personal|Business)\s*(\d{1,3})\s*%/i);
+    if (!category.id || !match) return [];
+    return [{ id: category.id, side: match[1].toLowerCase(), pct: Number(match[2]), base: category.name.slice(0, match.index).trim() }];
+  });
+  for (const category of parsed) {
+    const raw = spent[category.id] || 0;
+    if (raw <= 0 || explicitSplitIds.has(category.id)) continue;
+    scale.set(category.id, category.pct / 100);
+    const counterpart = parsed.find(other => other.id !== category.id && other.base === category.base && other.side !== category.side);
+    if (counterpart && (spent[counterpart.id] || 0) === 0 && !explicitSplitIds.has(counterpart.id)) {
+      mirror.set(counterpart.id, (mirror.get(counterpart.id) || 0) + raw * counterpart.pct / 100);
+    }
+  }
+  return { scale, mirror };
+}
+
 // In combined mode, the same expense split across personal and business
 // budget rows (e.g. Rent $946 personal + $154 business) must read as one
 // line, so the key is the normalized category name rather than the id.
