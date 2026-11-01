@@ -5,6 +5,7 @@ import { BUDGET_ACTUAL_PILLARS, budgetActualLineKey, classifyBudgetActualPillar,
 import { excludesTakeHomeAllocation, isFiveBucketFunding } from '@/lib/budgeting/takeHomeAllocation';
 import type { PaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 import { namedBudgetActualShares } from '@/lib/budgeting/budgetActual';
+import { isBudgetActualExpense } from '@/lib/budgeting/budgetActual';
 
 export interface BudgetActualLine {
   key: string;
@@ -49,7 +50,7 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
       const plannedCategoryIds = new Set((budgetsRes.data || []).map(row => row.category_id));
       const add = (category: BudgetActualCategory, budgeted: number, actual: number) => {
         if (!category.id || !plannedCategoryIds.has(category.id)) return;
-        if (classifyBudgetActualPillar(category) === 'income' || isTransferLikeCategory(category) || category.expenseType === 'payroll_deduction' || (category.moneyPurpose === 'business' && category.budgetType !== 'business') || isFiveBucketFunding(category.name) || excludesTakeHomeAllocation(category.name, false) || !modeIncludes(mode, category)) return;
+        if (!isBudgetActualExpense(category) || !modeIncludes(mode, category)) return;
         const key = budgetActualLineKey(mode, category);
         const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar: 'uncategorized' as BudgetActualLine['pillar'], budgeted: 0, actual: 0 };
         current.budgeted += budgeted;
@@ -88,6 +89,9 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         record(row);
       }
       for (const row of splitsRes.data || []) {
+        const category = readCat(row);
+        const amount = Number(row.amount) || 0;
+        if (amount > 0 && classifyBudgetActualPillar(category) === 'income' && modeIncludes(mode, category)) incomeReceived += amount;
         record(row, true);
       }
       const shares = namedBudgetActualShares([...categories.values()], spent, explicitSplitIds);
@@ -111,7 +115,15 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
         return { ...def, budgeted: children.reduce((sum, line) => sum + line.budgeted, 0), actual: children.reduce((sum, line) => sum + line.actual, 0), lines: children };
       });
       const uncategorized = lines.filter(line => line.pillar === 'uncategorized');
-      return { start, end, pillars, uncategorized, incomeReceived, deployment: deployRes.data as unknown as PaycheckDeployment | null };
+      const categoryTotals = new Map<string, { budgeted: number; actual: number }>();
+      for (const entries of entriesByKey.values()) for (const entry of entries) {
+        if (!entry.category.id) continue;
+        const current = categoryTotals.get(entry.category.id) || { budgeted: 0, actual: 0 };
+        current.budgeted += entry.budgeted;
+        current.actual += entry.actual;
+        categoryTotals.set(entry.category.id, current);
+      }
+      return { start, end, pillars, uncategorized, incomeReceived, categoryTotals, deployment: deployRes.data as unknown as PaycheckDeployment | null };
     },
   });
 }
