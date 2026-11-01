@@ -1,8 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, isTransferLikeCategory, modeIncludes, primaryBudgetActualEntry, namedBudgetActualShares } from './budgetActual';
+import { budgetActualLineKey, classifyBudgetActualPillar, combinedCategoryName, isTransferLikeCategory, modeIncludes, primaryBudgetActualEntry, namedBudgetActualShares, isBudgetActualExpense } from './budgetActual';
 
 const cat = (overrides: Record<string, unknown> = {}) => ({ id: '1', name: 'Rent', groupName: 'Housing', budgetType: 'personal', expenseType: 'fixed', moneyPurpose: null, ...overrides });
 describe('budget actual classification', () => {
+  it('excludes internal transfer categories from closeout spending', () => {
+    expect(isBudgetActualExpense(cat({ name: 'Transfers' }))).toBe(false);
+    expect(isBudgetActualExpense(cat({ name: 'Rent' }))).toBe(true);
+  });
+  it('excludes withheld payroll from deposited-pay closeout spending', () => {
+    expect(isBudgetActualExpense(cat({ name: 'HSA', expenseType: 'payroll_deduction' }))).toBe(false);
+  });
+  it('excludes reimbursed groceries from closeout spending', () => {
+    expect(isBudgetActualExpense(cat({ name: 'Groceries' }))).toBe(false);
+  });
+  it('excludes HSA-covered medical from closeout spending', () => {
+    expect(isBudgetActualExpense(cat({ name: 'Medical' }))).toBe(false);
+  });
+  it('does not treat planned Five-Bucket funding as actual spending', () => {
+    expect(isBudgetActualExpense(cat({ name: 'Five-Bucket · Emergency Fund' }))).toBe(false);
+  });
   it('allocates restaurant outflows before netting the refund, removing the $117.21 discrepancy', () => {
     const shares = namedBudgetActualShares([cat({ name: 'Restaurants — Personal 50%' })], { '1': 234.42 }, new Set());
     expect(234.42 * (shares.scale.get('1') ?? 1) - 40).toBeCloseTo(77.21, 2);

@@ -10,6 +10,7 @@ import {
 } from '@/lib/budget/rollover';
 import { buildMonthEndClose, type SweepRule } from '@/lib/budget/leftover';
 import { runRolloverChecks } from '@/lib/budget/rolloverChecks';
+import { useBudgetActual } from '@/hooks/use-budget-actual';
 
 export const monthStart = (d: Date | string) => {
   const date = typeof d === 'string' ? new Date(`${d}T00:00:00`) : d;
@@ -42,64 +43,54 @@ export function useMonthEndClose(month: string) {
   const householdId = household?.id;
   const qc = useQueryClient();
   const monthKey = monthStart(month);
+  const actualReport = useBudgetActual(monthKey.slice(0, 7), 'combined');
 
   const { data, isLoading } = useQuery({
     queryKey: ['month-end-close', householdId, monthKey],
     enabled: !!householdId,
     queryFn: async () => {
-      const start = monthKey;
-      const end = nextMonthStart(monthKey);
+      if (!householdId) throw new Error('No household selected');
 
-      const [cats, budgets, txns, priorBalances, rules, close, reserves, allocations] = await Promise.all([
+      const [cats, priorBalances, rules, close, reserves, allocations] = await Promise.all([
         supabase
           .from('categories')
           .select('id, name, rollover_rule, rollover_keep_amount, sweep_destination, money_purpose')
-          .eq('household_id', householdId!)
+          .eq('household_id', householdId)
           .order('name'),
-        supabase
-          .from('budgets')
-          .select('category_id, planned_amount')
-          .eq('household_id', householdId!)
-          .eq('month', monthKey),
-        supabase
-          .from('transactions')
-          .select('category_id, amount, is_transfer, date')
-          .eq('household_id', householdId!)
-          .is('deleted_at', null)
-          .gte('date', start)
-          .lt('date', end),
         supabase
           .from('category_rollover_balances')
           .select('category_id, rolled_forward')
-          .eq('household_id', householdId!)
+          .eq('household_id', householdId)
           .eq('month', prevMonth(monthKey)),
         supabase
           .from('leftover_sweep_rules')
           .select('*')
-          .eq('household_id', householdId!)
+          .eq('household_id', householdId)
           .order('priority'),
         supabase
           .from('month_end_closes')
           .select('*')
-          .eq('household_id', householdId!)
+          .eq('household_id', householdId)
           .eq('month', monthKey)
           .maybeSingle(),
         supabase
           .from('reserve_funds')
           .select('name, primary_target, starting_balance, market_value, kind')
-          .eq('household_id', householdId!),
+          .eq('household_id', householdId),
         supabase
           .from('leftover_allocations')
           .select('*')
-          .eq('household_id', householdId!)
+          .eq('household_id', householdId)
           .order('month', { ascending: false })
           .limit(200),
       ]);
 
+      for (const result of [cats, priorBalances, rules, close, reserves, allocations]) {
+        if (result.error) throw result.error;
+      }
+
       return {
         categories: (cats.data ?? []) as unknown as RolloverCategory[],
-        budgets: budgets.data ?? [],
-        transactions: txns.data ?? [],
         priorBalances: priorBalances.data ?? [],
         rules: rules.data ?? [],
         close: close.data ?? null,
@@ -110,25 +101,11 @@ export function useMonthEndClose(month: string) {
   });
 
   const computed = useMemo(() => {
-    if (!data) return null;
-    const plannedBy = new Map<string, number>();
-    for (const b of data.budgets) plannedBy.set(b.category_id, Number(b.planned_amount) || 0);
-
-    const actualBy = new Map<string, number>();
-    let incomeReceived = 0;
-    let transfersOut = 0;
-    for (const t of data.transactions as any[]) {
-      const amt = Number(t.amount) || 0;
-      if (t.is_transfer) {
-        if (amt < 0) transfersOut += Math.abs(amt);
-        continue;
-      }
-      if (amt > 0) {
-        incomeReceived += amt;
-      } else if (t.category_id) {
-        actualBy.set(t.category_id, (actualBy.get(t.category_id) ?? 0) + Math.abs(amt));
-      }
-    }
+    if (!data || !actualReport.data) return null;
+    const totals = actualReport.data.categoryTotals;
+    const incomeReceived = actualReport.data.incomeReceived;
+    // Internal account movements are not household spending or lost income.
+    const transfersOut = 0;
 
     const beginningBy = new Map<string, number>();
     for (const b of data.priorBalances as any[]) {
@@ -136,15 +113,15 @@ export function useMonthEndClose(month: string) {
     }
 
     const inputs: CategoryRolloverInput[] = data.categories
-      .filter((c) => (plannedBy.get(c.id) ?? 0) > 0 || (actualBy.get(c.id) ?? 0) > 0 || beginningBy.get(c.id))
+      .filter((c) => totals.has(c.id))
       .map((c) => ({
         categoryId: c.id,
         name: c.name,
         rule: (c.rollover_rule as RolloverRule) || 'reset',
         keepAmount: Number(c.rollover_keep_amount) || 0,
         sweepDestination: c.sweep_destination,
-        planned: plannedBy.get(c.id) ?? 0,
-        actual: actualBy.get(c.id) ?? 0,
+        planned: totals.get(c.id)?.budgeted ?? 0,
+        actual: totals.get(c.id)?.actual ?? 0,
         beginningRollover: beginningBy.get(c.id) ?? 0,
       }));
 
@@ -190,7 +167,7 @@ export function useMonthEndClose(month: string) {
     });
 
     return { rollover, closeSummary, checks, sweepRules, bufferBalance, bufferTarget, incomeReceived, transfersOut };
-  }, [data, monthKey]);
+  }, [data, actualReport.data, monthKey]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['month-end-close'] });
 
@@ -215,10 +192,11 @@ export function useMonthEndClose(month: string) {
 
   const saveRule = useMutation({
     mutationFn: async (rule: Partial<SweepRule> & { id?: string }) => {
+      if (!householdId || !rule.destination) throw new Error('Choose a destination');
       const row = {
-        household_id: householdId!,
+        household_id: householdId,
         priority: rule.priority ?? 1,
-        destination: rule.destination!,
+        destination: rule.destination,
         mode: rule.mode ?? 'percent',
         amount: rule.amount ?? 0,
         cap_amount: rule.capAmount ?? null,
@@ -323,7 +301,7 @@ export function useMonthEndClose(month: string) {
 
   return {
     month: monthKey,
-    isLoading,
+    isLoading: isLoading || actualReport.isLoading,
     categories: data?.categories ?? [],
     history: data?.allocations ?? [],
     closedRecord: data?.close ?? null,

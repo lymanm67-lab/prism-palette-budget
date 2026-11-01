@@ -59,6 +59,14 @@ export function isTransferLikeCategory(category: BudgetActualCategory): boolean 
   return /^transfers?$/i.test(category.name.trim());
 }
 
+/** Shared deposited-pay spending boundary for reports and month-end close. */
+export function isBudgetActualExpense(category: BudgetActualCategory): boolean {
+  return classifyBudgetActualPillar(category) !== 'income' &&
+    !isTransferLikeCategory(category) && category.expenseType !== 'payroll_deduction' &&
+    !(category.moneyPurpose === 'business' && category.budgetType !== 'business') &&
+    !isFiveBucketFunding(category.name) && !excludesTakeHomeAllocation(category.name, false);
+}
+
 // Split expenses are named e.g. "Utilities — Personal 69%" / "Utilities — Business 31%".
 const SPLIT_SHARE_SUFFIX = /\s*[—–-]\s*(personal|business)\s*\d+\s*%\s*$/i;
 
