@@ -43,7 +43,7 @@ export function useMonthEndClose(month: string) {
   const householdId = household?.id;
   const qc = useQueryClient();
   const monthKey = monthStart(month);
-  const actualReport = useBudgetActual(monthKey.slice(0, 7), 'combined');
+  const actualReport = useBudgetActual(monthKey.slice(0, 7), 'combined', { includeUnplanned: true });
 
   const { data, isLoading } = useQuery({
     queryKey: ['month-end-close', householdId, monthKey],
@@ -113,7 +113,7 @@ export function useMonthEndClose(month: string) {
     }
 
     const inputs: CategoryRolloverInput[] = data.categories
-      .filter((c) => totals.has(c.id))
+      .filter((c) => totals.has(c.id) || (beginningBy.get(c.id) ?? 0) !== 0)
       .map((c) => ({
         categoryId: c.id,
         name: c.name,
