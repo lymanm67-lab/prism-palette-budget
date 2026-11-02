@@ -17,10 +17,11 @@ export interface BudgetActualLine {
   actual: number;
 }
 
-export function useBudgetActual(month: string, mode: BudgetActualMode) {
+export function useBudgetActual(month: string, mode: BudgetActualMode, options: { includeUnplanned?: boolean } = {}) {
+  const includeUnplanned = !!options.includeUnplanned;
   const { household } = useHousehold();
   return useQuery({
-    queryKey: ['budget-actual', household?.id, month, mode],
+    queryKey: ['budget-actual', household?.id, month, mode, includeUnplanned],
     enabled: !!household,
     queryFn: async () => {
       if (!household) throw new Error('No household selected');
@@ -49,7 +50,7 @@ export function useBudgetActual(month: string, mode: BudgetActualMode) {
       const entriesByKey = new Map<string, BudgetActualEntry[]>();
       const plannedCategoryIds = new Set((budgetsRes.data || []).map(row => row.category_id));
       const add = (category: BudgetActualCategory, budgeted: number, actual: number) => {
-        if (!category.id || !plannedCategoryIds.has(category.id)) return;
+        if (!category.id || (!includeUnplanned && !plannedCategoryIds.has(category.id))) return;
         if (!isBudgetActualExpense(category) || !modeIncludes(mode, category)) return;
         const key = budgetActualLineKey(mode, category);
         const current = map.get(key) || { key, categoryId: category.id, name: category.name, groupName: category.groupName, pillar: 'uncategorized' as BudgetActualLine['pillar'], budgeted: 0, actual: 0 };
