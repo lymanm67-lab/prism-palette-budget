@@ -172,7 +172,7 @@ const Budgets = () => {
   const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
-  const { data: budgets, isLoading: budgetsLoading, isFetching: budgetsFetching } = useBudgets(month);
+  const { data: budgets, isLoading: budgetsLoading, isFetching: budgetsFetching, isError: budgetsError, refetch: refetchBudgets } = useBudgets(month);
   const { data: transactions, isLoading: transactionsLoading, isFetching: transactionsFetching } = useTransactions();
   const hh = household;
   const monthStart = month;
@@ -1686,6 +1686,16 @@ const Budgets = () => {
       </div>
     </div>
   );
+
+  if (budgetsError && !budgets) {
+    return (
+      <div className="p-8 flex flex-col items-center justify-center text-center gap-4 min-h-[60vh]">
+        <h2 className="text-xl font-semibold">Couldn't load your budget</h2>
+        <p className="text-muted-foreground max-w-md">The connection was briefly unavailable. Your budget is safe — try again.</p>
+        <Button onClick={() => refetchBudgets()}>Try again</Button>
+      </div>
+    );
+  }
 
   if (!budgetItems.length && !unbudgetedCategories.length) {
     return (
