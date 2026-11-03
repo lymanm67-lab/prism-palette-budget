@@ -20,8 +20,6 @@ function isNonSubscription(sub: any): boolean {
 
 export interface SafeToSpendResult {
   daily: number;
-  guiltFreeSpent: number;
-  remaining: number;
   weekly: number;
   monthly: number;
   totalAvailableCash: number;
@@ -59,7 +57,7 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     queryFn: async () => {
       const { data, error } = await supabase
         .from('budgets')
-        .select('planned_amount, category_id, categories(name, group_id, category_groups(expense_type, budget_type, business_profile_id))')
+        .select('planned_amount, categories(name, group_id, category_groups(expense_type, budget_type, business_profile_id))')
         .eq('household_id', household!.id)
         .eq('month', currentMonth);
       if (error) throw error;
@@ -91,7 +89,6 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     let budgetExpenses = 0;
     let guiltFree = 0;
     let hasGuiltFree = false;
-    const guiltFreeCategoryIds = new Set<string>();
     for (const b of (budgetsWithGroups || [])) {
       const group = b.categories?.category_groups;
       const isBusiness = group?.budget_type === 'business' || !!group?.business_profile_id;
@@ -106,7 +103,7 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
         catName.includes('owner capital infusion') ||
         catName.includes('owner draw');
       if (scope === 'combined' && isInternalFunding) continue;
-      if (catName.includes('guilt')) { hasGuiltFree = true; guiltFree += b.planned_amount || 0; if (b.category_id) guiltFreeCategoryIds.add(b.category_id); }
+      if (catName.includes('guilt')) { hasGuiltFree = true; guiltFree += b.planned_amount || 0; }
       if (expType === 'income') {
         // Only verified expected income (salary, consulting, owner draw) and confirmed
         // carryover count — unreceived one-off income must not inflate Safe to Spend.
@@ -204,26 +201,13 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
-    let dailySafe = monthlySafe / daysInMonth;
-    let weeklySafe = monthlySafe / (daysInMonth / 7);
-    let guiltFreeSpent = 0;
-    if (hasGuiltFree) {
-      // Guilt-free spending this month reduces what's left; daily/weekly spread the remainder over the days left.
-      guiltFreeSpent = monthTxns
-        .filter((t: any) => t.amount < 0 && !t.is_transfer && !t.deleted_at && t.category_id && guiltFreeCategoryIds.has(t.category_id))
-        .reduce((s, t) => s + Math.abs(t.amount), 0);
-      const remaining = Math.max(0, monthlySafe - guiltFreeSpent);
-      const daysLeft = daysInMonth - now.getDate() + 1;
-      dailySafe = remaining / daysLeft;
-      weeklySafe = Math.min(remaining, dailySafe * 7);
-    }
+    const dailySafe = monthlySafe / daysInMonth;
+    const weeklySafe = monthlySafe / (daysInMonth / 7);
 
     return {
       daily: Math.round(dailySafe * 100) / 100,
       weekly: Math.round(weeklySafe * 100) / 100,
       monthly: Math.round(monthlySafe * 100) / 100,
-      guiltFreeSpent: Math.round(guiltFreeSpent * 100) / 100,
-      remaining: Math.round(Math.max(0, monthlySafe - guiltFreeSpent) * 100) / 100,
       totalAvailableCash,
       monthlyIncome: effectiveIncome,
       monthlyObligations,

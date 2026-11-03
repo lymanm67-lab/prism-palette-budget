@@ -82,6 +82,12 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
   const ModeIcon = modeIcons[sts.mode];
   const label = `${viewLabels[viewMode]} Safe to Spend`;
 
+  // Remaining guilt-free money shrinks as you spend; daily/weekly spread it over the days left.
+  const nowD = new Date();
+  const daysLeft = new Date(nowD.getFullYear(), nowD.getMonth() + 1, 0).getDate() - nowD.getDate() + 1;
+  const monthLeft = Math.max(0, sts.monthly - spent.month);
+  const dailyLeft = Math.round((monthLeft / daysLeft) * 100) / 100;
+  const weeklyLeft = Math.round(Math.min(monthLeft, dailyLeft * 7) * 100) / 100;
   const displayIncome = sts.monthlyIncome;
   const displayExpenses = sts.monthlyObligations + sts.monthlySubscriptions;
   const stsPercent = displayIncome > 0 ? Math.round((sts.monthly / displayIncome) * 100) : 0;
@@ -162,8 +168,8 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
           )}
 
           <div className="grid grid-cols-3 gap-3 sm:gap-6">
-            <TimeframePill icon={<DollarSign className="h-4 w-4" />} label="Daily" amount={formatCurrency(sts.daily)} gradient="from-prism-teal to-prism-lime" spent={spent.today} limit={sts.daily} spentLabel="today" formatCurrency={formatCurrency} />
-            <TimeframePill icon={<Calendar className="h-4 w-4" />} label="Weekly" amount={formatCurrency(sts.weekly)} gradient="from-prism-sky to-prism-teal" spent={spent.week} limit={sts.weekly} spentLabel="this week" formatCurrency={formatCurrency} />
+            <TimeframePill icon={<DollarSign className="h-4 w-4" />} label="Daily" amount={formatCurrency(dailyLeft)} gradient="from-prism-teal to-prism-lime" spent={spent.today} limit={dailyLeft} spentLabel="today" formatCurrency={formatCurrency} />
+            <TimeframePill icon={<Calendar className="h-4 w-4" />} label="Weekly" amount={formatCurrency(weeklyLeft)} gradient="from-prism-sky to-prism-teal" spent={spent.week} limit={weeklyLeft} spentLabel="this week" formatCurrency={formatCurrency} />
             <TimeframePill icon={<CalendarDays className="h-4 w-4" />} label="Monthly" amount={formatCurrency(sts.monthly)} gradient="from-prism-violet to-prism-sky" spent={spent.month} limit={sts.monthly} spentLabel="this month" formatCurrency={formatCurrency} />
           </div>
           <p className="text-[10px] text-muted-foreground/70 mt-2 text-center">
