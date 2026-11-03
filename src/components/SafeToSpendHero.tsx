@@ -115,13 +115,13 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
             </p>
             <div className="font-display text-5xl sm:text-6xl font-extrabold tracking-tight">
               <span className="prism-gradient-text">
-                {formatCurrency(sts.monthly)}
+                {formatCurrency(monthLeft)}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto">
               {isBusinessView 
                 ? 'What your business can spend without affecting cash reserves'
-                : 'This is what you can spend without disrupting your financial stability'}
+                : `Money still left from this month's ${formatCurrency(sts.monthly)} safe-to-spend allowance`}
             </p>
             <p className="text-[11px] text-muted-foreground/70 mt-1.5 max-w-md mx-auto">
               Planned surplus − savings − investing − {sts.bufferPercent}% buffer = safe to spend. This is the spending number to trust — Budgets shows the same figure when both pages use the {viewLabels[viewMode]} view.
