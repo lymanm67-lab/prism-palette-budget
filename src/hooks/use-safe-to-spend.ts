@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth } from 'date-fns';
 import { useHouseholdProfile } from '@/hooks/use-household-profile';
+import { isExpectedIncome } from '@/lib/budgeting/takeHomeAllocation';
 
 const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
 
@@ -101,7 +102,11 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
         catName.includes('owner draw');
       if (scope === 'combined' && isInternalFunding) continue;
       if (expType === 'income') {
-        budgetIncome += b.planned_amount || 0;
+        // Only verified expected income (salary, consulting, owner draw) and confirmed
+        // carryover count — unreceived one-off income must not inflate Safe to Spend.
+        if (isExpectedIncome(catName) || /surplus|carryover|rollover/.test(catName)) {
+          budgetIncome += b.planned_amount || 0;
+        }
       } else if (expType !== 'equity' && expType !== 'payroll_deduction') {
         // Payroll deductions are withheld before take-home pay, so they are not
         // spendable cash and must not be subtracted from net income again.
@@ -125,8 +130,9 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       : Number(profile?.household_net_monthly || 0) ||
         (Number(profile?.lyman_net_monthly || 0) + Number(profile?.kateri_net_monthly || 0));
 
-    // Use highest of budget income, actual transaction income, or profile household net
-    const effectiveIncome = Math.max(monthlyIncome, budgetIncome, profileNet);
+    // A zero-based budget is the source of truth (matches the Budgets page); fall back
+    // to actual/profile income only when no budget income exists.
+    const effectiveIncome = budgetIncome > 0 ? budgetIncome : Math.max(monthlyIncome, profileNet);
 
     // Monthly obligations from recurring transactions (bills) 
     const monthlyObligations = (recurring || [])
