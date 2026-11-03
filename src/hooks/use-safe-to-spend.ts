@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth } from 'date-fns';
 import { useHouseholdProfile } from '@/hooks/use-household-profile';
+import { isGuiltFreeSpend } from '@/lib/budgeting/moneyPurpose';
 import { isExpectedIncome } from '@/lib/budgeting/takeHomeAllocation';
 
 const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
@@ -18,7 +19,10 @@ function isNonSubscription(sub: any): boolean {
   return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw) || catName.includes(kw)) || (sub.is_transfer === true);
 }
 
+export const ROLLOVER_START = '2026-11-01';
+
 export interface SafeToSpendResult {
+  rollover: number;
   daily: number;
   weekly: number;
   monthly: number;
@@ -60,6 +64,22 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
         .select('planned_amount, categories(name, group_id, category_groups(expense_type, budget_type, business_profile_id))')
         .eq('household_id', household!.id)
         .eq('month', currentMonth);
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Guilt-Free budgets from prior months (rollover starts Nov 2026)
+  const { data: priorGuiltFree } = useQuery({
+    queryKey: ['guilt-free-prior', household?.id, currentMonth],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('budgets')
+        .select('month, planned_amount, categories(name, category_groups(budget_type, business_profile_id))')
+        .eq('household_id', household!.id)
+        .gte('month', ROLLOVER_START)
+        .lt('month', currentMonth);
       if (error) throw error;
       return data as any[];
     },
@@ -195,8 +215,33 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     // Apply buffer
     const bufferMultiplier = 1 - (bufferPercent / 100);
     // Safe to Spend = this month's budgeted Guilt-Free spending when the budget has it.
+    // Unspent Guilt-Free money from earlier months rolls forward (never negative).
+    const plannedByMonth: Record<string, number> = {};
+    for (const b of (priorGuiltFree || [])) {
+      const name = (b.categories?.name || '').toLowerCase();
+      if (!name.includes('guilt')) continue;
+      const g = b.categories?.category_groups;
+      const isBiz = g?.budget_type === 'business' || !!g?.business_profile_id;
+      if (scope === 'personal' && isBiz) continue;
+      if (scope === 'business' && !isBiz) continue;
+      const m = String(b.month).slice(0, 7);
+      plannedByMonth[m] = (plannedByMonth[m] || 0) + (b.planned_amount || 0);
+    }
+    let rollover = 0;
+    for (const m of Object.keys(plannedByMonth).sort()) {
+      const spentM = (transactions || []).filter((t: any) => {
+        if (!t.date?.startsWith(m) || t.amount >= 0 || t.is_transfer) return false;
+        const g = t.categories?.category_groups;
+        const isBiz = g?.budget_type === 'business';
+        if (scope === 'personal' && isBiz) return false;
+        if (scope === 'business' && !isBiz) return false;
+        return isGuiltFreeSpend({ categoryName: t.categories?.name, expenseType: g?.expense_type, budgetType: g?.budget_type, storedPurpose: t.categories?.money_purpose });
+      }).reduce((s: number, t: any) => s + Math.abs(t.amount), 0);
+      rollover = Math.max(0, rollover + plannedByMonth[m] - spentM);
+    }
+
     const monthlySafe = hasGuiltFree
-      ? Math.max(0, guiltFree)
+      ? Math.max(0, guiltFree + rollover)
       : Math.max(0, baseMonthlySafe * bufferMultiplier);
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -208,6 +253,7 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       daily: Math.round(dailySafe * 100) / 100,
       weekly: Math.round(weeklySafe * 100) / 100,
       monthly: Math.round(monthlySafe * 100) / 100,
+      rollover: Math.round(rollover * 100) / 100,
       totalAvailableCash,
       monthlyIncome: effectiveIncome,
       monthlyObligations,
@@ -222,6 +268,6 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       mode,
       isLoading: !accounts,
     };
-  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, deploymentRules, scope, profile]);
+  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, priorGuiltFree, deploymentRules, scope, profile]);
 
 }

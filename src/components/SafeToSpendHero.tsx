@@ -180,6 +180,8 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
           </div>
           <p className="text-[10px] text-muted-foreground/70 mt-2 text-center">
             "Spent" counts only guilt-free spending — dining, entertainment and fun. Bills, business costs, subscriptions, groceries and medical are left out.
+            {sts.rollover > 0 && ` Includes ${formatCurrency(sts.rollover)} rolled over from last month.`}
+            {' '}Unspent guilt-free money rolls into next month.
           </p>
 
 
