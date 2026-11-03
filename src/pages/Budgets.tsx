@@ -59,7 +59,7 @@ import BudgetSummaryTiles from '@/components/budget/BudgetSummaryTiles';
 import { Coins } from 'lucide-react';
 import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
 import OwnerLoanCard from '@/components/budget/OwnerLoanCard';
-import { excludesTakeHomeAllocation, isFiveBucketFunding, budgetFundingBreakdown } from '@/lib/budgeting/takeHomeAllocation';
+import { excludesTakeHomeAllocation, isFiveBucketFunding, isExpectedIncome, budgetFundingBreakdown } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
 import OverBudgetGlance from '@/components/budget/OverBudgetGlance';
@@ -1030,7 +1030,7 @@ const Budgets = () => {
   const availableMonthlyIncome = monthlyIncome(month, getMonth(0), budgetItems.filter(b => categoryExpenseType.get(b.category_id) === 'income').map(b => ({
     planned: Number(b.planned_amount), received: b.received,
     carryover: categoryNameById.get(b.category_id) === CARRYOVER_NAME,
-    expected: /salary|consulting/i.test(categoryNameById.get(b.category_id) || ''),
+    expected: isExpectedIncome(categoryNameById.get(b.category_id) || ''),
   })));
   const allocationIncome = budgetType === 'business' ? availableMonthlyIncome + ownerContribution
     : budgetType === 'personal' ? availableMonthlyIncome - ownerContribution : availableMonthlyIncome;

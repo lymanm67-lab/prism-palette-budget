@@ -10,6 +10,11 @@ export function excludesBusinessOperatingFunding(name: string): boolean {
     /^Investment Transfer\s*[—–-]\s*Business Checking$/i.test(name.trim());
 }
 
+/** Planned income that can be counted before it lands (salary, consulting, owner draws). */
+export function isExpectedIncome(name: string): boolean {
+  return /salary|consulting|owner\s+(draw|capital)/i.test(name.trim());
+}
+
 export function isFiveBucketFunding(name: string): boolean {
   return name.trim().startsWith('Five-Bucket · ');
 }

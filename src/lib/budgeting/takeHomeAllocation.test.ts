@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding, isFiveBucketFunding, budgetFundingBreakdown } from './takeHomeAllocation';
+import { excludesTakeHomeAllocation, excludesBusinessOperatingFunding, isFiveBucketFunding, isExpectedIncome, budgetFundingBreakdown } from './takeHomeAllocation';
 
 describe('net-pay allocation exclusions', () => {
   it('keeps all five bucket contributions separate from expenses', () => {
@@ -40,5 +40,13 @@ describe('net-pay allocation exclusions', () => {
   });
   it('excludes medical costs paid from HSA', () => {
     expect(excludesTakeHomeAllocation('Prescriptions', false)).toBe(true);
+  });
+  it('counts owner draws and owner capital infusions as expected income', () => {
+    expect(isExpectedIncome('Owner Draw from Business')).toBe(true);
+    expect(isExpectedIncome('Owner Capital Infusion')).toBe(true);
+    expect(isExpectedIncome('Salary')).toBe(true);
+    expect(isExpectedIncome('Consulting')).toBe(true);
+    expect(isExpectedIncome('Speaking Fees')).toBe(false);
+    expect(isExpectedIncome('Deposit')).toBe(false);
   });
 });
