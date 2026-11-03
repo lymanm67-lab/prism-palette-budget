@@ -138,7 +138,7 @@ export default function BudgetSummaryTiles({
         Safe to spend: {formatCurrency(safeToSpendMonthly)}
       </p>
       <p className="text-xs text-muted-foreground">
-        Planned surplus − savings − investing − {safeToSpendBuffer}% buffer = safe to spend.
+        This month's Guilt-Free budget {safeToSpendBuffer > 0 ? `— or, without one, surplus − savings − investing − ${safeToSpendBuffer}% buffer` : ''}.
         Matches Dashboard when both show {scopeName}.
       </p>
     </div>

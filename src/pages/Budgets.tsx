@@ -2390,7 +2390,7 @@ const Budgets = () => {
         totalExpenseActual={totalExpenseActual}
         plannedSurplus={allocationIncome - totalExpenseBudget}
         actualSurplus={totalIncomeActual - totalExpenseActual}
-        safeToSpendMonthly={Math.max(0, unallocated)}
+        safeToSpendMonthly={safeToSpend.monthly}
         safeToSpendBuffer={safeToSpend.bufferPercent}
         unallocated={unallocated}
         ownerContribution={ownerContribution}
