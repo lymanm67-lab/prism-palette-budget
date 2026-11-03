@@ -201,7 +201,6 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
-    // Consistent planning rates based on full month
     const dailySafe = monthlySafe / daysInMonth;
     const weeklySafe = monthlySafe / (daysInMonth / 7);
 
