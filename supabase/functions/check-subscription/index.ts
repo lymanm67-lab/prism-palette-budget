@@ -44,9 +44,10 @@ serve(async (req) => {
     if (userError && (!authStatus || authStatus >= 500)) {
       // Transient auth backend failure — don't downgrade the user.
       logStep("Auth lookup unavailable", { error: userError.message });
-      return new Response(JSON.stringify({ error: "auth_unavailable" }), {
+      // 200 + degraded flag: clients keep last known state without a non-2xx crash.
+      return new Response(JSON.stringify({ degraded: true, reason: "auth_unavailable" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 503,
+        status: 200,
       });
     }
     if (userError || !userData.user) {

@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
-      if (!data) return; // degraded response — keep previous state
+      if (!data || data.degraded) return; // degraded response — keep previous state
       const hasFullAccessRole = data.has_full_access_role ?? false;
       setIsFounder(hasFullAccessRole);
       setSubscribed(data.subscribed ?? false);
