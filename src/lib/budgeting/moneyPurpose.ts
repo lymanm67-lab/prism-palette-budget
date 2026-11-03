@@ -209,6 +209,23 @@ export function isPersonalPurpose(p: MoneyPurpose | null | undefined): boolean {
   return !!p && (PERSONAL_PURPOSES as (MoneyPurpose | null)[]).includes(p);
 }
 
+/**
+ * True when a transaction is genuine guilt-free spending: discretionary
+ * (dining, entertainment, fun, shopping) FLEXIBLE spending only. Business
+ * operating costs, insurance, dues, vehicle/transportation, utilities, debt
+ * and fixed bills/subscriptions never consume the Guilt-Free allowance.
+ */
+export function isGuiltFreeSpend(input: ClassifyInput & { storedPurpose?: string | null }): boolean {
+  const name = `${input.categoryName || ''}`.toLowerCase();
+  // Groceries are reimbursed and medical is paid from the HSA — not guilt-free.
+  if (/grocer|medical|health/.test(name)) return false;
+  const expenseType = (input.expenseType || 'flexible').toLowerCase();
+  // Fixed bills and subscriptions are budgeted obligations, not guilt-free spending.
+  if (expenseType !== 'flexible') return false;
+  const purpose = input.storedPurpose || classifyMoneyPurpose(input);
+  return purpose === 'enjoy';
+}
+
 export function statusFor(
   purpose: 'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt',
   actualPct: number,

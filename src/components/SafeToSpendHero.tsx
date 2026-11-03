@@ -7,6 +7,7 @@ import { useTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { MODE_CONFIG } from '@/hooks/use-financial-mode';
 import { Shield, Zap, Leaf, DollarSign, Calendar, CalendarDays, TrendingUp, Info } from 'lucide-react';
+import { isGuiltFreeSpend } from '@/lib/budgeting/moneyPurpose';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const modeIcons = {
@@ -51,13 +52,18 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
     for (const t of (transactions || []) as any[]) {
       if (t.amount >= 0 || t.is_transfer) continue;
       const group = t.categories?.category_groups;
-      if (group?.expense_type !== 'flexible') continue;
       const isBiz = group?.budget_type === 'business';
       if (viewMode === 'personal' && isBiz) continue;
       if (viewMode === 'business' && !isBiz) continue;
-      if (t.categories?.money_purpose === 'build_wealth') continue;
-      const name = (t.categories?.name || '').toLowerCase();
-      if (name.includes('grocer') || name.includes('medical') || name.includes('health')) continue;
+      // Only genuine guilt-free spending (dining, entertainment, fun, shopping)
+      // consumes the allowance — business operating costs, insurance, dues,
+      // subscriptions, groceries and medical never count.
+      if (!isGuiltFreeSpend({
+        categoryName: t.categories?.name,
+        expenseType: group?.expense_type,
+        budgetType: group?.budget_type,
+        storedPurpose: t.categories?.money_purpose,
+      })) continue;
       if (!t.date?.startsWith(monthPrefix)) continue;
       const amt = Math.abs(t.amount);
       month += amt;
@@ -173,7 +179,7 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
             <TimeframePill icon={<CalendarDays className="h-4 w-4" />} label="Monthly" amount={formatCurrency(sts.monthly)} gradient="from-prism-violet to-prism-sky" spent={spent.month} limit={sts.monthly} spentLabel="this month" formatCurrency={formatCurrency} />
           </div>
           <p className="text-[10px] text-muted-foreground/70 mt-2 text-center">
-            "Spent" counts only day-to-day spending — bills, savings, transfers, groceries and medical are left out.
+            "Spent" counts only guilt-free spending — dining, entertainment and fun. Bills, business costs, subscriptions, groceries and medical are left out.
           </p>
 
 
