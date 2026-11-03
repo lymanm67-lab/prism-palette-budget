@@ -10,7 +10,7 @@ import { BUCKETS } from '@/lib/fiveBucket/engine';
 import { fundingName } from '@/lib/fiveBucket/budgetFunding';
 import { CARRYOVER_NAME, monthlyBalance } from '@/lib/fiveBucket/monthlyBalance';
 
-interface Props { month: string; income: number; expenses: number; ready: boolean; categories: { id: string; name: string; group_id: string | null }[]; budgets: { category_id: string; planned_amount: number }[]; carryover: number; emergencyBalance: number }
+interface Props { month: string; income: number; expenses: number; ready: boolean; categories: { id: string; name: string; group_id: string | null }[]; budgets: { category_id: string; planned_amount: number; locked_at?: string | null }[]; carryover: number; emergencyBalance: number }
 const locks = new Set<string>();
 export default function MonthlyBudgetBalance({ month, income, expenses, ready, categories, budgets, carryover, emergencyBalance }: Props) {
   const { household } = useHousehold();
@@ -30,12 +30,21 @@ export default function MonthlyBudgetBalance({ month, income, expenses, ready, c
       return (data || []).filter(r => r.categories?.name === fundingName('emergency')).reduce((sum,r) => sum + Number(r.planned_amount),0);
     },
   });
+  const bucketIds = new Set(BUCKETS.map(b => categories.find(c => c.name === fundingName(b.key))?.id).filter(Boolean));
+  // A bucket row with locked_at marks a user-entered split; auto-balancing must not overwrite it.
+  const manual = budgets.some(r => bucketIds.has(r.category_id) && !!r.locked_at);
+  const resumeAuto = async () => {
+    if (!household) return;
+    const { error } = await supabase.from('budgets').update({ locked_at: null }).eq('household_id', household.id).eq('month', month).in('category_id', [...bucketIds] as string[]);
+    if (error) setStatus(`Could not switch: ${error.message}`); else await qc.invalidateQueries({ queryKey: ['budgets'] });
+  };
   const desired = monthlyBalance(income, expenses, emergencyBalance, prior || 0);
   const signature = JSON.stringify(BUCKETS.map(b => [b.key, desired[b.key]]));
   useEffect(() => {
     if (!ready || !household || !isSuccess || isFetching || month < '2026-10-01') return;
     const scope = `${household.id}:${month}`;
     if (locks.has(scope)) return;
+    if (manual) { setStatus('Manual split saved'); return; }
     const rows = BUCKETS.flatMap(b => {
       const category = categories.find(c => c.name === fundingName(b.key));
       if (!category) return [];
@@ -52,7 +61,7 @@ export default function MonthlyBudgetBalance({ month, income, expenses, ready, c
       if (mounted.current) setStatus(error ? `Could not balance: ${error.message}` : 'Balanced automatically');
       if (!error) await Promise.all([qc.invalidateQueries({ queryKey:['budgets'] }),qc.invalidateQueries({ queryKey:['budget-actual'] })]);
     })();
-  }, [ready, household?.id, month, isSuccess, isFetching, signature, categories, budgets, qc]);
+  }, [ready, household?.id, month, isSuccess, isFetching, signature, categories, budgets, qc, manual]);
   const saveCarryover = async () => {
     const category = categories.find(c => c.name === CARRYOVER_NAME);
     const amount = Number(draft);
@@ -62,7 +71,7 @@ export default function MonthlyBudgetBalance({ month, income, expenses, ready, c
     else await qc.invalidateQueries({queryKey:['budgets']});
   };
   return <section aria-label="Monthly budget balancing" className="space-y-2 border-b border-border py-4">
-    <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-semibold">Monthly balancing</h2><span className="text-xs text-muted-foreground" role="status">{status}</span></div>
+    <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-semibold">Monthly balancing</h2><span className="flex items-center gap-2 text-xs text-muted-foreground" role="status">{status}{manual && <Button size="sm" variant="ghost" onClick={resumeAuto}>Balance automatically</Button>}</span></div>
     <div className="flex flex-wrap items-center gap-2"><Label htmlFor="monthly-carryover">Previous month’s surplus ($)</Label><Input id="monthly-carryover" className="w-32" type="number" min="0" step="0.01" value={draft} onChange={e=>setDraft(e.target.value)} /><Button size="sm" variant="outline" onClick={saveCarryover}>Save surplus</Button></div>
     <p className="text-sm text-muted-foreground">{formatCurrency(income)} available including {formatCurrency(carryover)} carryover − {formatCurrency(expenses)} expenses = {formatCurrency(desired.available)} for savings.</p>
     <p className="text-xs text-muted-foreground">Expenses first, then Deductibles & Emergency toward {formatCurrency(7000)}. Retirement and HSA remain funded through payroll.</p>
