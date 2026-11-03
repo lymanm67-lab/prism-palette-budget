@@ -59,7 +59,7 @@ import BudgetSummaryTiles from '@/components/budget/BudgetSummaryTiles';
 import { Coins } from 'lucide-react';
 import { splitBudgetIncome } from '@/lib/budgeting/incomeSummary';
 import OwnerLoanCard from '@/components/budget/OwnerLoanCard';
-import { excludesTakeHomeAllocation, isFiveBucketFunding, budgetFundingBreakdown } from '@/lib/budgeting/takeHomeAllocation';
+import { excludesTakeHomeAllocation, isFiveBucketFunding, isExpectedIncome, budgetFundingBreakdown } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
 import OverBudgetGlance from '@/components/budget/OverBudgetGlance';
