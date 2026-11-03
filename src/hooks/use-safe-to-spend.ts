@@ -87,6 +87,8 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     // Calculate budget-based income and expenses
     let budgetIncome = 0;
     let budgetExpenses = 0;
+    let guiltFree = 0;
+    let hasGuiltFree = false;
     for (const b of (budgetsWithGroups || [])) {
       const group = b.categories?.category_groups;
       const isBusiness = group?.budget_type === 'business' || !!group?.business_profile_id;
@@ -101,6 +103,7 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
         catName.includes('owner capital infusion') ||
         catName.includes('owner draw');
       if (scope === 'combined' && isInternalFunding) continue;
+      if (catName.includes('guilt')) { hasGuiltFree = true; guiltFree += b.planned_amount || 0; }
       if (expType === 'income') {
         // Only verified expected income (salary, consulting, owner draw) and confirmed
         // carryover count — unreceived one-off income must not inflate Safe to Spend.
@@ -191,7 +194,10 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
 
     // Apply buffer
     const bufferMultiplier = 1 - (bufferPercent / 100);
-    const monthlySafe = Math.max(0, baseMonthlySafe * bufferMultiplier);
+    // Safe to Spend = this month's budgeted Guilt-Free spending when the budget has it.
+    const monthlySafe = hasGuiltFree
+      ? Math.max(0, guiltFree)
+      : Math.max(0, baseMonthlySafe * bufferMultiplier);
 
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
