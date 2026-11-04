@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { personaCounts, resolveResult, scoreAnswers, QUESTIONS } from './persona';
 import { leakTotals, leakAdjustment } from './fiveIs';
-import { freedomNumber, yearlyGaps, FreedomInputs } from './freedom';
+import { evaluate, freedomNumber, futureDollars, yearlyGaps, FreedomInputs } from './freedom';
 
 const base: FreedomInputs = {
   currentYear: 2026, targetYear: 2030, endYear: 2032, budgetBefore: 1000, monthlyTaxes: 0,
@@ -49,5 +49,28 @@ describe('wealth lens', () => {
   it('present value matches a hand-checked example', () => {
     // 2 years of $12,000 at 10% real: 12000 + 12000/1.1 = 22909.09
     expect(freedomNumber({ ...base, nominalReturn: 0.1 })).toBeCloseTo(22909.09, 1);
+  });
+  it('converts $1,000 today to $1,806.11 in 20 years at 3% inflation', () => {
+    expect(futureDollars(1000, 0.03, 2026, 2046)).toBeCloseTo(1806.11, 2);
+    expect(futureDollars(1000, 0, 2026, 2046)).toBe(1000);
+    expect(futureDollars(1000, 0.03, 2026, 2026)).toBe(1000);
+  });
+  it('uses a 4% backup for a 6% return without changing 3% inflation', () => {
+    const inputs = { ...base, inflation: 0.03, nominalReturn: 0.06 };
+    const result = evaluate(inputs);
+    expect(result.low.nominalReturn).toBeCloseTo(0.04, 10);
+    expect(result.low.needed).toBeCloseTo(freedomNumber(inputs, 0.04), 8);
+  });
+  it('inflates portfolio targets, assets and gaps once at each path target year', () => {
+    const inputs = { ...base, targetYear: 2046, endYear: 2048, inflation: 0.03, nominalReturn: 0.06, currentAssets: 50000 };
+    const result = evaluate(inputs);
+    const factor = 1.03 ** 20;
+    expect(result.future.freedomBudget).toBeCloseTo(1806.11, 2);
+    expect(result.future.needed).toBeCloseTo(result.needed * factor, 8);
+    expect(result.future.projected).toBeCloseTo(result.projected * factor, 8);
+    expect(result.future.surplus).toBeCloseTo(result.surplus * factor, 8);
+    expect(result.future.low.needed).toBeCloseTo(result.low.needed * factor, 8);
+    expect(result.future.low.projected).toBeCloseTo(result.low.projected * factor, 8);
+    expect(result.future.monthlyGap).toBeCloseTo(result.monthlyGap * factor, 8);
   });
 });

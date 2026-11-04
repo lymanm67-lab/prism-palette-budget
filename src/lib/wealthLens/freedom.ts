@@ -26,6 +26,10 @@ export interface FreedomInputs {
 
 export const realReturn = (nominal: number, inflation: number) => (1 + nominal) / (1 + inflation) - 1;
 
+/** Display conversion only: real-dollar calculations remain unchanged. */
+export const futureDollars = (today: number, inflation: number, currentYear: number, year: number) =>
+  today * Math.pow(1 + inflation, Math.max(0, year - currentYear));
+
 export function missingInputs(i: Partial<FreedomInputs>): string[] {
   const m: string[] = [];
   if (!i.targetYear) m.push('Target freedom year');
@@ -42,7 +46,7 @@ export function yearlyGaps(i: FreedomInputs): YearRow[] {
   const cut = i.spendingCut ?? 0;
   for (let y = i.targetYear; y < i.endYear; y++) {
     const after = i.changeYear != null && i.budgetAfter != null && y >= i.changeYear;
-    const monthly = Math.max(0, (after ? i.budgetAfter! : i.budgetBefore) - cut) + (i.monthlyTaxes || 0);
+    const monthly = Math.max(0, (after ? i.budgetAfter ?? i.budgetBefore : i.budgetBefore) - cut) + (i.monthlyTaxes || 0);
     const inc = i.otherIncome
       .filter((o) => y >= o.startYear && (o.endYear == null || y <= o.endYear))
       .reduce((s, o) => s + o.monthly, 0);
@@ -81,6 +85,7 @@ export function evaluate(i: FreedomInputs, lowerReturnDelta = 0.02) {
   const maxGap = rows.reduce((m, r) => Math.max(m, r.gap), 0);
   const peakYears = rows.filter((r) => r.gap > 0 && r.gap >= maxGap * 0.95).map((r) => r.year);
   const room = i.currentTakeHome != null && i.currentBudget != null ? i.currentTakeHome - i.currentBudget : undefined;
+  const future = (amount: number) => futureDollars(amount, i.inflation, i.currentYear, i.targetYear);
   return {
     rows,
     freedomBudget: i.budgetBefore,
@@ -88,7 +93,15 @@ export function evaluate(i: FreedomInputs, lowerReturnDelta = 0.02) {
     needed,
     projected,
     surplus: projected - needed,
-    low: { needed: neededLow, projected: projectedLow, surplus: projectedLow - neededLow },
+    low: { nominalReturn: lowR, needed: neededLow, projected: projectedLow, surplus: projectedLow - neededLow },
+    future: {
+      freedomBudget: future(i.budgetBefore),
+      monthlyGap: future(rows[0] ? rows[0].gap / 12 : 0),
+      needed: future(needed),
+      projected: future(projected),
+      surplus: future(projected - needed),
+      low: { needed: future(neededLow), projected: future(projectedLow), surplus: future(projectedLow - neededLow) },
+    },
     peakYears,
     contributionTooHigh: room != null && i.monthlyContribution > room,
     room,

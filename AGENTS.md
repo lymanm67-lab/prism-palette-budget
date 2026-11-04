@@ -19,3 +19,4 @@
 - Budgets and Debt Payoff render the same VacationLoanPayoff component and pure tested vacationLoanPayoff engine (simple daily APR/365 estimates, lender quotes override); inputs share household-keyed browser storage until a database table is added, keeping both entry points consistent without altering debt records.
 
 - The Wealth Lens math lives in pure tested engines under src/lib/wealthLens; inputs stay in page memory and save only as explicit device-file downloads/imports until a per-user database table exists, so persona answers stay private.
+- Wealth Lens computes in real purchasing-power dollars and converts display amounts with the shared futureDollars helper at each amount's year, so inflation is never applied twice.

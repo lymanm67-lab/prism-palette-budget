@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { QUESTIONS, PERSONAS, personaById, scoreAnswers, resolveResult, PersonaId } from '@/lib/wealthLens/persona';
 import { LEAK_AREAS, LeakArea, LeakCheck, LeakStatus, leakTotals, leakAdjustment } from '@/lib/wealthLens/fiveIs';
-import { evaluate, missingInputs, FreedomInputs } from '@/lib/wealthLens/freedom';
+import { evaluate, futureDollars, missingInputs, FreedomInputs } from '@/lib/wealthLens/freedom';
 
 const usd = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const YEAR = new Date().getFullYear();
@@ -308,7 +308,7 @@ export default function WealthLens() {
                 <Num label="Net home proceeds" value={shared.homeSaleNet} onChange={S('homeSaleNet')} />
                 <Num label="Sale year" value={shared.homeSaleYear} onChange={S('homeSaleYear')} />
               </>}
-              <p className="text-xs text-muted-foreground md:col-span-4">All amounts are in today's dollars. Keep spending and income on the same tax basis.</p>
+              <p className="text-xs text-muted-foreground md:col-span-4">Enter amounts in today's purchasing power. Results also show future dollars adjusted for your inflation assumption. Keep spending and income on the same tax basis.</p>
             </CardContent>
           </Card>
           <div className="grid lg:grid-cols-3 gap-4">
@@ -348,22 +348,48 @@ export default function WealthLens() {
                 <Card key={path.id} className="glass-card">
                   <CardHeader><CardTitle className="text-base">{path.name}</CardTitle><p className="text-xs text-muted-foreground">Target {inp.targetYear} · projection</p></CardHeader>
                   <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span>My Freedom Budget</span><b>{usd(r.freedomBudget)}/mo</b></div>
-                    {inp.budgetAfter != null && <div className="flex justify-between"><span>After {inp.changeYear}</span><b>{usd(inp.budgetAfter)}/mo</b></div>}
-                    <div className="flex justify-between"><span>My Monthly Freedom Gap</span><b>{usd(r.monthlyGap)}/mo</b></div>
-                    <div className="flex justify-between"><span>Monthly contribution</span><b>{usd(inp.monthlyContribution + (inp.incomeGain ?? 0))}</b></div>
-                    <div className="flex justify-between text-base"><span>My Financial Freedom Number</span><b className="text-primary">{usd(r.needed)}</b></div>
-                    <div className="flex justify-between"><span>Projected assets</span><b>{usd(r.projected)}</b></div>
-                    <div className="flex justify-between"><span>{r.surplus >= 0 ? 'Estimated surplus' : 'Funding gap'}</span><b className={r.surplus >= 0 ? 'text-prism-teal' : 'text-destructive'}>{usd(Math.abs(r.surplus))}</b></div>
-                    <div className="flex justify-between text-xs text-muted-foreground"><span>Lower-return case (−2%)</span><span>{usd(r.low.needed)} needed · {r.low.surplus >= 0 ? '+' : '−'}{usd(Math.abs(r.low.surplus))}</span></div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs tabular-nums">
+                        <thead><tr className="border-b text-muted-foreground"><th className="text-left py-2 font-medium">Amount</th><th className="text-right px-2 font-medium">Today ({YEAR})</th><th className="text-right font-medium">Future ({inp.targetYear})</th></tr></thead>
+                        <tbody>
+                          {[
+                            ['Freedom Budget /mo', r.freedomBudget, r.future.freedomBudget],
+                            ...(inp.budgetAfter != null && inp.changeYear != null ? [[`Budget /mo from ${inp.changeYear}¹`, inp.budgetAfter, futureDollars(inp.budgetAfter, inp.inflation, YEAR, inp.changeYear)]] : []),
+                            ['Monthly Freedom Gap', r.monthlyGap, r.future.monthlyGap],
+                            ['Financial Freedom Number', r.needed, r.future.needed],
+                            ['Projected assets', r.projected, r.future.projected],
+                            [r.surplus >= 0 ? 'Estimated surplus' : 'Funding gap', Math.abs(r.surplus), Math.abs(r.future.surplus)],
+                          ].map(([label, today, future]) => (
+                            <tr key={String(label)} className="border-b border-border/50"><th className="py-3 text-left font-medium">{label}</th><td className="text-right px-2 whitespace-nowrap">{usd(Number(today))}</td><td className="text-right font-semibold whitespace-nowrap text-primary">{usd(Number(future))}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {inp.budgetAfter != null && <p className="text-xs text-muted-foreground">¹ Later lifestyle budget uses inflation through {inp.changeYear}, not the target year.</p>}
+                    <p className="text-xs text-muted-foreground">Future dollars reflect {shared.inflation}% annual inflation, not extra purchasing power.</p>
+                    <p>Monthly contribution in today's dollars: <b>{usd(inp.monthlyContribution + (inp.incomeGain ?? 0))}</b></p>
+                    <div className="pt-2 space-y-1">
+                      <p className="font-medium">Lower-return stress test: {Number((r.low.nominalReturn * 100).toFixed(2))}% versus {shared.nominalReturn}%</p>
+                      <p className="text-xs text-muted-foreground">Two percentage points lower; same {shared.inflation}% inflation. Not a worst-case guarantee.</p>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs tabular-nums">
+                          <thead><tr className="text-muted-foreground"><th className="text-left py-2 font-medium">Backup case</th><th className="text-right px-2 font-medium">Today</th><th className="text-right font-medium">{inp.targetYear}</th></tr></thead>
+                          <tbody>{[
+                            ['Portfolio needed', r.low.needed, r.future.low.needed],
+                            ['Projected assets', r.low.projected, r.future.low.projected],
+                            [r.low.surplus >= 0 ? 'Estimated surplus' : 'Funding gap', Math.abs(r.low.surplus), Math.abs(r.future.low.surplus)],
+                          ].map(([label, today, future]) => <tr key={String(label)}><th className="text-left py-2 font-medium">{label}</th><td className="text-right px-2 whitespace-nowrap">{usd(Number(today))}</td><td className="text-right whitespace-nowrap">{usd(Number(future))}</td></tr>)}</tbody>
+                        </table>
+                      </div>
+                    </div>
                     {r.peakYears.length > 0 && <p className="text-xs">Highest-gap years: {r.peakYears.slice(0, 6).join(', ')}{r.peakYears.length > 6 ? '…' : ''}</p>}
                     {r.contributionTooHigh && <p className="text-xs text-destructive">Your current budget leaves {usd(r.room ?? 0)}/mo to invest, less than you plan to contribute.</p>}
                     <Button size="sm" variant="ghost" onClick={() => setShowMath(showMath === path.id ? null : path.id)}>Show My Math</Button>
                     {showMath === path.id && (
                       <div className="max-h-64 overflow-auto text-xs">
-                        <p className="mb-1">Inflation {shared.inflation}% · return after fees {shared.nominalReturn}% · today's dollars</p>
+                        <p className="mb-1">Inflation {shared.inflation}% · return after fees {shared.nominalReturn}%. Each cell: today / that year's dollars. Annual totals.</p>
                         <table className="w-full"><thead><tr className="text-left"><th>Year</th><th>Spend</th><th>Other inc.</th><th>Gap</th></tr></thead>
-                          <tbody>{r.rows.map((row) => <tr key={row.year}><td>{row.year}</td><td>{usd(row.spending)}</td><td>{usd(row.otherIncome)}</td><td>{usd(row.gap)}</td></tr>)}</tbody></table>
+                          <tbody>{r.rows.map((row) => <tr key={row.year}><td className="align-top py-2">{row.year}</td>{[row.spending, row.otherIncome, row.gap].map((amount, index) => <td key={index} className="py-2 align-top"><div>{usd(amount)}</div><div className="text-muted-foreground">{usd(futureDollars(amount, inp.inflation, YEAR, row.year))}</div></td>)}</tr>)}</tbody></table>
                       </div>
                     )}
                   </CardContent>
