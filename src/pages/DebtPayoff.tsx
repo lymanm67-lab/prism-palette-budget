@@ -63,6 +63,8 @@ import { DebtStatementScanner } from '@/components/DebtStatementScanner';
 import { Target, FileUp } from 'lucide-react';
 import DebtPaidHistory from '@/components/debt/DebtPaidHistory';
 import { useDebtPaymentsApplied } from '@/hooks/use-debt-payments-applied';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { VacationLoanPayoff } from '@/components/budget/VacationLoanPayoff';
 
 // ─── Types ───
 interface Debt {
@@ -161,6 +163,7 @@ const STRATEGIES = [
 // ─── Component ───
 const DebtPayoff = () => {
   const { formatCurrency } = useCurrency();
+  const { household } = useHousehold();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
 
   // DB hooks
@@ -433,10 +436,13 @@ const DebtPayoff = () => {
 
       <RelatedToolsBar
         tools={[
+          { to: '/budgets', icon: DollarSign, label: 'Budgets', description: 'Review monthly funding for your debt payments' },
           { to: '/planning/investments', icon: Sparkles, label: 'Debt → Wealth tool', description: 'Project what your debt payments become when redirected to investments' },
           { to: '/goals', icon: Target, label: 'Goals', description: 'Set savings goals alongside payoff targets' },
         ]}
       />
+
+      {household && <VacationLoanPayoff key={household.id} householdId={household.id} />}
 
 
       {/* No plan state */}
