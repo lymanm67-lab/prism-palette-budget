@@ -16,3 +16,4 @@
 - Akron application answers and signatures stay in component memory; only explicit device-file draft downloads/imports may save and restore them. Never store them in browser storage or transmit them online, because they include SSNs and financial declarations.
 - Retirement What-If Lab uses the pure engine in src/lib/retirement/whatIf.ts and stateTax.ts with in-memory inputs only, so experiments never change saved plans.
 - Owner-draw/owner-capital income counts as expected income via isExpectedIncome in Budgets' Available-for-Savings math, so business surplus moved to Personal shows immediately; the business Owner Draw expense zeroes the business side without double counting.
+- Vacation loan payoff math lives in the pure tested vacationLoanPayoff module (simple daily APR/365 estimates, lender quotes override); inputs persist per household in browser storage until a database table is added.
