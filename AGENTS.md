@@ -17,3 +17,5 @@
 - Retirement What-If Lab uses the pure engine in src/lib/retirement/whatIf.ts and stateTax.ts with in-memory inputs only, so experiments never change saved plans.
 - Owner-draw/owner-capital income counts as expected income via isExpectedIncome in Budgets' Available-for-Savings math, so business surplus moved to Personal shows immediately; the business Owner Draw expense zeroes the business side without double counting.
 - Budgets and Debt Payoff render the same VacationLoanPayoff component and pure tested vacationLoanPayoff engine (simple daily APR/365 estimates, lender quotes override); inputs share household-keyed browser storage until a database table is added, keeping both entry points consistent without altering debt records.
+
+- The Wealth Lens math lives in pure tested engines under src/lib/wealthLens; results are private to one user, never household-shared, so personal persona answers stay private.

@@ -24,6 +24,7 @@ const Accounts = lazy(() => import("@/pages/Accounts"));
 const Transactions = lazy(() => import("@/pages/Transactions"));
 const Budgets = lazy(() => import("@/pages/Budgets"));
 const BudgetVsActual = lazy(() => import("@/pages/BudgetVsActual"));
+const WealthLens = lazy(() => import("@/pages/WealthLens"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const MonthlyReport = lazy(() => import("@/pages/MonthlyReport"));
 const BudgetBillsReport = lazy(() => import("@/pages/BudgetBillsReport"));
@@ -328,6 +329,7 @@ const App = () => (
               <Route path="/budgets/month-end" element={<Suspense fallback={<PageLoader />}><MonthEndClose /></Suspense>} />
               <Route path="/planning/zero-based" element={<Navigate to="/planning/savings-plans?tab=zero-based" replace />} />
               <Route path="/planning/five-bucket" element={<Navigate to="/planning/savings-plans?tab=five-bucket" replace />} />
+              <Route path="/planning/wealth-lens" element={<Suspense fallback={<PageLoader />}><WealthLens /></Suspense>} />
               <Route path="/planning/savings-plans" element={<Suspense fallback={<PageLoader />}><SavingsPlans /></Suspense>} />
               <Route path="/planning/reserves" element={<Suspense fallback={<PageLoader />}><Reserves /></Suspense>} />
               <Route path="/planning/wealth-projection" element={<Suspense fallback={<PageLoader />}><WealthProjection /></Suspense>} />
