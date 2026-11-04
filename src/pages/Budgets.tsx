@@ -62,6 +62,7 @@ import OwnerLoanCard from '@/components/budget/OwnerLoanCard';
 import { excludesTakeHomeAllocation, isFiveBucketFunding, isExpectedIncome, budgetFundingBreakdown } from '@/lib/budgeting/takeHomeAllocation';
 import FiveBucketFunding from '@/components/budget/FiveBucketFunding';
 import { MonthsAhead } from '@/components/budget/MonthsAhead';
+import { VacationLoanPayoff } from '@/components/budget/VacationLoanPayoff';
 import OverBudgetGlance from '@/components/budget/OverBudgetGlance';
 import MatchTransactions from '@/components/budget/MatchTransactions';
 import CollapsibleSection from '@/components/CollapsibleSection';
@@ -2465,6 +2466,7 @@ const Budgets = () => {
       })()}
       {household?.id && <div className="py-2"><CollapsibleSection title="Months ahead" subtitle="Income, expenses, debt and savings for the coming months">
         <MonthsAhead householdId={household.id} budgetType={budgetType} />
+        {budgetType !== 'business' && <VacationLoanPayoff householdId={household.id} />}
       </CollapsibleSection></div>}
 
       {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
