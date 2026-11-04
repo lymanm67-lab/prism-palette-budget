@@ -89,6 +89,7 @@ export const NAV_SECTIONS: NavSection[] = [
         { to: '/planning/savings-plans?tab=fifty-percent', icon: Target, label: 'Live on 50% Plan', color: 'text-prism-amber' },
         { to: '/planning/savings-plans?tab=five-bucket', icon: Target, label: 'Five-Bucket Wealth Plan', color: 'text-prism-teal' },
         { to: '/planning/savings-plans?tab=zero-based', icon: Wallet, label: 'Zero-Based Plan', color: 'text-prism-teal' },
+        { to: '/planning/wealth-lens', icon: Target, label: 'The Wealth Lens', color: 'text-prism-amber' },
       ] },
       { subLabel: 'Emergency & Reserves', items: [
         { to: '/planning/reserves', icon: ShieldCheck, label: 'Emergency Fund & Liquidity', color: 'text-prism-teal' },
