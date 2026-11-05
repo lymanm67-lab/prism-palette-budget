@@ -227,6 +227,7 @@ export default function WealthLens() {
           <FoldCard className="glass-card">
             <CardHeader>
               <CardTitle>Wealth Building Persona Quiz</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Start here. Answer 16 quick questions about how you think and feel about money — there are no right answers, just pick the one that sounds most like you. At the end you'll get your wealth persona, which shapes the tips shown throughout this page.</p>
               <Progress value={(Object.keys(answers).length / QUESTIONS.length) * 100} />
               <p className="text-xs text-muted-foreground">{Object.keys(answers).length} of {QUESTIONS.length} answered</p>
             </CardHeader>
@@ -297,7 +298,9 @@ export default function WealthLens() {
 
         <TabsContent value="leaks">
           <FoldCard className="glass-card">
-            <CardHeader><CardTitle>The 5 Is Money Leak Check</CardTitle></CardHeader>
+            <CardHeader><CardTitle>The 5 Is Money Leak Check</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Next, check five common places money quietly slips away. For each area, mark whether it's handled or a leak, and enter the rough monthly amount if you know it. Your biggest leak can be added to your Freedom Number as an optional "what if I fixed this" scenario.</p>
+            </CardHeader>
             <CardContent className="space-y-3">
               {LEAK_AREAS.map((a) => {
                 const e = leaks[a.id] ?? { status: 'unsure' as LeakStatus, period: 'monthly' as const };
@@ -344,34 +347,12 @@ export default function WealthLens() {
             <h2 className="text-2xl font-semibold">What does freedom look like for you?</h2>
             <p className="max-w-3xl text-muted-foreground leading-relaxed">Imagine waking up on a Tuesday and knowing you can choose how to spend it. Start with the life you want, pick when you want it, and see how much your investments would need to cover.</p>
           </div>
-          <FoldCard className="glass-card">
-            <CardHeader>
-              <CardTitle>Three example lifestyles — and pitfalls to avoid</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">Made-up households to show how each path plays out. Pick the one that sounds most like you.</p>
-            </CardHeader>
-            <CardContent className="grid md:grid-cols-3 gap-4">
-              {SCENARIOS.map((s) => (
-                <div key={s.title} className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-                  <div>
-                    <p className="font-semibold text-foreground">{s.title}</p>
-                    <p className="text-xs text-muted-foreground">{s.who}</p>
-                  </div>
-                  <p className="text-sm text-foreground">{s.story}</p>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Pitfalls to avoid</p>
-                    <ul className="list-disc pl-4 space-y-1 text-sm text-muted-foreground">
-                      {s.pitfalls.map((p) => <li key={p}>{p}</li>)}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </FoldCard>
-          <FoldCard className="glass-card">
+           <FoldCard className="glass-card">
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
               <div>
+                <Badge variant="secondary" className="mb-1">Step 1 of 3</Badge>
                 <CardTitle>When, and what's working for you</CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">Not sure what to enter? Load a made-up example to see how it works, then replace it with your numbers.</p>
+                <p className="text-xs text-muted-foreground mt-1">Start here. These shared numbers — your target year, savings, income and spending — apply to all three lifestyle paths below. Each field has a hint telling you where to find the number. Not sure what to enter? Load a made-up example to see how it works, then replace it with your numbers.</p>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => { setShared(SAMPLE_SHARED); setPaths(SAMPLE_PATHS); toast.success('Sample filled in — replace with your own numbers'); }}>Fill in a sample</Button>
@@ -408,6 +389,11 @@ export default function WealthLens() {
               <p className="text-xs text-muted-foreground md:col-span-4">Enter amounts in today's purchasing power. Results also show future dollars adjusted for your inflation assumption. Keep spending and income on the same tax basis.</p>
             </CardContent>
           </FoldCard>
+          <div className="space-y-1">
+            <Badge variant="secondary">Step 2 of 3</Badge>
+            <h3 className="text-lg font-semibold">Pick your lifestyle path</h3>
+            <p className="text-sm text-muted-foreground max-w-3xl">Each card is one way freedom could look — Live Large (spend more later), Build First (spend less now, more later) or Live Well (steady throughout). Fill in the monthly budget for the life you want; leave the "shared" fields alone to reuse your Step 1 numbers. You can fill in one path or all three to compare.</p>
+          </div>
           <div className="grid lg:grid-cols-3 gap-4">
             {PATHS.map((path) => {
               const p = paths[path.id];
@@ -428,6 +414,30 @@ export default function WealthLens() {
               );
             })}
           </div>
+          <FoldCard className="glass-card">
+            <CardHeader>
+              <Badge variant="secondary" className="mb-1 w-fit">Step 3 of 3</Badge>
+              <CardTitle>Three example lifestyles — and pitfalls to avoid</CardTitle>
+               <p className="text-xs text-muted-foreground mt-1">See how each path plays out for a made-up household, and the mistakes to watch for. Use these to sanity-check the numbers you entered above before viewing your results.</p>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-3 gap-4">
+              {SCENARIOS.map((s) => (
+                <div key={s.title} className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <div>
+                    <p className="font-semibold text-foreground">{s.title}</p>
+                    <p className="text-xs text-muted-foreground">{s.who}</p>
+                  </div>
+                  <p className="text-sm text-foreground">{s.story}</p>
+                   <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Pitfalls to avoid</p>
+                    <ul className="list-disc pl-4 space-y-1 text-sm text-muted-foreground">
+                      {s.pitfalls.map((p) => <li key={p}>{p}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </FoldCard>
           <Button onClick={() => setTab('results')}>See my results</Button>
         </TabsContent>
 
