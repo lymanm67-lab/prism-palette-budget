@@ -11,7 +11,7 @@ import { ChevronDown } from 'lucide-react';
 
 /** Card with a chevron that hides everything except its header. */
 function FoldCard({ className = '', children }: { className?: string; children: ReactNode }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   return (
     <Card className={`relative ${className} ${open ? '' : '[&>*:not(:first-child)]:hidden'}`}>
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? 'Collapse section' : 'Expand section'}
