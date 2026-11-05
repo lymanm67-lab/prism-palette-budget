@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { ChevronDown } from 'lucide-react';
 
 /** Card with a chevron that hides everything except its header. */
-function FoldCard({ className = '', children }: { className?: string; children: React.ReactNode }) {
+function FoldCard({ className = '', children }: { className?: string; children: ReactNode }) {
   const [open, setOpen] = useState(true);
   return (
     <Card className={`relative ${className} ${open ? '' : '[&>*:not(:first-child)]:hidden'}`}>
