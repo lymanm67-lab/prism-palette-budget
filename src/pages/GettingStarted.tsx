@@ -59,6 +59,28 @@ const TRAINING_STEPS: TrainingStep[] = [
     ],
   },
   {
+    id: 'wealth-lens',
+    title: 'Discover Your Wealth Persona',
+    icon: Eye,
+    color: 'text-prism-amber',
+    route: '/planning/wealth-lens',
+    summary: 'Take The Wealth Lens 16-question persona quiz to learn your money mindset, then check your leaks and Freedom Number.',
+    ttsScript: `Before building your budget, take a moment to understand your money mindset. Open The Wealth Lens and take the 16-question persona quiz. There are no right or wrong answers. You'll discover your primary and secondary wealth persona, such as the Fortress Keeper, the Wealth Architect, or the Value Maker, along with your strength, your blind spot, and one practical action. Then run the Five Is leak check and the Freedom Number calculator to see where you stand today and in future dollars.`,
+    steps: [
+      'Open The Wealth Lens (Planning → Savings Plans)',
+      'Click to start the persona quiz',
+      'Answer all 16 questions honestly',
+      'Review your primary and secondary persona',
+      'Run the 5 Is leak check',
+      'Calculate your Freedom Number',
+    ],
+    tips: [
+      'Results stay private on this device unless you download them',
+      'Retake the quiz every few months to see how your mindset shifts',
+      'Use your persona’s action step as your first budget goal',
+    ],
+  },
+  {
     id: 'categories',
     title: 'Organize Categories',
     icon: Tags,
