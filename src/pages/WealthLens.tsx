@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,21 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { ChevronDown } from 'lucide-react';
+
+/** Card with a chevron that hides everything except its header. */
+function FoldCard({ className = '', children }: { className?: string; children: ReactNode }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <Card className={`relative ${className} ${open ? '' : '[&>*:not(:first-child)]:hidden'}`}>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? 'Collapse section' : 'Expand section'}
+        className="absolute right-3 top-3 z-10 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
+        <ChevronDown className={`h-5 w-5 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {children}
+    </Card>
+  );
+}
 import { QUESTIONS, PERSONAS, personaById, scoreAnswers, resolveResult, PersonaId } from '@/lib/wealthLens/persona';
 import { LEAK_AREAS, LeakArea, LeakCheck, LeakStatus, leakTotals, leakAdjustment } from '@/lib/wealthLens/fiveIs';
 import { evaluate, futureDollars, missingInputs, FreedomInputs } from '@/lib/wealthLens/freedom';
@@ -206,7 +221,7 @@ export default function WealthLens() {
         </TabsContent>
 
         <TabsContent value="quiz">
-          <Card className="glass-card">
+          <FoldCard className="glass-card">
             <CardHeader>
               <CardTitle>Wealth Building Persona Quiz</CardTitle>
               <Progress value={(Object.keys(answers).length / QUESTIONS.length) * 100} />
@@ -274,11 +289,11 @@ export default function WealthLens() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </FoldCard>
         </TabsContent>
 
         <TabsContent value="leaks">
-          <Card className="glass-card">
+          <FoldCard className="glass-card">
             <CardHeader><CardTitle>The 5 Is Money Leak Check</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {LEAK_AREAS.map((a) => {
@@ -317,7 +332,7 @@ export default function WealthLens() {
               )}
               <Button onClick={() => setTab('freedom')}>Next: Freedom Number</Button>
             </CardContent>
-          </Card>
+          </FoldCard>
         </TabsContent>
 
         <TabsContent value="freedom" className="space-y-4">
@@ -326,7 +341,7 @@ export default function WealthLens() {
               <p className="italic text-muted-foreground">Imagine waking up on a Tuesday and knowing you can choose how to spend it. What would that life cost each month? Start with the life you want, pick when you want it, and see how much your investments would need to cover.</p>
             </CardContent>
           </Card>
-          <Card className="glass-card">
+          <FoldCard className="glass-card">
             <CardHeader>
               <CardTitle>Three example lifestyles — and pitfalls to avoid</CardTitle>
               <p className="text-xs text-muted-foreground mt-1">Made-up households to show how each path plays out. Pick the one that sounds most like you.</p>
@@ -348,8 +363,8 @@ export default function WealthLens() {
                 </div>
               ))}
             </CardContent>
-          </Card>
-          <Card className="glass-card">
+          </FoldCard>
+          <FoldCard className="glass-card">
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
               <div>
                 <CardTitle>When, and what's working for you</CardTitle>
@@ -389,12 +404,12 @@ export default function WealthLens() {
               </>}
               <p className="text-xs text-muted-foreground md:col-span-4">Enter amounts in today's purchasing power. Results also show future dollars adjusted for your inflation assumption. Keep spending and income on the same tax basis.</p>
             </CardContent>
-          </Card>
+          </FoldCard>
           <div className="grid lg:grid-cols-3 gap-4">
             {PATHS.map((path) => {
               const p = paths[path.id];
               return (
-                <Card key={path.id} className="glass-card">
+                <FoldCard key={path.id} className="glass-card">
                   <CardHeader><CardTitle className="text-base">{path.name}</CardTitle><p className="text-xs text-muted-foreground">{path.blurb}</p></CardHeader>
                   <CardContent className="space-y-2">
                     <Num label="Monthly Freedom Budget (first phase)" hint="Monthly spending for the life you want, in today's dollars. Example: 4200" value={p.budgetBefore} onChange={P(path.id, 'budgetBefore')} />
@@ -406,7 +421,7 @@ export default function WealthLens() {
                     <Num label="Target year (0 = shared)" hint="Leave 0 to use the target freedom year above." value={p.targetYear} onChange={P(path.id, 'targetYear')} />
                     <Num label="Monthly contribution (-1 = shared)" hint="Leave -1 to use the planned monthly contribution above." value={p.monthlyContribution} onChange={P(path.id, 'monthlyContribution')} />
                   </CardContent>
-                </Card>
+                </FoldCard>
               );
             })}
           </div>
@@ -419,12 +434,12 @@ export default function WealthLens() {
               const inp = inputsFor(path.id);
               const miss = missingInputs(inp);
               if (miss.length) return (
-                <Card key={path.id} className="glass-card"><CardHeader><CardTitle className="text-base">{path.name}</CardTitle></CardHeader>
-                  <CardContent className="text-sm">Still needed: {miss.join(', ')}.</CardContent></Card>
+                <FoldCard key={path.id} className="glass-card"><CardHeader><CardTitle className="text-base">{path.name}</CardTitle></CardHeader>
+                  <CardContent className="text-sm">Still needed: {miss.join(', ')}.</CardContent></FoldCard>
               );
               const r = evaluate(inp);
               return (
-                <Card key={path.id} className="glass-card">
+                <FoldCard key={path.id} className="glass-card">
                   <CardHeader><CardTitle className="text-base">{path.name}</CardTitle><p className="text-xs text-muted-foreground">Target {inp.targetYear} · projection</p></CardHeader>
                   <CardContent className="space-y-2 text-sm">
                     <div className="overflow-x-auto">
@@ -472,7 +487,7 @@ export default function WealthLens() {
                       </div>
                     )}
                   </CardContent>
-                </Card>
+                </FoldCard>
               );
             })}
           </div>
