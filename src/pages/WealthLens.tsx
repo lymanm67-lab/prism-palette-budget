@@ -42,11 +42,25 @@ const DEFAULT_PATHS: Record<PathId, PathIn> = {
   steady: { budgetBefore: 0, changeYear: 0, budgetAfter: 0, oneTimeCost: 0, targetYear: 0, monthlyContribution: -1 },
 };
 
-function Num({ label, value, onChange, step = 1 }: { label: string; value: number; onChange: (n: number) => void; step?: number }) {
+// Fictional example household used only by the "Fill in a sample" button.
+const SAMPLE_SHARED: Shared = {
+  targetYear: YEAR + 10, endYear: YEAR + 40, monthlyTaxes: 600, currentAssets: 150000, monthlyContribution: 1000,
+  inflation: 3, nominalReturn: 6, endingGoal: 50000, currentBudget: 4000, currentTakeHome: 5500,
+  ssMonthly: 2200, ssStart: YEAR + 12, pensionMonthly: 0, pensionStart: YEAR + 10, workMonthly: 800, workEnd: YEAR + 13, rentMonthly: 0,
+  useHomeSale: false, homeSaleNet: 0, homeSaleYear: YEAR + 15,
+};
+const SAMPLE_PATHS: Record<PathId, PathIn> = {
+  down: { budgetBefore: 5000, changeYear: YEAR + 20, budgetAfter: 3500, oneTimeCost: 10000, targetYear: 0, monthlyContribution: -1 },
+  up: { budgetBefore: 3500, changeYear: YEAR + 15, budgetAfter: 5000, oneTimeCost: 15000, targetYear: 0, monthlyContribution: -1 },
+  steady: { budgetBefore: 4200, changeYear: 0, budgetAfter: 0, oneTimeCost: 0, targetYear: 0, monthlyContribution: -1 },
+};
+
+function Num({ label, value, onChange, step = 1, hint }: { label: string; value: number; onChange: (n: number) => void; step?: number; hint?: string }) {
   return (
     <div className="space-y-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>
       <Input type="number" step={step} value={Number.isFinite(value) ? value : 0} onChange={(e) => onChange(parseFloat(e.target.value) || 0)} />
+      {hint && <p className="text-[11px] leading-snug text-muted-foreground/80">{hint}</p>}
     </div>
   );
 }
@@ -280,33 +294,42 @@ export default function WealthLens() {
             </CardContent>
           </Card>
           <Card className="glass-card">
-            <CardHeader><CardTitle>When, and what's working for you</CardTitle></CardHeader>
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
+              <div>
+                <CardTitle>When, and what's working for you</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">Not sure what to enter? Load a made-up example to see how it works, then replace it with your numbers.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => { setShared(SAMPLE_SHARED); setPaths(SAMPLE_PATHS); toast.success('Sample filled in — replace with your own numbers'); }}>Fill in a sample</Button>
+                <Button size="sm" variant="ghost" onClick={() => { setShared(DEFAULT_SHARED); setPaths(DEFAULT_PATHS); }}>Clear</Button>
+              </div>
+            </CardHeader>
             <CardContent className="grid md:grid-cols-4 gap-3">
-              <Num label="Target freedom year" value={shared.targetYear} onChange={S('targetYear')} />
-              <Num label="Plan through year" value={shared.endYear} onChange={S('endYear')} />
-              <Num label="Monthly taxes still to cover" value={shared.monthlyTaxes} onChange={S('monthlyTaxes')} />
-              <Num label="Ending balance goal (optional)" value={shared.endingGoal} onChange={S('endingGoal')} />
-              <Num label="Current investable assets" value={shared.currentAssets} onChange={S('currentAssets')} />
-              <Num label="Planned monthly contribution" value={shared.monthlyContribution} onChange={S('monthlyContribution')} />
-              <Num label="Today's monthly take-home" value={shared.currentTakeHome} onChange={S('currentTakeHome')} />
-              <Num label="Today's monthly spending" value={shared.currentBudget} onChange={S('currentBudget')} />
-              <Num label="Social Security /mo" value={shared.ssMonthly} onChange={S('ssMonthly')} />
-              <Num label="Social Security starts (year)" value={shared.ssStart} onChange={S('ssStart')} />
-              <Num label="Pension /mo" value={shared.pensionMonthly} onChange={S('pensionMonthly')} />
-              <Num label="Pension starts (year)" value={shared.pensionStart} onChange={S('pensionStart')} />
-              <Num label="Planned work income /mo" value={shared.workMonthly} onChange={S('workMonthly')} />
-              <Num label="Work income ends (year)" value={shared.workEnd} onChange={S('workEnd')} />
-              <Num label="Net rental income /mo" value={shared.rentMonthly} onChange={S('rentMonthly')} />
+              <Num label="Target freedom year" hint={`Year work becomes optional. Example: ${YEAR + 10}`} value={shared.targetYear} onChange={S('targetYear')} />
+              <Num label="Plan through year" hint={`Last year the money must last, e.g. age 95. Example: ${YEAR + 40}`} value={shared.endYear} onChange={S('endYear')} />
+              <Num label="Monthly taxes still to cover" hint="Estimated income tax per month in freedom. Example: 600" value={shared.monthlyTaxes} onChange={S('monthlyTaxes')} />
+              <Num label="Ending balance goal (optional)" hint="Money to leave behind at the end. 0 if none. Example: 50000" value={shared.endingGoal} onChange={S('endingGoal')} />
+              <Num label="Current investable assets" hint="Retirement + brokerage today. Exclude home and emergency fund. Example: 150000" value={shared.currentAssets} onChange={S('currentAssets')} />
+              <Num label="Planned monthly contribution" hint="What you invest each month until the target year. Example: 1000" value={shared.monthlyContribution} onChange={S('monthlyContribution')} />
+              <Num label="Today's monthly take-home" hint="Net pay after taxes and deductions. Example: 5500" value={shared.currentTakeHome} onChange={S('currentTakeHome')} />
+              <Num label="Today's monthly spending" hint="What you spend now in a normal month. Example: 4000" value={shared.currentBudget} onChange={S('currentBudget')} />
+              <Num label="Social Security /mo" hint="From your ssa.gov statement, in today's dollars. Example: 2200" value={shared.ssMonthly} onChange={S('ssMonthly')} />
+              <Num label="Social Security starts (year)" hint={`Year you plan to claim. Example: ${YEAR + 12}`} value={shared.ssStart} onChange={S('ssStart')} />
+              <Num label="Pension /mo" hint="Monthly pension estimate. 0 if none." value={shared.pensionMonthly} onChange={S('pensionMonthly')} />
+              <Num label="Pension starts (year)" hint="Year the pension begins." value={shared.pensionStart} onChange={S('pensionStart')} />
+              <Num label="Planned work income /mo" hint="Part-time or consulting income you still expect. Example: 800" value={shared.workMonthly} onChange={S('workMonthly')} />
+              <Num label="Work income ends (year)" hint="Year that extra work stops." value={shared.workEnd} onChange={S('workEnd')} />
+              <Num label="Net rental income /mo" hint="Rent minus all property costs. 0 if none." value={shared.rentMonthly} onChange={S('rentMonthly')} />
               <div />
-              <Num label="Inflation %" step={0.1} value={shared.inflation} onChange={S('inflation')} />
-              <Num label="Return after fees %" step={0.1} value={shared.nominalReturn} onChange={S('nominalReturn')} />
+              <Num label="Inflation %" hint="Yearly price growth. 3 is a common long-run guess." step={0.1} value={shared.inflation} onChange={S('inflation')} />
+              <Num label="Return after fees %" hint="Yearly investment growth after fees. 6 is a moderate guess." step={0.1} value={shared.nominalReturn} onChange={S('nominalReturn')} />
               <label className="flex items-center gap-2 text-sm col-span-2">
                 <input type="checkbox" checked={shared.useHomeSale} onChange={(e) => setShared((s) => ({ ...s, useHomeSale: e.target.checked }))} />
                 Model a home sale or downsize (net after costs and replacement housing)
               </label>
               {shared.useHomeSale && <>
-                <Num label="Net home proceeds" value={shared.homeSaleNet} onChange={S('homeSaleNet')} />
-                <Num label="Sale year" value={shared.homeSaleYear} onChange={S('homeSaleYear')} />
+                <Num label="Net home proceeds" hint="Sale price minus selling costs and the next home's cost." value={shared.homeSaleNet} onChange={S('homeSaleNet')} />
+                <Num label="Sale year" hint="Year you expect to sell." value={shared.homeSaleYear} onChange={S('homeSaleYear')} />
               </>}
               <p className="text-xs text-muted-foreground md:col-span-4">Enter amounts in today's purchasing power. Results also show future dollars adjusted for your inflation assumption. Keep spending and income on the same tax basis.</p>
             </CardContent>
@@ -318,14 +341,14 @@ export default function WealthLens() {
                 <Card key={path.id} className="glass-card">
                   <CardHeader><CardTitle className="text-base">{path.name}</CardTitle><p className="text-xs text-muted-foreground">{path.blurb}</p></CardHeader>
                   <CardContent className="space-y-2">
-                    <Num label="Monthly Freedom Budget (first phase)" value={p.budgetBefore} onChange={P(path.id, 'budgetBefore')} />
+                    <Num label="Monthly Freedom Budget (first phase)" hint="Monthly spending for the life you want, in today's dollars. Example: 4200" value={p.budgetBefore} onChange={P(path.id, 'budgetBefore')} />
                     {path.id !== 'steady' && <>
-                      <Num label={path.id === 'down' ? 'Downsizing year' : 'Year lifestyle grows'} value={p.changeYear} onChange={P(path.id, 'changeYear')} />
-                      <Num label="Monthly budget after change" value={p.budgetAfter} onChange={P(path.id, 'budgetAfter')} />
-                      <Num label="One-time transition cost" value={p.oneTimeCost} onChange={P(path.id, 'oneTimeCost')} />
+                      <Num label={path.id === 'down' ? 'Downsizing year' : 'Year lifestyle grows'} hint="Year your spending changes."  value={p.changeYear} onChange={P(path.id, 'changeYear')} />
+                      <Num label="Monthly budget after change" hint="Monthly spending after the change. Example: 3500 (down) or 5000 (up)" value={p.budgetAfter} onChange={P(path.id, 'budgetAfter')} />
+                      <Num label="One-time transition cost" hint="Moving, remodel or big purchase at the change. Example: 10000" value={p.oneTimeCost} onChange={P(path.id, 'oneTimeCost')} />
                     </>}
-                    <Num label="Target year (0 = shared)" value={p.targetYear} onChange={P(path.id, 'targetYear')} />
-                    <Num label="Monthly contribution (-1 = shared)" value={p.monthlyContribution} onChange={P(path.id, 'monthlyContribution')} />
+                    <Num label="Target year (0 = shared)" hint="Leave 0 to use the target freedom year above." value={p.targetYear} onChange={P(path.id, 'targetYear')} />
+                    <Num label="Monthly contribution (-1 = shared)" hint="Leave -1 to use the planned monthly contribution above." value={p.monthlyContribution} onChange={P(path.id, 'monthlyContribution')} />
                   </CardContent>
                 </Card>
               );
