@@ -386,6 +386,11 @@ export default function WealthLens() {
               <p className="text-xs text-muted-foreground md:col-span-4">Enter amounts in today's purchasing power. Results also show future dollars adjusted for your inflation assumption. Keep spending and income on the same tax basis.</p>
             </CardContent>
           </FoldCard>
+          <div className="space-y-1">
+            <Badge variant="secondary">Step 2 of 3</Badge>
+            <h3 className="text-lg font-semibold">Pick your lifestyle path</h3>
+            <p className="text-sm text-muted-foreground max-w-3xl">Each card is one way freedom could look — Live Large (spend more later), Build First (spend less now, more later) or Live Well (steady throughout). Fill in the monthly budget for the life you want; leave the "shared" fields alone to reuse your Step 1 numbers. You can fill in one path or all three to compare.</p>
+          </div>
           <div className="grid lg:grid-cols-3 gap-4">
             {PATHS.map((path) => {
               const p = paths[path.id];
