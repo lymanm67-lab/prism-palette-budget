@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { Children, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,13 +12,16 @@ import { ChevronDown } from 'lucide-react';
 /** Card with a chevron that hides everything except its header. */
 function FoldCard({ className = '', children }: { className?: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const contentId = useId();
+  const [header, ...content] = Children.toArray(children);
   return (
-    <Card className={`relative ${className} ${open ? '' : '[&>*:not(:first-child)]:hidden'}`}>
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={open ? 'Collapse section' : 'Expand section'}
-        className="absolute right-3 top-3 z-10 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
-        <ChevronDown className={`h-5 w-5 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {children}
+    <Card className={`relative border-l-4 border-l-primary ${className}`}>
+      <div className="pr-14 [&_h3]:leading-snug [&_p]:text-sm [&_p]:leading-relaxed">{header}</div>
+      <Button type="button" variant="outline" size="icon" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls={contentId} aria-label={open ? 'Collapse section' : 'Expand section'}
+        className="absolute right-4 top-5 z-10 border-primary/30 bg-primary/10 text-primary hover:bg-primary/20">
+        <ChevronDown className={`h-5 w-5 transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`} />
+      </Button>
+      <div id={contentId} hidden={!open}>{content}</div>
     </Card>
   );
 }
@@ -336,11 +339,11 @@ export default function WealthLens() {
         </TabsContent>
 
         <TabsContent value="freedom" className="space-y-4">
-          <Card className="glass-card">
-            <CardContent className="py-6">
-              <p className="italic text-muted-foreground">Imagine waking up on a Tuesday and knowing you can choose how to spend it. What would that life cost each month? Start with the life you want, pick when you want it, and see how much your investments would need to cover.</p>
-            </CardContent>
-          </Card>
+          <div className="border-b border-primary/20 py-6 space-y-3">
+            <Badge variant="secondary">Your life. Your pace.</Badge>
+            <h2 className="text-2xl font-semibold">What does freedom look like for you?</h2>
+            <p className="max-w-3xl text-muted-foreground leading-relaxed">Imagine waking up on a Tuesday and knowing you can choose how to spend it. Start with the life you want, pick when you want it, and see how much your investments would need to cover.</p>
+          </div>
           <FoldCard className="glass-card">
             <CardHeader>
               <CardTitle>Three example lifestyles — and pitfalls to avoid</CardTitle>
