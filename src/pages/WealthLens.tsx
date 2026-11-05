@@ -411,6 +411,30 @@ export default function WealthLens() {
               );
             })}
           </div>
+          <FoldCard className="glass-card">
+            <CardHeader>
+              <Badge variant="secondary" className="mb-1 w-fit">Step 3 of 3</Badge>
+              <CardTitle>Three example lifestyles — and pitfalls to avoid</CardTitle>
+               <p className="text-xs text-muted-foreground mt-1">See how each path plays out for a made-up household, and the mistakes to watch for. Use these to sanity-check the numbers you entered above before viewing your results.</p>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-3 gap-4">
+              {SCENARIOS.map((s) => (
+                <div key={s.title} className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <div>
+                    <p className="font-semibold text-foreground">{s.title}</p>
+                    <p className="text-xs text-muted-foreground">{s.who}</p>
+                  </div>
+                  <p className="text-sm text-foreground">{s.story}</p>
+                   <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Pitfalls to avoid</p>
+                    <ul className="list-disc pl-4 space-y-1 text-sm text-muted-foreground">
+                      {s.pitfalls.map((p) => <li key={p}>{p}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </FoldCard>
           <Button onClick={() => setTab('results')}>See my results</Button>
         </TabsContent>
 
