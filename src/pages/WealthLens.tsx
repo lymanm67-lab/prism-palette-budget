@@ -21,6 +21,39 @@ const PATHS: { id: PathId; name: string; blurb: string }[] = [
   { id: 'steady', name: 'Live Well, Stay Steady (Steady Lifestyle)', blurb: 'A comfortable lifestyle now that you would keep later.' },
 ];
 
+const SCENARIOS: { title: string; who: string; story: string; pitfalls: string[] }[] = [
+  {
+    title: 'Live Large, Land Light',
+    who: 'Example: Dana, 55 — travels now, plans to downsize at 67.',
+    story: 'Spends $6,000/mo while healthy and active (trips, hobbies, family visits), then plans to drop to $4,000/mo after selling the house and moving somewhere cheaper.',
+    pitfalls: [
+      'Counting on the "later" cut that never happens — spending habits are sticky.',
+      'Forgetting healthcare and long-term care costs often rise with age.',
+      'Assuming the house sale will cover everything; prices and timing can disappoint.',
+    ],
+  },
+  {
+    title: 'Build First, Live Bigger',
+    who: 'Example: Marcus, 45 — lean now, bigger lifestyle at 60.',
+    story: 'Keeps spending at $3,500/mo and invests hard so freedom life can be $6,500/mo — more travel, a nicer home, generous giving.',
+    pitfalls: [
+      'Burnout from saving so hard that today feels deprived.',
+      'Delaying joy for health years you may not get back.',
+      'Planning a bigger lifestyle without pricing it (taxes, upkeep, insurance).',
+    ],
+  },
+  {
+    title: 'Live Well, Stay Steady',
+    who: 'Example: Priya, 50 — same comfortable life, now and later.',
+    story: 'Spends about $5,000/mo today and expects to keep that same lifestyle in freedom years, funded by investments, Social Security and some part-time work.',
+    pitfalls: [
+      'Ignoring inflation — "the same life" costs more every year.',
+      'Lifestyle creep quietly raising the "steady" number.',
+      'No buffer for surprises like a roof, car or medical bill.',
+    ],
+  },
+];
+
 interface Shared {
   targetYear: number; endYear: number; monthlyTaxes: number; currentAssets: number; monthlyContribution: number;
   inflation: number; nominalReturn: number; endingGoal: number; currentBudget: number; currentTakeHome: number;
@@ -291,6 +324,29 @@ export default function WealthLens() {
           <Card className="glass-card">
             <CardContent className="py-6">
               <p className="italic text-muted-foreground">Imagine waking up on a Tuesday and knowing you can choose how to spend it. What would that life cost each month? Start with the life you want, pick when you want it, and see how much your investments would need to cover.</p>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle>Three example lifestyles — and pitfalls to avoid</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Made-up households to show how each path plays out. Pick the one that sounds most like you.</p>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-3 gap-4">
+              {SCENARIOS.map((s) => (
+                <div key={s.title} className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <div>
+                    <p className="font-semibold text-foreground">{s.title}</p>
+                    <p className="text-xs text-muted-foreground">{s.who}</p>
+                  </div>
+                  <p className="text-sm text-foreground">{s.story}</p>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Pitfalls to avoid</p>
+                    <ul className="list-disc pl-4 space-y-1 text-sm text-muted-foreground">
+                      {s.pitfalls.map((p) => <li key={p}>{p}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
           <Card className="glass-card">
