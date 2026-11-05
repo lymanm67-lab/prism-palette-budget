@@ -307,19 +307,19 @@ export default function WealthLens() {
             <CardContent className="grid md:grid-cols-4 gap-3">
               <Num label="Target freedom year" hint={`Year work becomes optional. Example: ${YEAR + 10}`} value={shared.targetYear} onChange={S('targetYear')} />
               <Num label="Plan through year" hint={`Last year the money must last, e.g. age 95. Example: ${YEAR + 40}`} value={shared.endYear} onChange={S('endYear')} />
-              <Num label="Monthly taxes still to cover" hint="Estimated income tax per month in freedom. Example: 600" value={shared.monthlyTaxes} onChange={S('monthlyTaxes')} />
-              <Num label="Ending balance goal (optional)" hint="Money to leave behind at the end. 0 if none. Example: 50000" value={shared.endingGoal} onChange={S('endingGoal')} />
-              <Num label="Current investable assets" hint="Retirement + brokerage today. Exclude home and emergency fund. Example: 150000" value={shared.currentAssets} onChange={S('currentAssets')} />
-              <Num label="Planned monthly contribution" hint="What you invest each month until the target year. Example: 1000" value={shared.monthlyContribution} onChange={S('monthlyContribution')} />
-              <Num label="Today's monthly take-home" hint="Net pay after taxes and deductions. Example: 5500" value={shared.currentTakeHome} onChange={S('currentTakeHome')} />
-              <Num label="Today's monthly spending" hint="What you spend now in a normal month. Example: 4000" value={shared.currentBudget} onChange={S('currentBudget')} />
+              <Num label="Monthly taxes still to cover" hint="From last year's tax return: 'total tax' ÷ 12. No return handy? Use ~15% of your planned freedom spending. Example: 600" value={shared.monthlyTaxes} onChange={S('monthlyTaxes')} />
+              <Num label="Ending balance goal (optional)" hint="Money you want left at the end — for heirs or a legacy gift. 0 means spend it all. Example: 50000" value={shared.endingGoal} onChange={S('endingGoal')} />
+              <Num label="Current investable assets" hint="Total on your latest retirement + brokerage statements (or the Investments page total). Exclude home equity and emergency fund. Example: 150000" value={shared.currentAssets} onChange={S('currentAssets')} />
+              <Num label="Planned monthly contribution" hint="What you actually invest each month — check automatic transfers or paycheck deductions (401k/457/Roth). Example: 1000" value={shared.monthlyContribution} onChange={S('monthlyContribution')} />
+              <Num label="Today's monthly take-home" hint="Net pay straight from your paystub. Example: 5500" value={shared.currentTakeHome} onChange={S('currentTakeHome')} />
+              <Num label="Today's monthly spending" hint="Use your Budgets page total, or last month's bank/credit-card spending. Example: 4000" value={shared.currentBudget} onChange={S('currentBudget')} />
               <Num label="Social Security /mo" hint="From your ssa.gov statement, in today's dollars. Example: 2200" value={shared.ssMonthly} onChange={S('ssMonthly')} />
               <Num label="Social Security starts (year)" hint={`Year you plan to claim. Example: ${YEAR + 12}`} value={shared.ssStart} onChange={S('ssStart')} />
-              <Num label="Pension /mo" hint="Monthly pension estimate. 0 if none." value={shared.pensionMonthly} onChange={S('pensionMonthly')} />
+              <Num label="Pension /mo" hint="From your plan's annual benefit statement or HR. If unknown, leave 0 and skip." value={shared.pensionMonthly} onChange={S('pensionMonthly')} />
               <Num label="Pension starts (year)" hint="Year the pension begins." value={shared.pensionStart} onChange={S('pensionStart')} />
-              <Num label="Planned work income /mo" hint="Part-time or consulting income you still expect. Example: 800" value={shared.workMonthly} onChange={S('workMonthly')} />
+              <Num label="Planned work income /mo" hint="Consulting or part-time pay you plan to keep working for — like your quarterly AI Services fee. 0 if fully retired." value={shared.workMonthly} onChange={S('workMonthly')} />
               <Num label="Work income ends (year)" hint="Year that extra work stops." value={shared.workEnd} onChange={S('workEnd')} />
-              <Num label="Net rental income /mo" hint="Rent minus all property costs. 0 if none." value={shared.rentMonthly} onChange={S('rentMonthly')} />
+              <Num label="Net rental income /mo" hint="Rent received minus mortgage, taxes, insurance and repairs — from your rental bank deposits and property bills. 0 if none." value={shared.rentMonthly} onChange={S('rentMonthly')} />
               <div />
               <Num label="Inflation %" hint="Yearly price growth. 3 is a common long-run guess." step={0.1} value={shared.inflation} onChange={S('inflation')} />
               <Num label="Return after fees %" hint="Yearly investment growth after fees. 6 is a moderate guess." step={0.1} value={shared.nominalReturn} onChange={S('nominalReturn')} />
@@ -328,7 +328,7 @@ export default function WealthLens() {
                 Model a home sale or downsize (net after costs and replacement housing)
               </label>
               {shared.useHomeSale && <>
-                <Num label="Net home proceeds" hint="Sale price minus selling costs and the next home's cost." value={shared.homeSaleNet} onChange={S('homeSaleNet')} />
+                <Num label="Net home proceeds" hint="Ask a realtor for a sale price, then subtract ~7% selling costs and what your next home costs. Keep it a rough guess." value={shared.homeSaleNet} onChange={S('homeSaleNet')} />
                 <Num label="Sale year" hint="Year you expect to sell." value={shared.homeSaleYear} onChange={S('homeSaleYear')} />
               </>}
               <p className="text-xs text-muted-foreground md:col-span-4">Enter amounts in today's purchasing power. Results also show future dollars adjusted for your inflation assumption. Keep spending and income on the same tax basis.</p>
