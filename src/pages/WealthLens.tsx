@@ -344,34 +344,12 @@ export default function WealthLens() {
             <h2 className="text-2xl font-semibold">What does freedom look like for you?</h2>
             <p className="max-w-3xl text-muted-foreground leading-relaxed">Imagine waking up on a Tuesday and knowing you can choose how to spend it. Start with the life you want, pick when you want it, and see how much your investments would need to cover.</p>
           </div>
-          <FoldCard className="glass-card">
-            <CardHeader>
-              <CardTitle>Three example lifestyles — and pitfalls to avoid</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">Made-up households to show how each path plays out. Pick the one that sounds most like you.</p>
-            </CardHeader>
-            <CardContent className="grid md:grid-cols-3 gap-4">
-              {SCENARIOS.map((s) => (
-                <div key={s.title} className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-                  <div>
-                    <p className="font-semibold text-foreground">{s.title}</p>
-                    <p className="text-xs text-muted-foreground">{s.who}</p>
-                  </div>
-                  <p className="text-sm text-foreground">{s.story}</p>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-primary mb-1">Pitfalls to avoid</p>
-                    <ul className="list-disc pl-4 space-y-1 text-sm text-muted-foreground">
-                      {s.pitfalls.map((p) => <li key={p}>{p}</li>)}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </FoldCard>
-          <FoldCard className="glass-card">
+           <FoldCard className="glass-card">
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
               <div>
+                <Badge variant="secondary" className="mb-1">Step 1 of 3</Badge>
                 <CardTitle>When, and what's working for you</CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">Not sure what to enter? Load a made-up example to see how it works, then replace it with your numbers.</p>
+                <p className="text-xs text-muted-foreground mt-1">Start here. These shared numbers — your target year, savings, income and spending — apply to all three lifestyle paths below. Each field has a hint telling you where to find the number. Not sure what to enter? Load a made-up example to see how it works, then replace it with your numbers.</p>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => { setShared(SAMPLE_SHARED); setPaths(SAMPLE_PATHS); toast.success('Sample filled in — replace with your own numbers'); }}>Fill in a sample</Button>
