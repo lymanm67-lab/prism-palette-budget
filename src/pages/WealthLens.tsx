@@ -227,6 +227,7 @@ export default function WealthLens() {
           <FoldCard className="glass-card">
             <CardHeader>
               <CardTitle>Wealth Building Persona Quiz</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Start here. Answer 16 quick questions about how you think and feel about money — there are no right answers, just pick the one that sounds most like you. At the end you'll get your wealth persona, which shapes the tips shown throughout this page.</p>
               <Progress value={(Object.keys(answers).length / QUESTIONS.length) * 100} />
               <p className="text-xs text-muted-foreground">{Object.keys(answers).length} of {QUESTIONS.length} answered</p>
             </CardHeader>
@@ -297,7 +298,9 @@ export default function WealthLens() {
 
         <TabsContent value="leaks">
           <FoldCard className="glass-card">
-            <CardHeader><CardTitle>The 5 Is Money Leak Check</CardTitle></CardHeader>
+            <CardHeader><CardTitle>The 5 Is Money Leak Check</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Next, check five common places money quietly slips away. For each area, mark whether it's handled or a leak, and enter the rough monthly amount if you know it. Your biggest leak can be added to your Freedom Number as an optional "what if I fixed this" scenario.</p>
+            </CardHeader>
             <CardContent className="space-y-3">
               {LEAK_AREAS.map((a) => {
                 const e = leaks[a.id] ?? { status: 'unsure' as LeakStatus, period: 'monthly' as const };
